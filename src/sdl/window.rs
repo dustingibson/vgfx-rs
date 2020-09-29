@@ -69,12 +69,14 @@ pub fn run() -> Result<(), String> {
 
     //Set up shader
     let mut shader = Shader::new("fragment".to_string());
+    let light_pos = glm::vec3(-0.5, 2.0, -0.5);
     shader.add_uniform("MVP".to_string());
+    shader.add_uniform("lightPos".to_string());
     
     let mut camera: Camera = Camera::new( glm::vec3(4.0, 3.0, 3.0));
 
-    let cuboid: Cuboid = Cuboid::new(glm::vec3(-1.0, -1.0, -1.0), glm::vec3(1.0, 0.0, 0.0), 0.5, 0.5, 0.5);
-    let cuboidB: Cuboid = Cuboid::new(glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0), 0.5, 0.5, 0.5);
+    let cuboid: Cuboid = Cuboid::new(glm::vec3(-0.5, -0.5, -0.5), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 1.0);
+    let cuboidB: Cuboid = Cuboid::new(light_pos, glm::vec3(0.0, 0.0, 0.0), 1.0, 1.0, 1.0);
 
     'running: loop {
         for event in event_pump.poll_iter() {
@@ -115,6 +117,7 @@ pub fn run() -> Result<(), String> {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::UseProgram(shader.program_id);
             gl::UniformMatrix4fv(shader.get_uniform_location("MVP".to_string()), 1, gl::FALSE, &camera.MVP[(0,0)]);
+            gl::Uniform3fv(shader.get_uniform_location("lightPos".to_string()), 1, &light_pos[0]);
 
             cuboid.draw();
             cuboidB.draw();
