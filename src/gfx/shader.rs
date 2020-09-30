@@ -30,6 +30,8 @@ impl Shader {
             gl::LinkProgram(program_id);
             gl::DetachShader(program_id, vertex_shader);
             gl::DetachShader(program_id, fragment_shader);
+            gl::DeleteShader(vertex_shader);
+            gl::DeleteShader(fragment_shader);
         }
         return Shader {
             name: String::new(),
@@ -51,13 +53,15 @@ impl Shader {
             gl::CompileShader(shader_id);
             gl::GetShaderiv(shader_id, gl::COMPILE_STATUS, &mut success);
         }
-        if (success <= 0) {
+        if success <= 0 {
+            println!("ERROR");
             let mut len = 0;
             unsafe { gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut len); }
             let mut buffer = Vec::with_capacity(len as usize);
             unsafe { 
-                gl::GetShaderInfoLog(shader_id, len, null_mut(), buffer.as_mut_ptr());
+                gl::GetShaderInfoLog(shader_id, len, null_mut(), buffer.as_mut_ptr() as *mut gl::types::GLchar);
                 buffer.set_len(len as usize);
+                println!("{}", String::from_utf8(buffer).unwrap());
             }
         }
     }
@@ -76,6 +80,10 @@ impl Shader {
             Some(&v) => v,
             None => 0
         }
+    }
+
+    pub fn clean_up(&self) {
+        unsafe { gl::DeleteProgram(self.program_id); }
     }
 
 }

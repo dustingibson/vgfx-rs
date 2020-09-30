@@ -326,6 +326,7 @@ name = "vgfx-rs"
 version = "0.1.0"
 dependencies = [
  "gl",
+ "libc",
  "nalgebra-glm",
  "sdl2",
 ]

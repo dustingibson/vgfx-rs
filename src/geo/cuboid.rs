@@ -1,6 +1,9 @@
 use gl;
 use gl::types::*;
+use std::mem;
 extern crate nalgebra_glm as glm;
+extern crate libc;
+
 
 pub struct Cuboid {
     pub point: glm::Vec3,
@@ -32,6 +35,7 @@ impl Cuboid {
                 (vertex_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
                 vertex_array.as_ptr() as *const gl::types::GLvoid, 
                 gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
         unsafe {
             gl::GenBuffers(1, &mut color_buffer);
@@ -41,15 +45,17 @@ impl Cuboid {
                 (color_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
                 color_array.as_ptr() as *const gl::types::GLvoid, 
                 gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
         unsafe {
-            gl::GenBuffers(2, &mut normal_buffer);
+            gl::GenBuffers(1, &mut normal_buffer);
             gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer);
             gl::BufferData(
                 gl::ARRAY_BUFFER, 
                 (normal_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
                 normal_array.as_ptr() as *const gl::types::GLvoid, 
                 gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
         return Cuboid {
             point: point,
@@ -86,57 +92,66 @@ impl Cuboid {
         }
     }
 
+    pub fn clean_up(&mut self) {
+        println!("CLEANING UP");
+        unsafe {
+            gl::DeleteBuffers(1, &mut self.vertex_buffer);
+            gl::DeleteBuffers(1, &mut self.color_buffer);
+            gl::DeleteBuffers(1, &mut self.normal_buffer);
+        }
+    }
+
     fn init_vertex_array(point: glm::Vec3, length: GLfloat, width: GLfloat, height: GLfloat) -> Vec<GLfloat> {
         return vec![
 
         //1
-            point.x, point.y,point.z,
-            point.x, point.y, point.z + height,
-            point.x, point.y + width, point.z + height,
+            -0.5, -0.5,-0.5,
+            -0.5, -0.5, 0.5,
+            -0.5, 0.5, 0.5,
         //2
-            point.x + length, point.y + width,point.z,
-            point.x, point.y,point.z,
-            point.x, point.y + width,point.z,
+            0.5, 0.5,-0.5,
+            -0.5, -0.5,-0.5,
+            -0.5, 0.5,-0.5,
         //3
-             point.x + length, point.y, point.z + height,
-            point.x, point.y,point.z,
-             point.x + length, point.y,point.z,
+             0.5, -0.5, 0.5,
+            -0.5, -0.5,-0.5,
+             0.5, -0.5,-0.5,
         //4
-             point.x + length, point.y + width,point.z,
-             point.x + length, point.y,point.z,
-            point.x, point.y,point.z,
+             0.5, 0.5,-0.5,
+             0.5, -0.5,-0.5,
+            -0.5, -0.5,-0.5,
         //5
-            point.x, point.y,point.z,
-            point.x, point.y + width, point.z + height,
-            point.x, point.y + width,point.z,
+            -0.5, -0.5,-0.5,
+            -0.5, 0.5, 0.5,
+            -0.5, 0.5,-0.5,
         //6
-             point.x + length, point.y, point.z + height,
-            point.x, point.y, point.z + height,
-            point.x, point.y,point.z,
+             0.5, -0.5, 0.5,
+            -0.5, -0.5, 0.5,
+            -0.5, -0.5,-0.5,
         //7
-            point.x, point.y + width, point.z + height,
-            point.x, point.y, point.z + height,
-             point.x + length, point.y, point.z + height,
+            -0.5, 0.5, 0.5,
+            -0.5, -0.5, 0.5,
+             0.5, -0.5, 0.5,
         //8
-             point.x + length, point.y + width, point.z + height,
-             point.x + length, point.y,point.z,
-             point.x + length, point.y + width,point.z,
+             0.5, 0.5, 0.5,
+             0.5, -0.5,-0.5,
+             0.5, 0.5,-0.5,
         //9
-             point.x + length, point.y,point.z,
-             point.x + length, point.y + width, point.z + height,
-             point.x + length, point.y, point.z + height,
+             0.5, -0.5,-0.5,
+             0.5, 0.5, 0.5,
+             0.5, -0.5, 0.5,
         //10
-             point.x + length, point.y + width, point.z + height,
-             point.x + length, point.y + width,point.z,
-             point.x, point.y + width,point.z,
+             0.5, 0.5, 0.5,
+             0.5, 0.5,-0.5,
+             -0.5, 0.5,-0.5,
         //11
-             point.x + length, point.y + width, point.z + height,
-            point.x, point.y + width,point.z,
-            point.x, point.y + width, point.z + height,
+             0.5, 0.5, 0.5,
+            -0.5, 0.5,-0.5,
+            -0.5, 0.5, 0.5,
         //12
-             point.x + length, point.y + width, point.z + height,
-            point.x, point.y + width, point.z + height,
-             point.x + length, point.y, point.z + height
+             0.5, 0.5, 0.5,
+            -0.5, 0.5, 0.5,
+             0.5, -0.5, 0.5
         ];
     }
 

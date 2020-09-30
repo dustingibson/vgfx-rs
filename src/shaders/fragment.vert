@@ -8,11 +8,15 @@ out vec3 fragmentColor;
 out vec3 normal;
 out vec3 fragPos;
 
-uniform mat4 MVP;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
 
 void main() {	
-	gl_Position =  MVP * vec4(model_pos,1);
-	fragPos = model_pos;
+	//gl_Position =  MVP * vec4(model_pos,1);
+	gl_Position = projection * view * model * vec4(model_pos, 1.0f);
+	fragPos = vec3(model * vec4(model_pos,1.0f));
 	fragmentColor = vertex_color;
 	normal = normals;
 }
