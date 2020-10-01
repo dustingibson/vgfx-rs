@@ -1,6 +1,7 @@
 use gl;
 use gl::types::*;
 use std::mem;
+use crate::Shader;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
@@ -13,6 +14,7 @@ pub struct Cuboid {
     pub vertex_array: Vec<GLfloat>,
     pub color_array: Vec<GLfloat>,
     pub normal_array: Vec<GLfloat>,
+    pub position: glm::Vec3,
     vertex_buffer: GLuint,
     color_buffer: GLuint,
     normal_buffer: GLuint
@@ -62,6 +64,7 @@ impl Cuboid {
             length: length,
             width: width,
             height: height,
+            position: point,
             vertex_array: vertex_array,
             color_array: color_array,
             normal_array: normal_array,
@@ -71,8 +74,10 @@ impl Cuboid {
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&mut self, shader: &mut Shader) {
         unsafe {
+            gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model()[(0,0)]);
+
             gl::EnableVertexAttribArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);
             gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
@@ -92,6 +97,11 @@ impl Cuboid {
         }
     }
 
+    pub fn get_model(&mut self) -> glm::Mat4 { 
+        let c_model: glm::Mat4 = glm::Mat4::identity();
+        return glm::translate(&c_model, &self.position);
+    }
+
     pub fn clean_up(&mut self) {
         println!("CLEANING UP");
         unsafe {
@@ -101,57 +111,63 @@ impl Cuboid {
         }
     }
 
-    fn init_vertex_array(point: glm::Vec3, length: GLfloat, width: GLfloat, height: GLfloat) -> Vec<GLfloat> {
+    fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
+        let lowX: GLfloat = width / -2.0; 
+        let highX: GLfloat = width / 2.0;
+        let lowY: GLfloat = height / -2.0;
+        let highY: GLfloat = height / 2.0;
+        let lowZ: GLfloat = depth / -2.0;
+        let highZ: GLfloat = depth / 2.0;
         return vec![
 
         //1
-            -0.5, -0.5,-0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, 0.5, 0.5,
+            lowX, lowY,lowZ,
+            lowX, lowY, highZ,
+            lowX, highY, highZ,
         //2
-            0.5, 0.5,-0.5,
-            -0.5, -0.5,-0.5,
-            -0.5, 0.5,-0.5,
+            highX, highY,lowZ,
+            lowX, lowY,lowZ,
+            lowX, highY,lowZ,
         //3
-             0.5, -0.5, 0.5,
-            -0.5, -0.5,-0.5,
-             0.5, -0.5,-0.5,
+            highX, lowY, highZ,
+             lowX, lowY, lowZ,
+             highX,lowY,lowZ,
         //4
-             0.5, 0.5,-0.5,
-             0.5, -0.5,-0.5,
-            -0.5, -0.5,-0.5,
+             highX,highY,lowZ,
+             highX, lowY,lowZ,
+            lowX, lowY,lowZ,
         //5
-            -0.5, -0.5,-0.5,
-            -0.5, 0.5, 0.5,
-            -0.5, 0.5,-0.5,
-        //6
-             0.5, -0.5, 0.5,
-            -0.5, -0.5, 0.5,
-            -0.5, -0.5,-0.5,
+            lowX, lowY,lowZ,
+            lowX, highY, highZ,
+            lowX, highY,lowZ,
+        //
+            highX,lowY, highZ,
+            lowX, lowY, highZ,
+            lowX, lowY,lowZ,
         //7
-            -0.5, 0.5, 0.5,
-            -0.5, -0.5, 0.5,
-             0.5, -0.5, 0.5,
+            lowX, highY, highZ,
+            lowX, lowY, highZ,
+            highX, lowY, highZ,
         //8
-             0.5, 0.5, 0.5,
-             0.5, -0.5,-0.5,
-             0.5, 0.5,-0.5,
+            highX, highY, highZ,
+            highX, lowY,lowZ,
+            highX, highY,lowZ,
         //9
-             0.5, -0.5,-0.5,
-             0.5, 0.5, 0.5,
-             0.5, -0.5, 0.5,
+            highX, lowY,lowZ,
+            highX, highY, highZ,
+            highX, lowY, highZ,
         //10
-             0.5, 0.5, 0.5,
-             0.5, 0.5,-0.5,
-             -0.5, 0.5,-0.5,
+            highX, highY, highZ,
+            highX, highY,lowZ,
+            lowX, highY,lowZ,
         //11
-             0.5, 0.5, 0.5,
-            -0.5, 0.5,-0.5,
-            -0.5, 0.5, 0.5,
+            highX, highY, highZ,
+           lowX, highY,lowZ,
+           lowX, highY, highZ,
         //12
-             0.5, 0.5, 0.5,
-            -0.5, 0.5, 0.5,
-             0.5, -0.5, 0.5
+            highX, highY, highZ,
+             lowX, highY, highZ,
+             highX, lowY, highZ
         ];
     }
 
