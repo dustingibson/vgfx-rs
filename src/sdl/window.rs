@@ -1,5 +1,6 @@
 use gl;
 use gl::types::*;
+use sdl2::mouse::Cursor;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::keyboard::Scancode;
@@ -24,6 +25,8 @@ fn find_sdl_gl_driver() -> Option<u32> {
 pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     const WIDTH: u32 = 1920;
     const HEIGHT: u32 = 1080;
+    const CENTER_X: f32 = WIDTH as f32 / 2.0;
+    const CENTER_Y: f32 = HEIGHT as f32 / 2.0;
 
     let mut start_ticks: u32 = 0;
     let mut end_ticks: u32 = 0;
@@ -34,6 +37,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
+    
 
     let window = video_subsystem.window("rust-gl demo", WIDTH, HEIGHT)
         .opengl()
@@ -74,10 +78,20 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     shader.add_uniform("projection".to_string());
     shader.add_uniform("view".to_string());
     shader.add_uniform("lightPos".to_string());
+
+    sdl_context.mouse().show_cursor(false);
+    sdl_context.mouse().set_relative_mouse_mode(true);
     
     let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 3.0), WIDTH as f32, HEIGHT as f32);
 
     let mut demo: Demo = Demo::new();
+
+    let mut mouse_x: i32 = 0;
+    let mut mouse_y: i32 = 0;
+    let mut prev_mouse_x: i32 = 0;
+    let mut prev_mouse_y: i32 = 0;
+    let mut offset_mouse_x: i32 = 0;
+    let mut offset_mouse_y: i32 = 0;
 
     'running: loop {
         start_ticks = sdl_timer.ticks();
@@ -91,20 +105,38 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
                 _ => {}
             }
         }
+        //event_pump.mouse_state().x();
+        mouse_x = event_pump.mouse_state().x();
+        mouse_y = event_pump.mouse_state().y();
+
+        offset_mouse_x -= (mouse_x - prev_mouse_x);
+        offset_mouse_y += (mouse_y - prev_mouse_y);
+        //let mouse_ang_x =  if  (mouse_x as f32) < CENTER_X {mouse_x as f32 / CENTER_X} else { CENTER_X / mouse_x as f32 *-1.0 };
+        let mouse_delta_x: f32 = (offset_mouse_x) as f32 / WIDTH as f32;
+        let mouse_delta_y = (offset_mouse_y) as f32 / HEIGHT as f32;
+        //camera.change_yaw(mouse_delta_x);
+        //camera.change_pitch(mouse_delta_y);
+        camera.change_angle(mouse_delta_x, mouse_delta_y);
 
         if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Right)) {
-            camera.position += glm::normalize(&glm::cross(&glm::vec3(0.0, 0.0, -1.0), &glm::vec3(0.0, 1.0, 0.0)) );
+            camera.position += glm::normalize(&glm::cross(&camera.front, &glm::vec3(0.0, 1.0, 0.0)) );
+            //camera.position += glm::normalize(&glm::cross(&glm::vec3(0.0,0.0,-1.0), &glm::vec3(0.0, 1.0, 0.0)) );
             camera.update();
         }
         if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Left)) {
-            camera.position -= glm::normalize(  &glm::cross(&glm::vec3(0.0, 0.0, -1.0),&glm::vec3(0.0, 1.0, 0.0)) );
+            camera.position -= glm::normalize(  &glm::cross(&camera.front,&glm::vec3(0.0, 1.0, 0.0)) );
+            //camera.position -= glm::normalize(  &glm::cross(&glm::vec3(0.0,0.0,-1.0),&glm::vec3(0.0, 1.0, 0.0)) );
             camera.update();
         }
         if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Up)) {
-            camera.translate(glm::vec3(0.0, 0.0, -1.0));
+            camera.translate(camera.front, 1.0);
+            //camera.translate(glm::vec3(0.0, 0.0, -1.0));
+
         }
         if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Down)) {
-            camera.translate(glm::vec3(0.0, 0.0, 1.0));
+            camera.translate(camera.front, -1.0);
+            //camera.translate(glm::vec3(0.0, 0.0, -1.0));
+
         }
 
 
@@ -125,8 +157,9 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
             if(command.eq("demo")) {
                 demo.run(&mut shader);
             }
-
         }
+        prev_mouse_x = mouse_x;
+        prev_mouse_y = mouse_y;
         window.gl_swap_window();
         delta_time = sdl_timer.ticks() - start_ticks;
         sleep_time = if (target_ms - delta_time as f32) < 0.0 {0} else { (target_ms - delta_time as f32) as u64};

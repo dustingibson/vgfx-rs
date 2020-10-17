@@ -19,6 +19,14 @@ impl Demo {
     pub fn new() -> Self {
         let mut cuboids: Vec<Cuboid> = vec![];
         let light_pos = glm::vec3(2.5, 3.0, -0.5);
+        for i in 0..5 {
+            for j in 0..5 {
+                for k in 0..5 {
+                    cuboids.push(Cuboid::new(glm::vec3(0.5 * i as f32,0.5 * j as f32, 0.5 * k as f32), glm::vec3(0.2 * i as f32, 0.2 * j as f32, 0.5 * k as f32), 0.5, 0.5, 0.5));
+                }
+            }
+
+        }
         cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
         cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
         return Demo {
