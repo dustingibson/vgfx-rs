@@ -1,18 +1,16 @@
 use gl;
 use gl::types::*;
-use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::keyboard::Scancode;
-use sdl2::timer;
 use std::time::Duration;
-use std::mem;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
 use crate::Plane;
 use crate::Shader;
 use crate::Camera;
+use crate::Demo;
 
 fn find_sdl_gl_driver() -> Option<u32> {
     for (index, item) in sdl2::render::drivers().enumerate() {
@@ -23,7 +21,7 @@ fn find_sdl_gl_driver() -> Option<u32> {
     None
 }
 
-pub fn run() -> Result<(), String> {
+pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     const WIDTH: u32 = 1920;
     const HEIGHT: u32 = 1080;
 
@@ -79,9 +77,7 @@ pub fn run() -> Result<(), String> {
     
     let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 3.0), WIDTH as f32, HEIGHT as f32);
 
-    let mut cuboid: Cuboid = Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0);
-    let mut cuboidB: Cuboid = Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0);
-    let mut planeA: Plane = Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0), 10.0, 10.0);
+    let mut demo: Demo = Demo::new();
 
     'running: loop {
         start_ticks = sdl_timer.ticks();
@@ -124,9 +120,12 @@ pub fn run() -> Result<(), String> {
             gl::Uniform3fv(shader.get_uniform_location("lightPos".to_string()), 1, &light_pos[0]);
 
 
-            cuboid.draw(&mut shader);
-            cuboidB.draw(&mut shader);
-            planeA.draw(&mut shader);
+            // cuboid.draw(&mut shader);
+            // cuboidB.draw(&mut shader);
+            if(command.eq("demo")) {
+                demo.run(&mut shader);
+            }
+
         }
         window.gl_swap_window();
         delta_time = sdl_timer.ticks() - start_ticks;
@@ -136,9 +135,7 @@ pub fn run() -> Result<(), String> {
     }
 
     //Clean up
-    cuboid.clean_up();
-    cuboidB.clean_up();
-    planeA.clean_up();
+    demo.clean_up_cuboids();
     unsafe{ gl::DeleteVertexArrays(1, &vertex_array_id); }
     shader.clean_up();
 
