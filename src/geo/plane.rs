@@ -5,12 +5,9 @@ use crate::Shader;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
-
-pub struct Cuboid {
-    pub point: glm::Vec3,
-    pub length: GLfloat,
+pub struct Plane {
     pub width: GLfloat,
-    pub height: GLfloat,
+    pub depth: GLfloat,
     pub vertex_array: Vec<GLfloat>,
     pub color_array: Vec<GLfloat>,
     pub normal_array: Vec<GLfloat>,
@@ -20,13 +17,13 @@ pub struct Cuboid {
     normal_buffer: GLuint
 }
 
-impl Cuboid {
+impl Plane {
 
-    pub fn new(point: glm::Vec3, color: glm::Vec3, length: GLfloat, width: GLfloat, height: GLfloat) -> Self {
+    pub fn new(point: glm::Vec3, color: glm::Vec3, width: GLfloat, depth: GLfloat) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut color_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
-        let vertex_array = Self::init_vertex_array(point, length, width, height);
+        let vertex_array = Self::init_vertex_array(point, width, 1.0, depth);
         let color_array = Self::init_color_array(color);
         let normal_array = Self::init_normal_array();
         unsafe {
@@ -59,11 +56,9 @@ impl Cuboid {
                 gl::STATIC_DRAW);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
-        return Cuboid {
-            point: point,
-            length: length,
+        return Plane {
+            depth: depth,
             width: width,
-            height: height,
             position: point,
             vertex_array: vertex_array,
             color_array: color_array,
@@ -120,59 +115,19 @@ impl Cuboid {
         return vec![
 
         //1
-            lowX, lowY,lowZ,
-            lowX, lowY, highZ,
-            lowX, highY, highZ,
+        highX, lowY, highZ,
+        lowX, lowY, lowZ,
+        highX,lowY,lowZ,
         //2
-            highX, highY,lowZ,
-            lowX, lowY,lowZ,
-            lowX, highY,lowZ,
-        //3
-            highX, lowY, highZ,
-             lowX, lowY, lowZ,
-             highX,lowY,lowZ,
-        //4
-             highX,highY,lowZ,
-             highX, lowY,lowZ,
-            lowX, lowY,lowZ,
-        //5
-            lowX, lowY,lowZ,
-            lowX, highY, highZ,
-            lowX, highY,lowZ,
-        //6
-            highX,lowY, highZ,
-            lowX, lowY, highZ,
-            lowX, lowY,lowZ,
-        //7
-            lowX, highY, highZ,
-            lowX, lowY, highZ,
-            highX, lowY, highZ,
-        //8
-            highX, highY, highZ,
-            highX, lowY,lowZ,
-            highX, highY,lowZ,
-        //9
-            highX, lowY,lowZ,
-            highX, highY, highZ,
-            highX, lowY, highZ,
-        //10
-            highX, highY, highZ,
-            highX, highY,lowZ,
-            lowX, highY,lowZ,
-        //11
-            highX, highY, highZ,
-           lowX, highY,lowZ,
-           lowX, highY, highZ,
-        //12
-            highX, highY, highZ,
-             lowX, highY, highZ,
-             highX, lowY, highZ
+        highX,lowY, highZ,
+        lowX, lowY, highZ,
+        lowX, lowY,lowZ,
         ];
     }
 
     fn init_color_array(color: glm::Vec3) -> Vec<GLfloat> {
         let mut resulting_vector: Vec<GLfloat> = Vec::new();
-        for x in 0..36 {
+        for x in 0..12 {
             resulting_vector.push(color.x);
             resulting_vector.push(color.y);
             resulting_vector.push(color.z);
@@ -183,64 +138,14 @@ impl Cuboid {
     fn init_normal_array() -> Vec<GLfloat> {
         return vec![
             //1
-            -1.0,  0.0,  0.0,
-            -1.0,  0.0,  0.0,
-            -1.0,  0.0,  0.0,
+            0.0,  -1.0,  0.0,
+            0.0,  -1.0,  0.0,
+            0.0,  -1.0,  0.0,
 
             //2
-            0.0,  0.0,  -1.0,
-            0.0,  0.0,  -1.0,
-            0.0,  0.0,  -1.0,
-
-            //3
-            0.0, -1.0,  0.0,
-            0.0, -1.0,  0.0,
-            0.0, -1.0,  0.0,
-
-            //4
-            0.0,  0.0,  -1.0,
-            0.0,  0.0,  -1.0,
-            0.0,  0.0,  -1.0,
-
-            //5
-            -1.0,  0.0,  0.0,
-            -1.0,  0.0,  0.0,
-            -1.0,  0.0,  0.0,
-
-            //6
-            0.0, -1.0,  0.0,
-            0.0, -1.0,  0.0,
-            0.0, -1.0,  0.0,
-            
-            //7
-            0.0,  0.0,  1.0,
-            0.0,  0.0,  1.0,
-            0.0,  0.0,  1.0,
-
-            //8
-            1.0,  0.0,  0.0,
-            1.0,  0.0,  0.0,
-            1.0,  0.0,  0.0,
-            
-            //9
-            1.0,  0.0,  0.0,
-            1.0,  0.0,  0.0,
-            1.0,  0.0,  0.0,
-
-            //10
-            0.0, 1.0,  0.0,
-            0.0, 1.0,  0.0,
-            0.0, 1.0,  0.0,
-
-            //11
-            0.0, 1.0,  0.0,
-            0.0, 1.0,  0.0,
-            0.0, 1.0,  0.0,
-
-            //12
-            0.0,  0.0,  1.0,
-            0.0,  0.0,  1.0,
-            0.0,  0.0,  1.0,
+            0.0,  -1.0,  0.0,
+            0.0,  -1.0,  0.0,
+            0.0,  -1.0,  0.0,
         ];
     }
 }

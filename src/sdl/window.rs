@@ -3,12 +3,14 @@ use gl::types::*;
 use sdl2::pixels::Color;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::keyboard::Scancode;
 use sdl2::timer;
 use std::time::Duration;
 use std::mem;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
+use crate::Plane;
 use crate::Shader;
 use crate::Camera;
 
@@ -22,17 +24,20 @@ fn find_sdl_gl_driver() -> Option<u32> {
 }
 
 pub fn run() -> Result<(), String> {
+    const WIDTH: u32 = 1920;
+    const HEIGHT: u32 = 1080;
+
     let mut start_ticks: u32 = 0;
     let mut end_ticks: u32 = 0;
     // Aim for 60 fps
-    let target_ms: f32 = (1.0/60.0)*1000.0;
+    let target_ms: f32 = (1.0/30.0)*1000.0;
     let mut delta_time: u32 = 0;
     let mut sleep_time: u64 = 0;
 
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
-    let window = video_subsystem.window("rust-gl demo", 1024, 768)
+    let window = video_subsystem.window("rust-gl demo", WIDTH, HEIGHT)
         .opengl()
         .position_centered()
         .build()
@@ -66,40 +71,23 @@ pub fn run() -> Result<(), String> {
 
     //Set up shader
     let mut shader = Shader::new("fragment".to_string());
-    let light_pos = glm::vec3(-0.5, 2.0, -0.5);
+    let light_pos = glm::vec3(2.5, 3.0, -0.5);
     shader.add_uniform("model".to_string());
     shader.add_uniform("projection".to_string());
     shader.add_uniform("view".to_string());
     shader.add_uniform("lightPos".to_string());
     
-    let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 3.0));
+    let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 3.0), WIDTH as f32, HEIGHT as f32);
 
     let mut cuboid: Cuboid = Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0);
     let mut cuboidB: Cuboid = Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0);
+    let mut planeA: Plane = Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0), 10.0, 10.0);
 
     'running: loop {
         start_ticks = sdl_timer.ticks();
+        
         for event in event_pump.poll_iter() {
             match event {
-                Event::KeyDown {keycode: Some(Keycode::Left),..} => {
-                    //camera.translate(glm::vec3(0.0, 0.0, -0.5));
-                    camera.position += glm::normalize(&glm::cross(&glm::vec3(0.0, 0.0, -1.0), &glm::vec3(0.0, 1.0, 0.0)) );
-                    camera.update();
-                    break;
-                }
-                Event::KeyDown {keycode: Some(Keycode::Right),..} => {
-                    camera.position -= glm::normalize(  &glm::cross(&glm::vec3(0.0, 0.0, -1.0),&glm::vec3(0.0, 1.0, 0.0)) );
-                    camera.update();
-                    break;
-                }
-                Event::KeyDown {keycode: Some(Keycode::Up),..} => {
-                    camera.translate(glm::vec3(0.0, 0.0, -1.0));
-                    break;
-                }
-                Event::KeyDown {keycode: Some(Keycode::Down),..} => {
-                    camera.translate(glm::vec3(0.0, 0.0, 1.0));
-                    break;
-                }
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'running;
@@ -107,21 +95,38 @@ pub fn run() -> Result<(), String> {
                 _ => {}
             }
         }
+
+        if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Right)) {
+            camera.position += glm::normalize(&glm::cross(&glm::vec3(0.0, 0.0, -1.0), &glm::vec3(0.0, 1.0, 0.0)) );
+            camera.update();
+        }
+        if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Left)) {
+            camera.position -= glm::normalize(  &glm::cross(&glm::vec3(0.0, 0.0, -1.0),&glm::vec3(0.0, 1.0, 0.0)) );
+            camera.update();
+        }
+        if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Up)) {
+            camera.translate(glm::vec3(0.0, 0.0, -1.0));
+        }
+        if(event_pump.keyboard_state().is_scancode_pressed(Scancode::Down)) {
+            camera.translate(glm::vec3(0.0, 0.0, 1.0));
+        }
+
+
+
+
         unsafe {
             //gl::ClearColor(0.8, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             gl::UseProgram(shader.program_id);
 
 
-            let model = cuboid.get_model();
-            let view = camera.get_view();
             camera.set_projection(&mut shader);
             gl::Uniform3fv(shader.get_uniform_location("lightPos".to_string()), 1, &light_pos[0]);
 
 
             cuboid.draw(&mut shader);
-            let model = cuboidB.get_model();
             cuboidB.draw(&mut shader);
+            planeA.draw(&mut shader);
         }
         window.gl_swap_window();
         delta_time = sdl_timer.ticks() - start_ticks;
@@ -133,6 +138,7 @@ pub fn run() -> Result<(), String> {
     //Clean up
     cuboid.clean_up();
     cuboidB.clean_up();
+    planeA.clean_up();
     unsafe{ gl::DeleteVertexArrays(1, &vertex_array_id); }
     shader.clean_up();
 

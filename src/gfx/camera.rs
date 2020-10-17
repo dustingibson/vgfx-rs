@@ -12,9 +12,9 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(position: glm::Vec3) -> Camera {
+    pub fn new(position: glm::Vec3, width: f32, height: f32) -> Camera {
             // Rad(45) = 0.785398
-        let projection: glm::Mat4 = glm::perspective(4.0 / 3.0, 0.785398, 0.1, 100.0);
+        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.1, 100.0);
         let view: glm::Mat4 = glm::look_at::<GLfloat>(
             &position,
             &glm::vec3(0.0, 0.0, 2.0),
@@ -33,7 +33,6 @@ impl Camera {
 
     pub fn translate(& mut self, translate_vector: glm::Vec3) {
         self.position += translate_vector;
-        println!("{}", self.position);
         self.update();
     }
 

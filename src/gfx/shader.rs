@@ -70,7 +70,6 @@ impl Shader {
         let c_name: CString = CString::new(name.clone()).expect("CSTring failed");
         unsafe {
             let loc = gl::GetUniformLocation(self.program_id, c_name.as_ptr());
-            println!("{}", loc);
             self.uniforms.insert(name.clone(), loc);
         }
     }
