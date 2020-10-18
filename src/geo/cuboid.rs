@@ -5,7 +5,7 @@ use crate::Shader;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
-
+#[derive(Clone)]
 pub struct Cuboid {
     pub point: glm::Vec3,
     pub length: GLfloat,
@@ -29,36 +29,36 @@ impl Cuboid {
         let vertex_array = Self::init_vertex_array(point, length, width, height);
         let color_array = Self::init_color_array(color);
         let normal_array = Self::init_normal_array();
-        unsafe {
-            gl::GenBuffers(1, &mut vertex_buffer);
-            gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
-            gl::BufferData(
-                gl::ARRAY_BUFFER, 
-                (vertex_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-                vertex_array.as_ptr() as *const gl::types::GLvoid, 
-                gl::STATIC_DRAW);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
-        unsafe {
-            gl::GenBuffers(1, &mut color_buffer);
-            gl::BindBuffer(gl::ARRAY_BUFFER, color_buffer);
-            gl::BufferData(
-                gl::ARRAY_BUFFER, 
-                (color_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-                color_array.as_ptr() as *const gl::types::GLvoid, 
-                gl::STATIC_DRAW);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
-        unsafe {
-            gl::GenBuffers(1, &mut normal_buffer);
-            gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer);
-            gl::BufferData(
-                gl::ARRAY_BUFFER, 
-                (normal_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-                normal_array.as_ptr() as *const gl::types::GLvoid, 
-                gl::STATIC_DRAW);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
+        // unsafe {
+        //     gl::GenBuffers(1, &mut vertex_buffer);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
+        //     gl::BufferData(
+        //         gl::ARRAY_BUFFER, 
+        //         (vertex_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+        //         vertex_array.as_ptr() as *const gl::types::GLvoid, 
+        //         gl::STATIC_DRAW);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        // }
+        // unsafe {
+        //     gl::GenBuffers(1, &mut color_buffer);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, color_buffer);
+        //     gl::BufferData(
+        //         gl::ARRAY_BUFFER, 
+        //         (color_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+        //         color_array.as_ptr() as *const gl::types::GLvoid, 
+        //         gl::STATIC_DRAW);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        // }
+        // unsafe {
+        //     gl::GenBuffers(1, &mut normal_buffer);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer);
+        //     gl::BufferData(
+        //         gl::ARRAY_BUFFER, 
+        //         (normal_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+        //         normal_array.as_ptr() as *const gl::types::GLvoid, 
+        //         gl::STATIC_DRAW);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        // }
         return Cuboid {
             point: point,
             length: length,
@@ -111,12 +111,12 @@ impl Cuboid {
     }
 
     fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
-        let lowX: GLfloat = width / -2.0; 
-        let highX: GLfloat = width / 2.0;
-        let lowY: GLfloat = height / -2.0;
-        let highY: GLfloat = height / 2.0;
-        let lowZ: GLfloat = depth / -2.0;
-        let highZ: GLfloat = depth / 2.0;
+        let lowX: GLfloat = point.x + (width / -2.0); 
+        let highX: GLfloat = point.x + (width / 2.0);
+        let lowY: GLfloat = point.y + (height / -2.0);
+        let highY: GLfloat = point.y + (height / 2.0);
+        let lowZ: GLfloat = point.z + (depth / -2.0);
+        let highZ: GLfloat = point.z + (depth / 2.0);
         return vec![
 
         //1

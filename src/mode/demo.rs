@@ -9,47 +9,48 @@ extern crate nalgebra_glm as glm;
 use crate::Cuboid;
 use crate::Plane;
 use crate::Shader;
+use crate::Model;
 
 pub struct Demo {
-    pub cuboids: Vec<Cuboid>,
+    pub model: Model,
     pub plane: Plane
 }
 
 impl Demo {
     pub fn new() -> Self {
+        let mut model: Model = Model::new(glm::vec3(0.0,0.0,0.0));
         let mut cuboids: Vec<Cuboid> = vec![];
-        let light_pos = glm::vec3(2.5, 3.0, -0.5);
-        for i in 0..5 {
-            for j in 0..5 {
-                for k in 0..5 {
-                    cuboids.push(Cuboid::new(glm::vec3(0.5 * i as f32,0.5 * j as f32, 0.5 * k as f32), glm::vec3(0.2 * i as f32, 0.2 * j as f32, 0.5 * k as f32), 0.5, 0.5, 0.5));
+        let light_pos = glm::vec3(2.5, 5.0, -0.5);
+        for i in 0..20 {
+            for j in 0..20 {
+                for k in 0..20 {
+                    cuboids.push(Cuboid::new(glm::vec3(0.05 * i as f32,0.05 * j as f32, 0.05 * k as f32), glm::vec3(0.05 * i as f32, 0.05 * j as f32, 0.05 * k as f32), 0.05, 0.05, 0.05));
                 }
             }
-
         }
-        cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
-        cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
+        //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
+        //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
+
+        model.insert_submodel(glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids);
+        
+        //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
+        //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
         return Demo {
-            cuboids: cuboids,
+            model: model,
             plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0), 10.0, 10.0)
         };
     }
 
     pub fn insert_cuboid(&mut self, position: glm::Vec3, size: glm::Vec3, color: glm::Vec3) {
-        self.cuboids.push(Cuboid::new(position, color, size.x, size.y, size.z));
+        //self.cuboids.push(Cuboid::new(position, color, size.x, size.y, size.z));
     }
 
     pub fn draw_cuboids(&mut self,  shader: &mut Shader) {
-        for cuboid in self.cuboids.iter_mut() {
-            cuboid.draw(shader);
-        }
         self.plane.draw(shader);
+        self.model.draw(shader);
     }
 
     pub fn clean_up_cuboids(&mut self) {
-        for cuboid in self.cuboids.iter_mut() {
-            cuboid.clean_up();
-        }
         self.plane.clean_up();
     }
 

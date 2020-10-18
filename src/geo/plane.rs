@@ -4,7 +4,7 @@ use std::mem;
 use crate::Shader;
 extern crate nalgebra_glm as glm;
 extern crate libc;
-
+#[derive(Clone)]
 pub struct Plane {
     pub width: GLfloat,
     pub depth: GLfloat,
