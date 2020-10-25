@@ -10,6 +10,7 @@ extern crate nalgebra_glm as glm;
 use crate::Cuboid;
 use crate::Plane;
 use crate::Shader;
+use crate::ShaderContainer;
 use crate::Camera;
 use crate::Demo;
 
@@ -71,13 +72,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         gl::BindVertexArray(vertex_array_id);
     }
 
-    //Set up shader
-    let mut shader = Shader::new("fragment".to_string());
-    let light_pos = glm::vec3(2.5, 3.0, -0.5);
-    shader.add_uniform("model".to_string());
-    shader.add_uniform("projection".to_string());
-    shader.add_uniform("view".to_string());
-    shader.add_uniform("lightPos".to_string());
+    let mut shader_container: ShaderContainer = ShaderContainer::new();
 
     //sdl_context.mouse().show_cursor(true);
     sdl_context.mouse().set_relative_mouse_mode(true);
@@ -126,19 +121,10 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         }
 
         unsafe {
-            //gl::ClearColor(0.8, 0.0, 0.0, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            gl::UseProgram(shader.program_id);
-
-
-            camera.set_projection(&mut shader);
-            gl::Uniform3fv(shader.get_uniform_location("lightPos".to_string()), 1, &light_pos[0]);
-
-
-            // cuboid.draw(&mut shader);
-            // cuboidB.draw(&mut shader);
+            camera.set_projection( &mut shader_container);
             if(command.eq("demo")) {
-                demo.run(&mut shader);
+                demo.run(&mut shader_container);
             }
         }
         window.gl_swap_window();
@@ -151,7 +137,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     //Clean up
     demo.clean_up_cuboids();
     unsafe{ gl::DeleteVertexArrays(1, &vertex_array_id); }
-    shader.clean_up();
+    shader_container.clean_up();
 
     Ok(())
 }

@@ -1,0 +1,4 @@
+Model -> CRUD Sub-Models, Resize
+SubModel -> Resize, Relocate, Voxel
+Voxel -> Place, Remove, Geometry, Resize, Color
+Place -> Absolute, Sticky

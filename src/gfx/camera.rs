@@ -1,6 +1,7 @@
 use gl;
 use gl::types::*;
 use crate::Shader;
+use crate::ShaderContainer;
 extern crate nalgebra_glm as glm;
 
 pub struct Camera {
@@ -38,11 +39,8 @@ impl Camera {
         self.update();
     }
 
-    pub fn set_projection(&mut self, shader: &mut Shader) {
-        unsafe {
-            gl::UniformMatrix4fv(shader.get_uniform_location("view".to_string()), 1, gl::FALSE, &self.get_view()[(0,0)]);
-            gl::UniformMatrix4fv(shader.get_uniform_location("projection".to_string()), 1, gl::FALSE, &self.projection[(0,0)]);
-        }
+    pub fn set_projection(&mut self, shader_container: &mut ShaderContainer) {
+        shader_container.set_projection(self.get_view(), self.projection);
     }
 
     pub fn get_view(&self) -> glm::Mat4 {

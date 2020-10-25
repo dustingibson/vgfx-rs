@@ -6,6 +6,7 @@ mod mode;
 
 use gl;
 use gfx::shader::Shader;
+use gfx::shader::ShaderContainer;
 use geo::cuboid::Cuboid;
 use geo::plane::Plane;
 use gfx::camera::Camera;

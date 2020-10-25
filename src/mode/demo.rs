@@ -9,6 +9,7 @@ extern crate nalgebra_glm as glm;
 use crate::Cuboid;
 use crate::Plane;
 use crate::Shader;
+use crate::ShaderContainer;
 use crate::Model;
 
 pub struct Demo {
@@ -45,16 +46,17 @@ impl Demo {
         //self.cuboids.push(Cuboid::new(position, color, size.x, size.y, size.z));
     }
 
-    pub fn draw_cuboids(&mut self,  shader: &mut Shader) {
-        self.plane.draw(shader);
-        self.model.draw(shader);
+    pub fn draw_cuboids(&mut self,  shader_container: &mut ShaderContainer) {
+        unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
+        self.plane.draw(&mut shader_container.get_shader("fragment".to_string()));
+        self.model.draw(&mut shader_container.get_shader("fragment".to_string()));
     }
 
     pub fn clean_up_cuboids(&mut self) {
         self.plane.clean_up();
     }
 
-    pub fn run(&mut self, shader: &mut Shader) {
+    pub fn run(&mut self, shader: &mut ShaderContainer) {
         self.draw_cuboids(shader);
     }
 

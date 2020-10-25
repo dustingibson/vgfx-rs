@@ -74,8 +74,10 @@ impl Cuboid {
         }
     }
 
-    pub fn draw(&mut self, shader: &mut Shader) {
+    pub fn draw(&mut self, shader: &mut Shader, light_pos: glm::Vec3) {
         unsafe {
+            gl::Uniform3fv(shader.get_uniform_location("lightPos".to_string()), 1, &light_pos[0]);
+
             gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model()[(0,0)]);
 
             gl::EnableVertexAttribArray(0);

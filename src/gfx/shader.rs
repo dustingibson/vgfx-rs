@@ -7,7 +7,55 @@ use std::ptr::null;
 use std::ptr::null_mut;
 use std::mem;
 use std::collections::HashMap;
+extern crate nalgebra_glm as glm;
 
+#[derive(Clone)]
+
+pub struct ShaderContainer {
+    pub shaders: HashMap<String, Shader>,
+    pub default_shader: Shader
+}
+
+impl ShaderContainer {
+
+    pub fn new() -> Self {
+        let mut all_shaders = HashMap::new();
+
+        let mut fragment_shader = Shader::new("fragment".to_string());
+        fragment_shader.add_uniform("lightPos".to_string());
+        all_shaders.insert("fragment".to_string(), fragment_shader.clone());
+        all_shaders.insert("texture".to_string(), Shader::new("texture".to_string()));
+        return ShaderContainer {
+            shaders: all_shaders,
+            default_shader: fragment_shader
+        }
+    }
+
+    pub fn set_projection(&self, view: glm::Mat4, projections: glm::Mat4) {
+        for (key, shader) in &self.shaders {
+            unsafe {
+                gl::UniformMatrix4fv(shader.get_uniform_location("view".to_string()), 1, gl::FALSE, &view[(0,0)]);
+                gl::UniformMatrix4fv(shader.get_uniform_location("projection".to_string()), 1, gl::FALSE, &projections[(0,0)]);
+            }
+        }
+    }
+
+    pub fn get_shader(&mut self, name: String) -> Shader {
+        match self.shaders.get(&name) {
+            Some(v) => v.clone(),
+            None => self.default_shader.clone()
+        }
+    }
+
+    pub fn clean_up(self) {
+        for (key, value) in self.shaders.iter() {
+            value.clean_up();
+        }
+    }
+
+}
+
+#[derive(Clone)]
 pub struct Shader {
     pub vertex_shader: GLuint,
     pub fragment_shader: GLuint,
@@ -33,13 +81,18 @@ impl Shader {
             gl::DeleteShader(vertex_shader);
             gl::DeleteShader(fragment_shader);
         }
-        return Shader {
-            name: String::new(),
+        let mut curShader = Shader {
+            name: name.clone(),
             vertex_shader: vertex_shader,
             fragment_shader: fragment_shader,
             program_id: program_id,
             uniforms: HashMap::new()
-        }
+        };
+        curShader.add_uniform("model".to_string());
+        curShader.add_uniform("projection".to_string());
+        curShader.add_uniform("view".to_string());
+        //curShader.add_uniform("lightPos".to_string());
+        return curShader;
     }
 
     pub fn compile_shader(shader_id: GLuint, shader_name: &String, shader_types: GLuint) {
@@ -74,7 +127,7 @@ impl Shader {
         }
     }
 
-    pub fn get_uniform_location(&mut self, name: String) -> GLint {
+    pub fn get_uniform_location(&self, name: String) -> GLint {
         match self.uniforms.get(&name) {
             Some(&v) => v,
             None => 0
