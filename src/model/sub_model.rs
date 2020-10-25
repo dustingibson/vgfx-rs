@@ -88,7 +88,7 @@ impl SubModel {
 
             gl::EnableVertexAttribArray(1);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.color_buffer);
-            gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
+            gl::VertexAttribPointer(1, 4, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
             gl::EnableVertexAttribArray(2);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer);

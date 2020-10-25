@@ -22,15 +22,15 @@ impl Demo {
         let mut model: Model = Model::new(glm::vec3(0.0,0.0,0.0));
         let mut cuboids: Vec<Cuboid> = vec![];
         let light_pos = glm::vec3(2.5, 5.0, -0.5);
-        for i in 0..20 {
-            for j in 0..20 {
-                for k in 0..20 {
-                    cuboids.push(Cuboid::new(glm::vec3(0.05 * i as f32,0.05 * j as f32, 0.05 * k as f32), glm::vec3(0.05 * i as f32, 0.05 * j as f32, 0.05 * k as f32), 0.05, 0.05, 0.05));
-                }
-            }
-        }
-        //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
-        //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
+        // for i in 0..20 {
+        //     for j in 0..20 {
+        //         for k in 0..20 {
+        //             cuboids.push(Cuboid::new(glm::vec3(0.05 * i as f32,0.05 * j as f32, 0.05 * k as f32), glm::vec3(0.05 * i as f32, 0.05 * j as f32, 0.05 * k as f32), 0.05, 0.05, 0.05));
+        //         }
+        //     }
+        // }
+        cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), 1.0, 1.0, 2.0));
+        cuboids.push(Cuboid::new(light_pos, glm::vec4(1.0, 1.0, 1.0, 0.1), 1.0, 1.0, 1.0));
 
         model.insert_submodel(glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids);
         
@@ -38,7 +38,7 @@ impl Demo {
         //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
         return Demo {
             model: model,
-            plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec3(0.0,1.0,0.0), 10.0, 10.0)
+            plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0)
         };
     }
 

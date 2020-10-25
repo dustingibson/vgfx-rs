@@ -19,7 +19,7 @@ pub struct Plane {
 
 impl Plane {
 
-    pub fn new(point: glm::Vec3, color: glm::Vec3, width: GLfloat, depth: GLfloat) -> Self {
+    pub fn new(point: glm::Vec3, color: glm::Vec4, width: GLfloat, depth: GLfloat) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut color_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
@@ -79,7 +79,7 @@ impl Plane {
 
             gl::EnableVertexAttribArray(1);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.color_buffer);
-            gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
+            gl::VertexAttribPointer(1, 4, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
             gl::EnableVertexAttribArray(2);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer);
@@ -125,12 +125,13 @@ impl Plane {
         ];
     }
 
-    fn init_color_array(color: glm::Vec3) -> Vec<GLfloat> {
+    fn init_color_array(color: glm::Vec4) -> Vec<GLfloat> {
         let mut resulting_vector: Vec<GLfloat> = Vec::new();
         for x in 0..12 {
             resulting_vector.push(color.x);
             resulting_vector.push(color.y);
             resulting_vector.push(color.z);
+            resulting_vector.push(color.w);
         }
         return resulting_vector;
     }

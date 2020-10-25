@@ -22,43 +22,13 @@ pub struct Cuboid {
 
 impl Cuboid {
 
-    pub fn new(point: glm::Vec3, color: glm::Vec3, length: GLfloat, width: GLfloat, height: GLfloat) -> Self {
+    pub fn new(point: glm::Vec3, color: glm::Vec4, length: GLfloat, width: GLfloat, height: GLfloat) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut color_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let vertex_array = Self::init_vertex_array(point, length, width, height);
         let color_array = Self::init_color_array(color);
         let normal_array = Self::init_normal_array();
-        // unsafe {
-        //     gl::GenBuffers(1, &mut vertex_buffer);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
-        //     gl::BufferData(
-        //         gl::ARRAY_BUFFER, 
-        //         (vertex_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-        //         vertex_array.as_ptr() as *const gl::types::GLvoid, 
-        //         gl::STATIC_DRAW);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        // }
-        // unsafe {
-        //     gl::GenBuffers(1, &mut color_buffer);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, color_buffer);
-        //     gl::BufferData(
-        //         gl::ARRAY_BUFFER, 
-        //         (color_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-        //         color_array.as_ptr() as *const gl::types::GLvoid, 
-        //         gl::STATIC_DRAW);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        // }
-        // unsafe {
-        //     gl::GenBuffers(1, &mut normal_buffer);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer);
-        //     gl::BufferData(
-        //         gl::ARRAY_BUFFER, 
-        //         (normal_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-        //         normal_array.as_ptr() as *const gl::types::GLvoid, 
-        //         gl::STATIC_DRAW);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        // }
         return Cuboid {
             point: point,
             length: length,
@@ -86,7 +56,7 @@ impl Cuboid {
 
             gl::EnableVertexAttribArray(1);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.color_buffer);
-            gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
+            gl::VertexAttribPointer(1, 4, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
             gl::EnableVertexAttribArray(2);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer);
@@ -172,12 +142,13 @@ impl Cuboid {
         ];
     }
 
-    fn init_color_array(color: glm::Vec3) -> Vec<GLfloat> {
+    fn init_color_array(color: glm::Vec4) -> Vec<GLfloat> {
         let mut resulting_vector: Vec<GLfloat> = Vec::new();
         for x in 0..36 {
             resulting_vector.push(color.x);
             resulting_vector.push(color.y);
             resulting_vector.push(color.z);
+            resulting_vector.push(color.w);
         }
         return resulting_vector;
     }

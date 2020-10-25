@@ -32,7 +32,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     let mut start_ticks: u32 = 0;
     let mut end_ticks: u32 = 0;
     // Aim for 60 fps
-    let target_ms: f32 = (1.0/30.0)*1000.0;
+    let target_ms: f32 = (1.0/60.0)*1000.0;
     let mut delta_time: u32 = 0;
     let mut sleep_time: u64 = 0;
 
@@ -58,6 +58,8 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     unsafe {
         //gl::Viewport(0, 0, 1024, 768);
         gl::ClearColor(0.0, 0.0, 0.4, 0.0);
+        gl::Enable(gl::BLEND);
+        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         gl::Enable(gl::DEPTH_TEST);
         gl::DepthFunc(gl::LESS);
     }
