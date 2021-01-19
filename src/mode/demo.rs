@@ -11,14 +11,18 @@ use crate::Plane;
 use crate::Shader;
 use crate::ShaderContainer;
 use crate::Model;
+use crate::Texture;
+use crate::Text;
+use crate::SDLContext;
 
 pub struct Demo {
     pub model: Model,
-    pub plane: Plane
+    pub plane: Plane,
+    pub text: Text
 }
 
 impl Demo {
-    pub fn new() -> Self {
+    pub fn new(sdl_payload: &mut SDLContext) -> Self {
         let mut model: Model = Model::new(glm::vec3(0.0,0.0,0.0));
         let mut cuboids: Vec<Cuboid> = vec![];
         let light_pos = glm::vec3(2.5, 5.0, -0.5);
@@ -29,8 +33,9 @@ impl Demo {
         //         }
         //     }
         // }
-        cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), 1.0, 1.0, 2.0));
-        cuboids.push(Cuboid::new(light_pos, glm::vec4(1.0, 1.0, 1.0, 0.1), 1.0, 1.0, 1.0));
+        cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 2.0));
+        cuboids.push(Cuboid::new(light_pos, glm::vec4(1.0, 1.0, 1.0, 0.1), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 1.0));
+        let mut text: Text = Text::new( sdl_payload, "Test".to_string(), glm::vec3(0.0,0.0,0.0) );
 
         model.insert_submodel(glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids);
         
@@ -38,7 +43,8 @@ impl Demo {
         //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
         return Demo {
             model: model,
-            plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0)
+            plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0),
+            text: text
         };
     }
 

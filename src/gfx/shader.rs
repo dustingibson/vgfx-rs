@@ -23,8 +23,10 @@ impl ShaderContainer {
 
         let mut fragment_shader = Shader::new("fragment".to_string());
         fragment_shader.add_uniform("lightPos".to_string());
+        fragment_shader.add_uniform("textureSample".to_string());
+        fragment_shader.add_uniform("textured".to_string());
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
-        all_shaders.insert("texture".to_string(), Shader::new("texture".to_string()));
+        //all_shaders.insert("textureSample".to_string(), Shader::new("textureSample".to_string()));
         return ShaderContainer {
             shaders: all_shaders,
             default_shader: fragment_shader
@@ -91,8 +93,17 @@ impl Shader {
         curShader.add_uniform("model".to_string());
         curShader.add_uniform("projection".to_string());
         curShader.add_uniform("view".to_string());
+        curShader.add_uniform("textureSample".to_string());
+        curShader.add_uniform("textured".to_string());
         //curShader.add_uniform("lightPos".to_string());
         return curShader;
+    }
+
+    pub fn set_texture(&self, texture_id: GLuint)
+    {
+        unsafe  {
+            gl::Uniform1i(self.get_uniform_location("textureSample".to_string()), 0);
+        }
     }
 
     pub fn compile_shader(shader_id: GLuint, shader_name: &String, shader_types: GLuint) {

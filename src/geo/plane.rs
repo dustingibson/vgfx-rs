@@ -72,6 +72,7 @@ impl Plane {
     pub fn draw(&mut self, shader: &mut Shader) {
         unsafe {
             gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model()[(0,0)]);
+            gl::Uniform1i(shader.get_uniform_location("textured".to_string()), 0);
 
             gl::EnableVertexAttribArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);

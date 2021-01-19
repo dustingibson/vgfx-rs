@@ -3,6 +3,7 @@ mod sdl;
 mod geo;
 mod model;
 mod mode;
+mod dep;
 
 use gl;
 use gfx::shader::Shader;
@@ -10,9 +11,13 @@ use gfx::shader::ShaderContainer;
 use geo::cuboid::Cuboid;
 use geo::plane::Plane;
 use gfx::camera::Camera;
+use gfx::texture::Texture;
+use gfx::text::Text;
 use model::model::Model;
 use model::sub_model::SubModel;
 use mode::demo::Demo;
+use mode::edit::ModelEditor;
+use dep::events::SDLContext;
 use std::env;
 
 

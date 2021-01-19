@@ -3,15 +3,16 @@
 layout(location = 0) in vec3 model_pos;
 layout(location = 1) in vec4 vertex_color;
 layout(location = 2) in vec3 normals;
+layout(location = 3) in vec2 aTexCoord;
 
 out vec4 fragmentColor;
 out vec3 normal;
 out vec3 fragPos;
+out vec2 TexCoord;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-
 
 void main() {	
 	//gl_Position =  MVP * vec4(model_pos,1);
@@ -19,4 +20,6 @@ void main() {
 	fragPos = vec3(model * vec4(model_pos,1.0f));
 	fragmentColor = vertex_color;
 	normal = normals;
+	TexCoord = aTexCoord;
+	//TexCoord = normalize(model_pos.xy);
 }
