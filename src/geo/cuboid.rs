@@ -36,6 +36,7 @@ impl Cuboid {
         let color_array = Self::init_color_array(color);
         let normal_array = Self::init_normal_array();
         let texture_array = Self::init_texture_array(texture_coord.x, texture_coord.y, texture_coord.z, texture_coord.w);
+        
 
         return Cuboid {
             point: point,

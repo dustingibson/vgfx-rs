@@ -10,6 +10,8 @@ use gfx::shader::Shader;
 use gfx::shader::ShaderContainer;
 use geo::cuboid::Cuboid;
 use geo::plane::Plane;
+use geo::label::Label;
+use geo::label_2d::Label2D;
 use gfx::camera::Camera;
 use gfx::texture::Texture;
 use gfx::text::Text;

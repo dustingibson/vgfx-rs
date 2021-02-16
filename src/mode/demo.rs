@@ -13,16 +13,18 @@ use crate::ShaderContainer;
 use crate::Model;
 use crate::Texture;
 use crate::Text;
+use crate::Camera;
+use crate::Label2D;
 use crate::SDLContext;
 
 pub struct Demo {
     pub model: Model,
     pub plane: Plane,
-    pub text: Text
+    pub label: Label2D
 }
 
 impl Demo {
-    pub fn new(sdl_payload: &mut SDLContext) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
         let mut model: Model = Model::new(glm::vec3(0.0,0.0,0.0));
         let mut cuboids: Vec<Cuboid> = vec![];
         let light_pos = glm::vec3(2.5, 5.0, -0.5);
@@ -33,9 +35,10 @@ impl Demo {
         //         }
         //     }
         // }
-        cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 2.0));
+        //let mut text: Text = Text::new( sdl_payload, "Test".to_string(), glm::vec3(0.0,0.0,0.0) );
+        //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 2.0));
         cuboids.push(Cuboid::new(light_pos, glm::vec4(1.0, 1.0, 1.0, 0.1), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 1.0));
-        let mut text: Text = Text::new( sdl_payload, "Test".to_string(), glm::vec3(0.0,0.0,0.0) );
+        let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), 0.5, 0.5);
 
         model.insert_submodel(glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids);
         
@@ -44,7 +47,7 @@ impl Demo {
         return Demo {
             model: model,
             plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0),
-            text: text
+            label: label
         };
     }
 
@@ -52,18 +55,30 @@ impl Demo {
         //self.cuboids.push(Cuboid::new(position, color, size.x, size.y, size.z));
     }
 
-    pub fn draw_cuboids(&mut self,  shader_container: &mut ShaderContainer) {
+    pub fn draw_cuboids(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         self.plane.draw(&mut shader_container.get_shader("fragment".to_string()));
         self.model.draw(&mut shader_container.get_shader("fragment".to_string()));
+        self.draw_hud(camera, shader_container);
+        //self.label.draw(camera, &mut shader_container.get_shader("fragment".to_string()));
     }
 
     pub fn clean_up_cuboids(&mut self) {
         self.plane.clean_up();
     }
 
-    pub fn run(&mut self, shader: &mut ShaderContainer) {
-        self.draw_cuboids(shader);
+    pub fn run(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
+        self.draw_cuboids(camera, shader);
+    }
+
+    pub fn draw_hud(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
+        unsafe { gl::Disable(gl::DEPTH_TEST); }
+        camera.set_projection_ortho(shader);
+        self.label.draw(camera, &mut shader.get_shader("fragment".to_string()));
+        camera.set_projection(shader);
+        unsafe { gl::Enable(gl::DEPTH_TEST); }
+        //gl::Ortho(0.0, 500, 500, 0.0, -1.0, 10.0);
+        
     }
 
 

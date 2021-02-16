@@ -58,7 +58,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     let _gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
 
     unsafe {
-        //gl::Viewport(0, 0, 1024, 768);
+        //gl::Viewport(0, 0, 1920, 1080);
         gl::ClearColor(0.0, 0.0, 0.4, 0.0);
         gl::Enable(gl::BLEND);
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
@@ -82,9 +82,9 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     sdl_context.mouse().set_relative_mouse_mode(true);
     
     let mut sdl_payload: SDLContext = SDLContext::new(sdl_context, ttf_context);
-    let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 3.0), WIDTH as f32, HEIGHT as f32);
+    let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 0.0), WIDTH as f32, HEIGHT as f32);
 
-    let mut demo: Demo = Demo::new(&mut sdl_payload);
+    let mut demo: Demo = Demo::new(&mut sdl_payload, &mut camera);
     let mut model_editor: ModelEditor = ModelEditor::new();
 
     let mut offset_mouse_x: i32 = 0;
@@ -131,7 +131,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             camera.set_projection( &mut shader_container);
             if(command.eq("demo")) {
-                demo.run(&mut shader_container);
+                demo.run(&mut camera, &mut shader_container);
             }
             if(command.eq("model editor")) {
                 model_editor.run(&sdl_payload); 

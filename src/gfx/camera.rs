@@ -11,7 +11,9 @@ pub struct Camera {
     pub model: glm::Mat4,
     pub view: glm::Mat4,
     pub front: glm::Vec3,
-    pub MVP: glm::Mat4
+    pub MVP: glm::Mat4,
+    width: f32,
+    height: f32
 }
 
 impl Camera {
@@ -31,7 +33,9 @@ impl Camera {
             view: view,
             front: glm::vec3(0.0, 0.0, -1.0),
             projection: projection,
-            MVP: MVP
+            MVP: MVP,
+            width: width,
+            height: height
         }
     }
 
@@ -42,6 +46,13 @@ impl Camera {
 
     pub fn set_projection(&mut self, shader_container: &mut ShaderContainer) {
         shader_container.set_projection(self.get_view(), self.projection);
+    }
+
+    pub fn set_projection_ortho(&mut self, shader_container: &mut ShaderContainer) {
+        let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 1.0);
+        let view: glm::Mat4 = glm::Mat4::identity();
+        //let view: glm::Mat4 = self.get_view();
+        shader_container.set_projection(view, new_projection);
     }
 
     pub fn get_view(&self) -> glm::Mat4 {
@@ -81,6 +92,15 @@ impl Camera {
             &self.position,
             &self.front,
             &glm::vec3(0.0 ,1.0, 0.0)
+        );
+    }
+
+    pub fn ortho(&mut self, left: f32, right: f32, bottom: f32, top: f32, zNear: f32, zFar: f32) -> glm::Mat4 {
+        return glm::mat4(
+            2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),
+            0.0, 2.0 / (top - bottom), 0.0, -(top + bottom) / (top - bottom),
+            0.0, 0.0, -2.0 / (zFar - zNear), -(zFar + zNear) / (zFar - zNear),
+            0.0, 0.0, 0.0, 1.0
         );
     }
 

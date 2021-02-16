@@ -33,7 +33,7 @@ impl Text {
             Err(e) => panic!("Cannot load font")
         };
         let renderer: PartialRendering = font.render("BLAH");
-        let surface: Surface = match renderer.blended(sdl2::pixels::Color::CYAN) {
+        let surface: Surface = match renderer.blended(sdl2::pixels::Color::RGBA(255 as u8, 0  as u8, 0  as u8, 255  as u8)) {
             Ok(x) => x,
             Err(e) => panic!("Cannot render font")
         };
