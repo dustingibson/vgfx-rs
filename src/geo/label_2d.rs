@@ -106,9 +106,15 @@ impl Label2D {
         }
     }
 
+    pub fn change_text(&mut self, sdl_payload: &mut SDLContext, text: String) {
+        //self.text_texture = Text::new(sdl_payload, text, self.position);   
+        self.text_texture.change_text(sdl_payload, text);
+    }
+
     pub fn draw(&mut self, camera: &mut Camera, shader: &mut Shader) {
         self.change_vertex(camera);
         unsafe {
+            gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.text_texture.texture.texture_id);
             shader.set_texture(1);
@@ -136,6 +142,9 @@ impl Label2D {
 
             gl::DisableVertexAttribArray(0);
             gl::DisableVertexAttribArray(1);
+
+            gl::Enable(gl::DEPTH_TEST);
+
         }
     }
 

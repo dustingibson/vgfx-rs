@@ -19,10 +19,10 @@ pub struct Texture {
 
 impl Texture {
 
-    pub fn new() -> Self {
+    pub fn new(name: String) -> Self {
         println!("Setting texture");
         let mut texture_buffer: GLuint = 0;
-        let mut surface: Surface = match sdl2::image::LoadSurface::from_file("C:/code/vgfx-rs/src/res/texture/test.jpg") {
+        let mut surface: Surface = match sdl2::image::LoadSurface::from_file(format!("res/texture/{}.jpg", name)) {
             Ok(val) => val,
             Err(val) => panic!("unable to load")
         };
@@ -72,6 +72,10 @@ impl Texture {
         return Texture {
             texture_id: texture_buffer
         }
+    }
+
+    pub fn removeTexture(&mut self) {
+        unsafe { gl::DeleteTextures(1, &self.texture_id); }
     }
 
     fn testVector() -> Vec<GLfloat> {

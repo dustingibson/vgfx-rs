@@ -31,7 +31,7 @@ impl Cuboid {
         let color_buffer: GLuint = 0;
         let normal_buffer: GLuint = 0;
         let texture_buffer: GLuint = 0;
-        let texture = Texture::new();
+        let texture = Texture::new("test".to_string());
         let vertex_array = Self::init_vertex_array(point, length, width, height);
         let color_array = Self::init_color_array(color);
         let normal_array = Self::init_normal_array();

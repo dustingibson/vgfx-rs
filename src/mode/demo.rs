@@ -72,11 +72,9 @@ impl Demo {
     }
 
     pub fn draw_hud(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
-        unsafe { gl::Disable(gl::DEPTH_TEST); }
         camera.set_projection_ortho(shader);
         self.label.draw(camera, &mut shader.get_shader("fragment".to_string()));
         camera.set_projection(shader);
-        unsafe { gl::Enable(gl::DEPTH_TEST); }
         //gl::Ortho(0.0, 500, 500, 0.0, -1.0, 10.0);
         
     }

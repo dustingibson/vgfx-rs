@@ -85,7 +85,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 0.0), WIDTH as f32, HEIGHT as f32);
 
     let mut demo: Demo = Demo::new(&mut sdl_payload, &mut camera);
-    let mut model_editor: ModelEditor = ModelEditor::new();
+    let mut model_editor: ModelEditor = ModelEditor::new(&mut sdl_payload, &mut camera);
 
     let mut offset_mouse_x: i32 = 0;
     let mut offset_mouse_y: i32 = 0;
@@ -134,7 +134,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
                 demo.run(&mut camera, &mut shader_container);
             }
             if(command.eq("model editor")) {
-                model_editor.run(&sdl_payload); 
+                model_editor.run(&mut sdl_payload, &mut camera, &mut shader_container); 
             }
         }
         window.gl_swap_window();

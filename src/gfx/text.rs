@@ -28,11 +28,11 @@ pub struct Text {
 impl Text {
     pub fn new(sdl_payload: &mut SDLContext, text: String, point: glm::Vec3) -> Self {
         let mut texture_id: GLuint = 0;
-        let font = match sdl_payload.ttf_context.load_font("C:/code/vgfx-rs/src/res/font/arial.ttf", 128) {
+        let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", 128) {
             Ok(x) => x,
             Err(e) => panic!("Cannot load font")
         };
-        let renderer: PartialRendering = font.render("BLAH");
+        let renderer: PartialRendering = font.render(&text);
         let surface: Surface = match renderer.blended(sdl2::pixels::Color::RGBA(255 as u8, 0  as u8, 0  as u8, 255  as u8)) {
             Ok(x) => x,
             Err(e) => panic!("Cannot render font")
@@ -45,8 +45,19 @@ impl Text {
         }
     }
 
-    pub fn new_texture() {
-        //let img_data = surface.raw();
+    pub fn change_text(&mut self, sdl_payload: &mut SDLContext, text: String) {
+        self.texture.removeTexture();
+        let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", 128) {
+            Ok(x) => x,
+            Err(e) => panic!("Cannot load font")
+        };
+        let renderer: PartialRendering = font.render(&text);
+        let surface: Surface = match renderer.blended(sdl2::pixels::Color::RGBA(255 as u8, 0  as u8, 0  as u8, 255  as u8)) {
+            Ok(x) => x,
+            Err(e) => panic!("Cannot render font")
+        };
+        self.text = text;
+        self.texture = Texture::fromSurface(surface);
     }
 
     // pub fn draw(&mut self, shader: &mut Shader) {

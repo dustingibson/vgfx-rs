@@ -4,6 +4,7 @@ mod geo;
 mod model;
 mod mode;
 mod dep;
+mod utils;
 
 use gl;
 use gfx::shader::Shader;
@@ -20,10 +21,25 @@ use model::sub_model::SubModel;
 use mode::demo::Demo;
 use mode::edit::ModelEditor;
 use dep::events::SDLContext;
+use utils::bfile::BFile;
 use std::env;
+use std::path::Path;
 
 
 fn main() {
+    let path = match env::current_dir() {
+        Ok(v) => v,
+        Err(v) => panic!("no path")
+    };
+
+    println!("{}", path.display());
+
+    let mut test: BFile = BFile::new("res/test.bin".to_string());
+    let test_string: String = test.readString(5);
+    println!("{}",test_string);
+    let test_u32: u32 = test.readu32();
+    println!("{}", test_u32);
+
     let args: Vec<String> = env::args().collect();
     
     // Usage: Mode Param1 Param2 ...

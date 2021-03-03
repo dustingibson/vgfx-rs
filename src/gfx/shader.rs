@@ -107,7 +107,7 @@ impl Shader {
     }
 
     pub fn compile_shader(shader_id: GLuint, shader_name: &String, shader_types: GLuint) {
-        let shader_path = format!("{}{}{}", "C:/code/vgfx-rs/src/shaders/", shader_name, if shader_types == gl::FRAGMENT_SHADER {".frag"} else {".vert"});
+        let shader_path = format!("{}{}{}", "src/shaders/", shader_name, if shader_types == gl::FRAGMENT_SHADER {".frag"} else {".vert"});
         let vertex_source = fs::read_to_string(shader_path)
             .expect("Error");
         let c_vertex_source = CString::new(vertex_source).expect("CSTring failed");
