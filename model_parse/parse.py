@@ -10,7 +10,7 @@ types = {
 }
 
 def toFloatByteArray(float_str):
-    return struct.pack("f", float(float_str))
+    return struct.pack('>f', float(float_str))
 
 def toIntByteArray(int_val):
     return int_val.to_bytes(4, 'big')
@@ -27,36 +27,43 @@ def toSplit(cur_entity, cur_line):
 
 def toByteArray(val, cur_type):
     byte_array_list = []
-    # Type Enum (4 bytes)
-    # Size (4 bytes)
-    # Name Enum (4 bytes)
-
     if cur_type == "string":
-        byte_array_list.append(toIntByteArray(0))
+        #byte_array_list.append(toIntByteArray(0))
         str_byte_array = toStringByteArray(val)
         print(len(str_byte_array))
         byte_array_list.append(toIntByteArray(len(str_byte_array)))
         byte_array_list.append(str_byte_array)
     elif cur_type == "vec3":
-        byte_array_list.append(toIntByteArray(1))
-        byte_array_list.append(toIntByteArray(12))
+        #byte_array_list.append(toIntByteArray(1))
+        #byte_array_list.append(toIntByteArray(12))
         all_vals = val.split(",")
         for cur_val in all_vals:
-            byte_array_list.append( toFloatByteArray(cur_val))
+            print(toFloatByteArray(cur_val) )
+            byte_array_list.append( toFloatByteArray(cur_val) )
     return byte_array_list
-        
+
+def toNameBytes(cur_name):
+    if cur_name == "geo":
+        return toIntByteArray(0)
+    elif cur_name == "type":
+        return toIntByteArray(1)
+    elif cur_name == "texture":
+        return toIntByteArray(2)
+    elif cur_name == "size":
+        return toIntByteArray(3)
+    elif cur_name == "pos":
+        return toIntByteArray(4)        
 
 def buildFile(cur_entity):
 
     # Number Properties (4 byes)
-    # Type Enum (4 bytes)
-    # Size (4 bytes)
     # Name Enum (4 bytes)
-    # Data (n bytes)
+    # Size/Data (n bytes)
     all_bytes = toIntByteArray(len(cur_entity))
     for cur_name in cur_entity:
         val = cur_entity[cur_name]
         cur_type = types[cur_name]
+        all_bytes += toNameBytes(cur_name)
         byte_array_list = toByteArray(val, cur_type)
         for cur_byte_array in byte_array_list:
             #print(byte_array_list)

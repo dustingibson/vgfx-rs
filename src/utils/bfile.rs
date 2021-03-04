@@ -37,21 +37,30 @@ impl BFile {
         let metadata = fs::metadata(&fname).expect("unable to read metadata");
         let mut buffer = vec![0; metadata.len() as usize];
         f.read(&mut buffer).expect("buffer overflow");
-        // 53 54 41 52
-        return BFile {
+        let mut bfile = BFile {
             fname: fname,
             buffer: buffer,
             curpos: 0
+        };
+        let test_string: String = bfile.readString(5);
+        if test_string != "START" {
+            panic!("corrupted file");
         }
+        return bfile;
     }
 
     pub fn readString(&mut self, size: usize) -> String {
-        let (cow, encoding, has_errors) = UTF_8.decode(&self.buffer[self.curpos..size]);
+        let (cow, encoding, has_errors) = UTF_8.decode(&self.buffer[self.curpos..self.curpos+size]);
         self.curpos += size;
         return match cow {
             Cow::Owned(s) => s,
             Cow::Borrowed(s) => s.to_string()
         };
+    }
+
+    pub fn autoReadString(&mut self) -> String {
+        let size: usize = self.readu32() as usize;
+        return self.readString(size);
     }
 
     pub fn readu32(&mut self) -> u32 {
@@ -66,9 +75,17 @@ impl BFile {
         return res;
     }
 
-    pub fn readuf32(&mut self) -> f32 {
+    pub fn readf32(&mut self) -> f32 {
         let res = BigEndian::read_f32(&self.buffer[self.curpos..self.curpos+4]);
         self.curpos += 4;
         return res;
+    }
+
+    pub fn readvec3(&mut self) -> glm::Vec3 {
+        let ele1 = self.readf32();
+        let ele2 = self.readf32();
+        let ele3 = self.readf32();
+        println!("3 ele float {}", ele3);
+        return glm::vec3(ele1 ,ele2, ele3);
     }
 }

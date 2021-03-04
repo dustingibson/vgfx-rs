@@ -14,6 +14,7 @@ use crate::Model;
 use crate::SDLContext;
 use crate::Label2D;
 use crate::Camera;
+use crate::BFile;
 
 pub struct ModelEditor {
     pub models: Vec<Model>,
@@ -23,8 +24,12 @@ pub struct ModelEditor {
 impl ModelEditor {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
         let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), 0.5, 0.5);
+
+        let mut models: Vec<Model> = Vec::new();
+        models.push(Model::fromFile(glm::vec3(0.0,0.0, 0.0)));
+
         return ModelEditor {
-            models: vec![],
+            models: models,
             main_label: label
         };
     }
@@ -48,6 +53,9 @@ impl ModelEditor {
 
     pub fn draw(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
         unsafe { gl::UseProgram(shader.get_shader("fragment".to_string()).program_id); }
+        for model in self.models.iter_mut() {
+            model.draw(&mut shader.get_shader("fragment".to_string()));
+        }
         camera.set_projection_ortho(shader);
         self.main_label.draw(camera, &mut shader.get_shader("fragment".to_string()));
         camera.set_projection(shader);

@@ -32,14 +32,6 @@ fn main() {
         Err(v) => panic!("no path")
     };
 
-    println!("{}", path.display());
-
-    let mut test: BFile = BFile::new("res/test.bin".to_string());
-    let test_string: String = test.readString(5);
-    println!("{}",test_string);
-    let test_u32: u32 = test.readu32();
-    println!("{}", test_u32);
-
     let args: Vec<String> = env::args().collect();
     
     // Usage: Mode Param1 Param2 ...
