@@ -20,7 +20,6 @@ pub struct Texture {
 impl Texture {
 
     pub fn new(name: String) -> Self {
-        println!("Setting texture");
         let mut texture_buffer: GLuint = 0;
         let mut surface: Surface = match sdl2::image::LoadSurface::from_file(format!("res/texture/{}.jpg", name)) {
             Ok(val) => val,
@@ -47,14 +46,12 @@ impl Texture {
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGB, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
-        println!("texture ID {0}", texture_buffer);
         return Texture {
             texture_id: texture_buffer
         }
     }
 
     pub fn fromSurface(surface: Surface) -> Self {
-        println!("Setting texture");
         let mut texture_buffer: GLuint = 0;
         let img_data = surface.raw();
         unsafe {
@@ -65,10 +62,8 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::BGRA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
-            println!("displaying...");
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
-        println!("texture ID {0}", texture_buffer);
         return Texture {
             texture_id: texture_buffer
         }

@@ -33,7 +33,6 @@ impl Label {
         //let new_position = glm::vec3(camera.position.x, camera.position.y, camera.position.z);
         let new_position = glm::vec3(camera.position.z, camera.position.x, camera.position.x);
         //let new_position = glm::vec3(0.0, 0.0, 3.0);
-        println!("{}", camera.position);
         let vertex_array = Self::init_vertex_array(new_position, 0.0, 1.0, 1.0);
         let color_array = Self::init_color_array(color);
         let normal_array = Self::init_normal_array();
@@ -41,7 +40,6 @@ impl Label {
 
         unsafe {
             gl::GenBuffers(1, &mut vertex_buffer);
-            println!("{}", vertex_buffer);
             gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
             gl::BufferData(
                 gl::ARRAY_BUFFER, 

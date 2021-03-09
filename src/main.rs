@@ -20,8 +20,11 @@ use model::model::Model;
 use model::sub_model::SubModel;
 use mode::demo::Demo;
 use mode::edit::ModelEditor;
+use mode::world_editor::WorldEditor;
 use dep::events::SDLContext;
 use utils::bfile::BFile;
+use utils::state::State;
+use utils::state::SwitchState;
 use std::env;
 use std::path::Path;
 

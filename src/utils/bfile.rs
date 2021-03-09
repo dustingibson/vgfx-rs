@@ -85,7 +85,10 @@ impl BFile {
         let ele1 = self.readf32();
         let ele2 = self.readf32();
         let ele3 = self.readf32();
-        println!("3 ele float {}", ele3);
         return glm::vec3(ele1 ,ele2, ele3);
+    }
+
+    pub fn isEnd(&mut self) -> bool {
+        return self.curpos >= self.buffer.len();
     }
 }

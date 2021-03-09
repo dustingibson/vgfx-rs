@@ -5,3 +5,10 @@ texture=brick
 pos=0.5,0.5,0.5
 size=0.5,0.5,0.5
 END
+START
+geo=block
+type=texture
+texture=brick
+pos=1.0,1.0,1.0
+size=0.5,0.5,0.5
+END

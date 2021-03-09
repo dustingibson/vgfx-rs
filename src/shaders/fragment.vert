@@ -15,11 +15,9 @@ uniform mat4 view;
 uniform mat4 projection;
 
 void main() {	
-	//gl_Position =  MVP * vec4(model_pos,1);
 	gl_Position = projection * view * model * vec4(model_pos, 1.0f);
 	fragPos = vec3(model * vec4(model_pos,1.0f));
 	fragmentColor = vertex_color;
 	normal = normals;
 	TexCoord = aTexCoord;
-	//TexCoord = normalize(model_pos.xy);
 }

@@ -37,46 +37,50 @@ impl Model {
         //Data (n bytes)
         let mut cuboids: Vec<Cuboid> = Vec::new();
         let mut model_file: BFile = BFile::new("res/test.bin".to_string());
-        let num_process: u32 = model_file.readu32();
-        for i in 0..num_process {
-
+        while !model_file.isEnd() {
+            let num_process: u32 = model_file.readu32();
             let mut geo: String = "".to_string();
             let mut model_type: String = "".to_string();
             let mut texture: String = "".to_string();
             let mut size: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
             let mut position: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
+            for i in 0..num_process {
 
-            let b_name = model_file.readu32();
 
-            // 0 - geo
-            match b_name {
-                0 => {
-                    geo = model_file.autoReadString();
-                },
-                1 => {
-                    model_type = model_file.autoReadString();
-                },
-                2 => {
-                    texture = model_file.autoReadString();
-                },
-                3 => {
-                    size = model_file.readvec3()
-                },
-                4 => {
-                    position = model_file.readvec3();
-                },
-                _ => panic!("no type found")
+
+                let b_name = model_file.readu32();
+
+                // 0 - geo
+                match b_name {
+                    0 => {
+                        geo = model_file.autoReadString();
+                    },
+                    1 => {
+                        model_type = model_file.autoReadString();
+                    },
+                    2 => {
+                        texture = model_file.autoReadString();
+                    },
+                    3 => {
+                        size = model_file.readvec3()
+                    },
+                    4 => {
+                        position = model_file.readvec3();
+                    },
+                    _ => panic!("no type found")
+                }
+                //point: glm::Vec3, color: glm::Vec4, texture_coord: glm::Vec4, length: GLfloat, width: GLfloat, height: GLfloat
             }
-            println!("{}", model_type);
-            println!("{}", texture);
-            println!("{} {} {}", size.x, size.y, size.z);
-            println!("{} {} {}", position.x, position.y, position.z);
-
-            //point: glm::Vec3, color: glm::Vec4, texture_coord: glm::Vec4, length: GLfloat, width: GLfloat, height: GLfloat
             cuboids.push(Cuboid::new(position,  glm::vec4(1.0, 1.0, 1.0, 0.1), glm::vec4(0.0,0.0,1.0,1.0), size.x, size.y, size.z));
         }
         model.insert_submodel(glm::vec3(0.0,0.0, 0.0), size, &mut cuboids);
         return model;
+    }
+
+    pub fn from_single_cuboid(&mut self, cuboid: &mut Cuboid) {
+        let mut cuboid_vec: Vec<Cuboid> = Vec::new();
+        cuboid_vec.push(cuboid.clone());
+        self.sub_models.push(SubModel::new(cuboid.position, cuboid.size(), &mut cuboid_vec));
     }
 
     pub fn insert_submodel(&mut self, position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>) {

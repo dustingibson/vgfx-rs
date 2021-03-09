@@ -9,6 +9,7 @@ extern crate libc;
 #[derive(Clone)]
 pub struct Cuboid {
     pub point: glm::Vec3,
+    pub size: glm::Vec3,
     pub length: GLfloat,
     pub width: GLfloat,
     pub height: GLfloat,
@@ -52,7 +53,44 @@ impl Cuboid {
             color_buffer: color_buffer,
             normal_buffer: normal_buffer,
             texture_buffer: texture_buffer,
-            texture: texture
+            texture: texture,
+            size: glm::vec3( length, width, height)
+        }
+    }
+
+    pub fn size(&mut self) -> glm::Vec3
+    {
+        return self.size;
+    }
+
+    pub fn from_texture(point: glm::Vec3, texture: String, texture_coord: glm::Vec4, length: GLfloat, width: GLfloat, height: GLfloat) -> Self {
+        let vertex_buffer: GLuint = 0;
+        let color_buffer: GLuint = 0;
+        let normal_buffer: GLuint = 0;
+        let texture_buffer: GLuint = 0;
+        let texture = Texture::new(texture);
+        let vertex_array = Self::init_vertex_array(point, length, width, height);
+        let color_array = Self::init_color_array(glm::vec4(0.0, 0.0, 0.0, 0.0));
+        let normal_array = Self::init_normal_array();
+        let texture_array = Self::init_texture_array(texture_coord.x, texture_coord.y, texture_coord.z, texture_coord.w);
+        
+
+        return Cuboid {
+            point: point,
+            length: length,
+            width: width,
+            height: height,
+            position: point,
+            texture_array: texture_array,
+            vertex_array: vertex_array,
+            color_array: color_array,
+            normal_array: normal_array,
+            vertex_buffer: vertex_buffer,
+            color_buffer: color_buffer,
+            normal_buffer: normal_buffer,
+            texture_buffer: texture_buffer,
+            texture: texture,
+            size: glm::vec3( length, width, height)
         }
     }
 
@@ -106,12 +144,12 @@ impl Cuboid {
     }
 
     fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
-        let lowX: GLfloat = point.x + (width / -2.0); 
-        let highX: GLfloat = point.x + (width / 2.0);
-        let lowY: GLfloat = point.y + (height / -2.0);
-        let highY: GLfloat = point.y + (height / 2.0);
-        let lowZ: GLfloat = point.z + (depth / -2.0);
-        let highZ: GLfloat = point.z + (depth / 2.0);
+        let lowX: GLfloat =    (width / -2.0); 
+        let highX: GLfloat =  (width / 2.0);
+        let lowY: GLfloat =    (height / -2.0);
+        let highY: GLfloat =  (height / 2.0);
+        let lowZ: GLfloat =    (depth / -2.0);
+        let highZ: GLfloat =  (depth / 2.0);
         return vec![
 
         //1

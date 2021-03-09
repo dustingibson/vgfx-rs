@@ -75,7 +75,6 @@ impl Camera {
         self.front.x = angle.cos();
         self.front.y = angle.sin() * -1.0;
         self.front.z = angle.cos() * -1.0;
-        println!("{}", self.front);
     }
 
     pub fn change_angle(&mut self, delta_x: f32, delta_y: f32) {

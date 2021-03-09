@@ -23,7 +23,7 @@ pub struct ModelEditor {
 
 impl ModelEditor {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), 0.5, 0.5);
+        let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
 
         let mut models: Vec<Model> = Vec::new();
         models.push(Model::fromFile(glm::vec3(0.0,0.0, 0.0)));

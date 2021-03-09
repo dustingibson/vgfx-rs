@@ -25,14 +25,13 @@ pub struct Label2D {
 
 impl Label2D {
 
-    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, width: GLfloat, height: GLfloat) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, width: GLfloat, height: GLfloat) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut color_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
-        let new_position = glm::vec3(0.0, 0.0, 0.0);
-        println!("{}", camera.position);
-        let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, 0.2, 0.2, 0.0);
+        let new_position = pos;
+        let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, width, height, 0.0);
         // let texture_array = vec![
         //     0.0, 1.0, 
         //     1.0, 1.0, 
@@ -47,11 +46,9 @@ impl Label2D {
         let normal_array = Self::init_normal_array();
         //let texture_array = vec![0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0];
         let texture_array = Self::init_texture_array();
-        println!("{:?}", texture_array);
 
         unsafe {
             gl::GenBuffers(1, &mut vertex_buffer);
-            println!("{}", vertex_buffer);
             gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
             gl::BufferData(
                 gl::ARRAY_BUFFER, 

@@ -68,7 +68,7 @@ def buildFile(cur_entity):
         for cur_byte_array in byte_array_list:
             #print(byte_array_list)
             all_bytes += cur_byte_array
-    all_bytes += toIntByteArray(1)
+    #all_bytes += toIntByteArray(1)
     return all_bytes
 
 def buildData(fname):

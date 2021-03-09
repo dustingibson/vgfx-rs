@@ -15,6 +15,7 @@ use crate::Camera;
 use crate::Demo;
 use crate::ModelEditor;
 use crate::SDLContext;
+use crate::WorldEditor;
 
 fn find_sdl_gl_driver() -> Option<u32> {
     for (index, item) in sdl2::render::drivers().enumerate() {
@@ -86,6 +87,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let mut demo: Demo = Demo::new(&mut sdl_payload, &mut camera);
     let mut model_editor: ModelEditor = ModelEditor::new(&mut sdl_payload, &mut camera);
+    let mut world_editor: WorldEditor = WorldEditor::new(&mut sdl_payload, &mut camera);
 
     let mut offset_mouse_x: i32 = 0;
     let mut offset_mouse_y: i32 = 0;
@@ -104,6 +106,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
                 _ => {}
             }
         }
+        sdl_payload.update();
         let mouse_state = sdl_payload.event_pump.relative_mouse_state();
         offset_mouse_x -= mouse_state.x();
         let mouse_delta_x: f32 = (offset_mouse_x) as f32 / WIDTH as f32;
@@ -112,20 +115,19 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         camera.change_angle(mouse_delta_x, mouse_delta_y);
 
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::D)) {
-            camera.position += glm::normalize(&glm::cross(&camera.front, &glm::vec3(0.0, 0.5, 0.0)) );
+            camera.position += glm::normalize(&glm::cross(&camera.front, &glm::vec3(0.0, 0.1, 0.0)) );
             camera.update();
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::A)) {
-            camera.position -= glm::normalize(  &glm::cross(&camera.front,&glm::vec3(0.0, 0.5, 0.0)) );
+            camera.position -= glm::normalize(  &glm::cross(&camera.front,&glm::vec3(0.0, 0.1, 0.0)) );
             camera.update();
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
-            camera.translate(camera.front, 0.5);
+            camera.translate(camera.front, 0.1);
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
-            camera.translate(camera.front, -0.5);
+            camera.translate(camera.front, -0.1);
         }
-
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
@@ -135,6 +137,9 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
             }
             if(command.eq("model editor")) {
                 model_editor.run(&mut sdl_payload, &mut camera, &mut shader_container); 
+            }
+            if(command.eq("world editor")) {
+                world_editor.run(&mut sdl_payload, &mut camera, &mut shader_container);
             }
         }
         window.gl_swap_window();

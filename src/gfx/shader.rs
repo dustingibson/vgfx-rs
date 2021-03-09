@@ -125,7 +125,6 @@ impl Shader {
             unsafe { 
                 gl::GetShaderInfoLog(shader_id, len, null_mut(), buffer.as_mut_ptr() as *mut gl::types::GLchar);
                 buffer.set_len(len as usize);
-                println!("{}", String::from_utf8(buffer).unwrap());
             }
         }
     }
