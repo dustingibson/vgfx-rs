@@ -18,12 +18,13 @@ void main() {
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec4 diffuse = diff * lightColor;
 	if(textured > 0) {
-		//color = texture(textureSample, TexCoord).rgba;
-		color = (ambient + diffuse) * texture(textureSample, TexCoord).rgba;
+		color = texture(textureSample, TexCoord).rgba;
+		//color = (ambient + diffuse) * texture(textureSample, TexCoord).rgba;
 		color.a = texture(textureSample, TexCoord).a;
 	}
 	else {
-		color = (ambient + diffuse) * fragmentColor.rgba;
+		//color = (ambient + diffuse) * fragmentColor.rgba;
+		color = fragmentColor.rgba;
 		color.a = fragmentColor.a;
 	}
 	//color = result;

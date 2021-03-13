@@ -3,6 +3,7 @@ use gl::types::*;
 use std::mem;
 use crate::Shader;
 use crate::Texture;
+use crate::SDLContext;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
@@ -22,7 +23,7 @@ pub struct Cuboid {
     color_buffer: GLuint,
     normal_buffer: GLuint,
     texture_buffer: GLuint,
-    texture: Texture
+    texture_id: GLuint
 }
 
 impl Cuboid {
@@ -53,7 +54,7 @@ impl Cuboid {
             color_buffer: color_buffer,
             normal_buffer: normal_buffer,
             texture_buffer: texture_buffer,
-            texture: texture,
+            texture_id: texture.texture_id,
             size: glm::vec3( length, width, height)
         }
     }
@@ -63,16 +64,16 @@ impl Cuboid {
         return self.size;
     }
 
-    pub fn from_texture(point: glm::Vec3, texture: String, texture_coord: glm::Vec4, length: GLfloat, width: GLfloat, height: GLfloat) -> Self {
+    pub fn from_texture(sdl_context: &mut SDLContext, point: glm::Vec3, texture_name: String, length: GLfloat, width: GLfloat, height: GLfloat) -> Self {
         let vertex_buffer: GLuint = 0;
         let color_buffer: GLuint = 0;
         let normal_buffer: GLuint = 0;
         let texture_buffer: GLuint = 0;
-        let texture = Texture::new(texture);
+        let texture_rect: glm::Vec4 = sdl_context.terrain_texture.getRectFromTextureImage(texture_name);
         let vertex_array = Self::init_vertex_array(point, length, width, height);
         let color_array = Self::init_color_array(glm::vec4(0.0, 0.0, 0.0, 0.0));
         let normal_array = Self::init_normal_array();
-        let texture_array = Self::init_texture_array(texture_coord.x, texture_coord.y, texture_coord.z, texture_coord.w);
+        let texture_array = Self::init_texture_array(texture_rect.x, texture_rect.y, texture_rect.z, texture_rect.w);
         
 
         return Cuboid {
@@ -89,7 +90,7 @@ impl Cuboid {
             color_buffer: color_buffer,
             normal_buffer: normal_buffer,
             texture_buffer: texture_buffer,
-            texture: texture,
+            texture_id: sdl_context.terrain_texture.texture_id,
             size: glm::vec3( length, width, height)
         }
     }
@@ -97,14 +98,14 @@ impl Cuboid {
     pub fn draw(&mut self, shader: &mut Shader, light_pos: glm::Vec3) {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, self.texture.texture_id);
+            gl::BindTexture(gl::TEXTURE_2D, self.texture_id);
 
             //shader.set_texture(self.texture.texture_id);
             gl::Uniform3fv(shader.get_uniform_location("lightPos".to_string()), 1, &light_pos[0]);
             gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model()[(0,0)]);
             gl::Uniform1i(shader.get_uniform_location("textured".to_string()), 1);
 
-            shader.set_texture(self.texture.texture_id);
+            shader.set_texture(self.texture_id);
 
             gl::EnableVertexAttribArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);

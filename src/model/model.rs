@@ -36,7 +36,8 @@ impl Model {
         //Size (4 bytes)
         //Data (n bytes)
         let mut cuboids: Vec<Cuboid> = Vec::new();
-        let mut model_file: BFile = BFile::new("res/test.bin".to_string());
+        let mut model_file: BFile = BFile::new("res/test.bin".to_string(), true);
+        let test_string: String = model_file.readString(5);
         while !model_file.isEnd() {
             let num_process: u32 = model_file.readu32();
             let mut geo: String = "".to_string();
@@ -45,8 +46,6 @@ impl Model {
             let mut size: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
             let mut position: glm::Vec3 = glm::vec3(0.0, 0.0, 0.0);
             for i in 0..num_process {
-
-
 
                 let b_name = model_file.readu32();
 
@@ -81,6 +80,11 @@ impl Model {
         let mut cuboid_vec: Vec<Cuboid> = Vec::new();
         cuboid_vec.push(cuboid.clone());
         self.sub_models.push(SubModel::new(cuboid.position, cuboid.size(), &mut cuboid_vec));
+    }
+
+    pub fn pos_from_cuboid(&mut self) -> glm::Vec3
+    {
+        return self.sub_models[0].cuboids[0].position;
     }
 
     pub fn insert_submodel(&mut self, position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>) {

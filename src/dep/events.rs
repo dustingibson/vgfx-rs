@@ -8,6 +8,7 @@ use sdl2::ttf::Sdl2TtfContext;
 use sdl2::keyboard::KeyboardState;
 use std::time::Duration;
 use std::rc::Rc;
+use crate::Texture;
 use crate::SwitchState;
 
 extern crate nalgebra_glm as glm;
@@ -16,7 +17,8 @@ pub struct SDLContext {
     pub event_pump: EventPump,
     pub ttf_context: Sdl2TtfContext,
     pub left_mouse_state: SwitchState,
-    pub left_click: bool
+    pub left_click: bool,
+    pub terrain_texture: Texture
 }
 
 impl SDLContext {
@@ -28,7 +30,8 @@ impl SDLContext {
                     left_mouse_state: left_mouse_state,
                     event_pump: val,
                     ttf_context: ttf_context,
-                    left_click: false
+                    left_click: false,
+                    terrain_texture: Texture::fromPackage("test".to_string())
                 };
              },
             Err(val) => { panic!("{}", val); }

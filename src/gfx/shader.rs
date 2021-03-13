@@ -22,10 +22,12 @@ impl ShaderContainer {
         let mut all_shaders = HashMap::new();
 
         let mut fragment_shader = Shader::new("fragment".to_string());
+        let mut color_shader = Shader::new("color".to_string());
         fragment_shader.add_uniform("lightPos".to_string());
         fragment_shader.add_uniform("textureSample".to_string());
         fragment_shader.add_uniform("textured".to_string());
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
+        all_shaders.insert("color".to_string(), color_shader.clone());
         //all_shaders.insert("textureSample".to_string(), Shader::new("textureSample".to_string()));
         return ShaderContainer {
             shaders: all_shaders,
@@ -43,6 +45,7 @@ impl ShaderContainer {
     }
 
     pub fn get_shader(&mut self, name: String) -> Shader {
+
         match self.shaders.get(&name) {
             Some(v) => v.clone(),
             None => self.default_shader.clone()
@@ -119,6 +122,7 @@ impl Shader {
         }
         if success <= 0 {
             println!("ERROR");
+            panic!(format!("Compile shader {} {}", shader_name, shader_types));
             let mut len = 0;
             unsafe { gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut len); }
             let mut buffer = Vec::with_capacity(len as usize);
