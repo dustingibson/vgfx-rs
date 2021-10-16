@@ -1,8 +1,6 @@
 use gl;
 use gl::types::*;
-use crate::Shader;
 use crate::ShaderContainer;
-use crate::SDLContext;
 extern crate nalgebra_glm as glm;
 
 pub struct Camera {

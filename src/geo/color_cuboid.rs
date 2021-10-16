@@ -2,7 +2,6 @@ use gl;
 use gl::types::*;
 use std::mem;
 use crate::Shader;
-use crate::Texture;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 

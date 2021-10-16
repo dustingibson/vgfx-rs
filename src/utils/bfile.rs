@@ -51,7 +51,7 @@ impl BFile {
         return bfile;
     }
 
-    pub fn readString(&mut self, size: usize) -> String {
+    pub fn read_string(&mut self, size: usize) -> String {
         let (cow, encoding, has_errors) = UTF_8.decode(&self.buffer[self.curpos..self.curpos+size]);
         self.curpos += size;
         return match cow {
@@ -60,9 +60,9 @@ impl BFile {
         };
     }
 
-    pub fn autoReadString(&mut self) -> String {
+    pub fn auto_read_string(&mut self) -> String {
         let size: usize = self.readu32() as usize;
-        return self.readString(size);
+        return self.read_string(size);
     }
 
     pub fn readu32(&mut self) -> u32 {

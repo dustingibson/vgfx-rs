@@ -1,13 +1,6 @@
 use gl;
-use gl::types::*;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::keyboard::Scancode;
 use sdl2::EventPump;
 use sdl2::ttf::Sdl2TtfContext;
-use sdl2::keyboard::KeyboardState;
-use std::time::Duration;
-use std::rc::Rc;
 use crate::Texture;
 use crate::SwitchState;
 
@@ -31,7 +24,7 @@ impl SDLContext {
                     event_pump: val,
                     ttf_context: ttf_context,
                     left_click: false,
-                    terrain_texture: Texture::fromPackage("test".to_string())
+                    terrain_texture: Texture::from_package("test".to_string())
                 };
              },
             Err(val) => { panic!("{}", val); }

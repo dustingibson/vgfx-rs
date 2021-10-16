@@ -58,7 +58,7 @@ impl WorldEditor {
             let final_pos = glm::vec3(camera.position.x + dist*camera.front.x, camera.position.y + dist*camera.front.y, camera.position.z + dist*camera.front.z);
             let mut marker_model = Model::new(final_pos);
             //glm::vec4(0.0,0.0,1.0,1.0)
-            let mut marker_cuboid = Cuboid::from_texture(sdl_context, final_pos, "select".to_string(), size, size, size);
+            let mut marker_cuboid = Cuboid::from_texture(sdl_context, final_pos, "brick".to_string(), size, size, size);
             let mut block_str = format!("{} {} {}", final_pos.x, final_pos.y, final_pos.z);
             self.block_label.change_text(sdl_context, block_str);
             marker_model.from_single_cuboid(&mut marker_cuboid);

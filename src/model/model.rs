@@ -1,9 +1,4 @@
 use gl;
-use gl::types::*;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::keyboard::Scancode;
-use std::time::Duration;
 use crate::BFile;
 extern crate nalgebra_glm as glm;
 
@@ -37,7 +32,6 @@ impl Model {
         //Data (n bytes)
         let mut cuboids: Vec<Cuboid> = Vec::new();
         let mut model_file: BFile = BFile::new("res/test.bin".to_string(), true);
-        let test_string: String = model_file.readString(5);
         while !model_file.isEnd() {
             let num_process: u32 = model_file.readu32();
             let mut geo: String = "".to_string();
@@ -52,13 +46,13 @@ impl Model {
                 // 0 - geo
                 match b_name {
                     0 => {
-                        geo = model_file.autoReadString();
+                        geo = model_file.auto_read_string();
                     },
                     1 => {
-                        model_type = model_file.autoReadString();
+                        model_type = model_file.auto_read_string();
                     },
                     2 => {
-                        texture = model_file.autoReadString();
+                        texture = model_file.auto_read_string();
                     },
                     3 => {
                         size = model_file.readvec3()

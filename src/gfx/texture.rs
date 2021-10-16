@@ -68,14 +68,14 @@ impl Texture {
         }
     }
 
-    pub fn getRectFromTextureImage(&mut self, key: String) -> glm::Vec4  {
+    pub fn get_rect_from_texture_image(&mut self, key: String) -> glm::Vec4  {
         return match self.texture_images.get(&key) {
             Some(val) => val.rect,
             None => panic!("did not find texture in package")
         };
     }
 
-    pub fn fromPackage(name: String) -> Self {
+    pub fn from_package(name: String) -> Self {
         let mut texture_buffer: GLuint = 0;
         let mut package_file = BFile::new(format!("res/texture/test.tmf"), false);
         let mut image_bytes: Vec<u8> = Vec::new();
@@ -102,7 +102,7 @@ impl Texture {
                 Err(val) => panic!("unable to load surface")
             };
             for i in 0..n {
-                let key: String = package_file.autoReadString();
+                let key: String = package_file.auto_read_string();
                 println!("{}", key);
                 let x: u32 = package_file.readu32();
                 let y: u32 = package_file.readu32();

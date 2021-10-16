@@ -6,16 +6,10 @@ use sdl2::keyboard::Keycode;
 use sdl2::keyboard::Scancode;
 use std::time::Duration;
 extern crate nalgebra_glm as glm;
-
-use crate::Cuboid;
-use crate::Plane;
-use crate::Shader;
 use crate::ShaderContainer;
 use crate::Camera;
 use crate::Demo;
-use crate::ModelEditor;
 use crate::SDLContext;
-use crate::WorldEditor;
 
 fn find_sdl_gl_driver() -> Option<u32> {
     for (index, item) in sdl2::render::drivers().enumerate() {
@@ -49,9 +43,6 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         .build()
         .unwrap();
 
-    // let mut canvas = window.into_canvas().index(find_sdl_gl_driver().unwrap()).build()
-    //     .expect("could not make a canvas");
-
     gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
 
 
@@ -79,6 +70,8 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let mut shader_container: ShaderContainer = ShaderContainer::new();
 
+    //Uncomment if you need cursor
+
     //sdl_context.mouse().show_cursor(true);
     sdl_context.mouse().set_relative_mouse_mode(true);
     
@@ -86,13 +79,9 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 0.0), WIDTH as f32, HEIGHT as f32);
 
     let mut demo: Demo = Demo::new(&mut sdl_payload, &mut camera);
-    let mut model_editor: ModelEditor = ModelEditor::new(&mut sdl_payload, &mut camera);
-    let mut world_editor: WorldEditor = WorldEditor::new(&mut sdl_payload, &mut camera);
 
     let mut offset_mouse_x: i32 = 0;
     let mut offset_mouse_y: i32 = 0;
-
-
 
     'running: loop {
         start_ticks = sdl_timer.ticks();
@@ -107,6 +96,9 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
             }
         }
         sdl_payload.update();
+
+        // TODO: Offload any camera controls to seperate module
+
         let mouse_state = sdl_payload.event_pump.relative_mouse_state();
         offset_mouse_x -= mouse_state.x();
         let mouse_delta_x: f32 = (offset_mouse_x) as f32 / WIDTH as f32;
@@ -134,12 +126,6 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
             camera.set_projection( &mut shader_container);
             if(command.eq("demo")) {
                 demo.run(&mut camera, &mut shader_container);
-            }
-            if(command.eq("model editor")) {
-                model_editor.run(&mut sdl_payload, &mut camera, &mut shader_container); 
-            }
-            if(command.eq("world editor")) {
-                world_editor.run(&mut sdl_payload, &mut camera, &mut shader_container);
             }
         }
         window.gl_swap_window();

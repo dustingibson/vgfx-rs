@@ -1,9 +1,5 @@
 use gl;
 use gl::types::*;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::keyboard::Scancode;
-use std::time::Duration;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;

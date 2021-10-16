@@ -69,7 +69,7 @@ impl Cuboid {
         let color_buffer: GLuint = 0;
         let normal_buffer: GLuint = 0;
         let texture_buffer: GLuint = 0;
-        let texture_rect: glm::Vec4 = sdl_context.terrain_texture.getRectFromTextureImage(texture_name);
+        let texture_rect: glm::Vec4 = sdl_context.terrain_texture.get_rect_from_texture_image(texture_name);
         let vertex_array = Self::init_vertex_array(point, length, width, height);
         let color_array = Self::init_color_array(glm::vec4(0.0, 0.0, 0.0, 0.0));
         let normal_array = Self::init_normal_array();
@@ -145,12 +145,12 @@ impl Cuboid {
     }
 
     fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
-        let lowX: GLfloat =    (width / -2.0); 
-        let highX: GLfloat =  (width / 2.0);
-        let lowY: GLfloat =    (height / -2.0);
-        let highY: GLfloat =  (height / 2.0);
-        let lowZ: GLfloat =    (depth / -2.0);
-        let highZ: GLfloat =  (depth / 2.0);
+        let lowX: GLfloat = point.x +   (width / -2.0); 
+        let highX: GLfloat = point.x +  (width / 2.0);
+        let lowY: GLfloat =   point.y + (height / -2.0);
+        let highY: GLfloat = point.y + (height / 2.0);
+        let lowZ: GLfloat =   point.z + (depth / -2.0);
+        let highZ: GLfloat = point.z + (depth / 2.0);
         return vec![
 
         //1

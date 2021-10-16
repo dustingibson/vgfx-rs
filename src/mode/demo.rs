@@ -8,11 +8,8 @@ extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
 use crate::Plane;
-use crate::Shader;
 use crate::ShaderContainer;
 use crate::Model;
-use crate::Texture;
-use crate::Text;
 use crate::Camera;
 use crate::Label2D;
 use crate::SDLContext;
@@ -27,17 +24,18 @@ impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
         let mut model: Model = Model::new(glm::vec3(0.0,0.0,0.0));
         let mut cuboids: Vec<Cuboid> = vec![];
-        let light_pos = glm::vec3(2.5, 5.0, -0.5);
-        // for i in 0..20 {
-        //     for j in 0..20 {
-        //         for k in 0..20 {
-        //             cuboids.push(Cuboid::new(glm::vec3(0.05 * i as f32,0.05 * j as f32, 0.05 * k as f32), glm::vec3(0.05 * i as f32, 0.05 * j as f32, 0.05 * k as f32), 0.05, 0.05, 0.05));
-        //         }
-        //     }
-        // }
+        let light_pos = glm::vec3(5.0, 5.0, 5.0);
+        for i in 0..20 {
+            for j in 0..20 {
+                for k in 0..20 {
+                    cuboids.push( Cuboid::from_texture(sdl_payload, glm::vec3(0.05 * i as f32,0.05 * j as f32, 0.05 * k as f32), "select".to_string(),  0.05, 0.05, 0.05));
+                }
+            }
+        }
         //let mut text: Text = Text::new( sdl_payload, "Test".to_string(), glm::vec3(0.0,0.0,0.0) );
         //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 2.0));
-        cuboids.push(Cuboid::new(light_pos, glm::vec4(1.0, 1.0, 1.0, 0.1), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 1.0));
+        //Cuboid::from_texture(sdl_context, light_pos, "brick".to_string(), 1.0, 1.0, 1.0);
+        cuboids.push( Cuboid::from_texture(sdl_payload, light_pos, "select".to_string(), 1.0, 1.0, 1.0));
         let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
 
         model.insert_submodel(glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids);
@@ -75,8 +73,6 @@ impl Demo {
         camera.set_projection_ortho(shader);
         self.label.draw(camera, &mut shader.get_shader("fragment".to_string()));
         camera.set_projection(shader);
-        //gl::Ortho(0.0, 500, 500, 0.0, -1.0, 10.0);
-        
     }
 
 
