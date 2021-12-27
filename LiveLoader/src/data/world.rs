@@ -98,24 +98,61 @@ impl World {
         let mut pos: usize = 0;
         let mut buffer = File::create(world_file)?;
 
-        // Area
+        // 1. Count of Areas
+        pos += write_add(&mut buffer, &self.areas.len().to_be_bytes())?;
         for area in self.areas.iter_mut() {
+            // 2. Count of Area Texture Polygons
+            pos += write_add(&mut buffer, &area.texture_polygons.len().to_be_bytes())?;
             for area_texture in area.texture_polygons.iter_mut() {
-                for vertex in area_texture.vertices.iter_mut() {
-                    pos += write_add(&mut buffer, &vertex.to_be_bytes())?;
-                }
+                // 3. Area's Texture Polygon Texture Name
+                pos += write_str(&mut buffer, &area_texture.texture_name)?;
+                // 4. Area's Texture Polygon Texture Vertices
+                pos += write_vec(&mut buffer, &area_texture.vertices)?;
             }
+            // 5. Count of Area Color Polygons
+            pos += write_add(&mut buffer, &area.color_polygons.len().to_be_bytes())?;
             for area_color in area.color_polygons.iter_mut() {
-                for vertex in area_color.vertices.iter_mut() {
-                    pos += write_add(&mut buffer, &vertex.to_be_bytes())?;
-                }
-                for color in area_color.color.iter_mut() {
-                    pos += write_add(&mut buffer, &color.to_be_bytes())?;
-                }
+                // 6. Area's Color Polygon Colors
+                pos += write_vec(&mut buffer, &area_color.color)?;
+                // 7. Area's Color Polygon Vertices
+                pos += write_vec(&mut buffer, &area_color.vertices)?;
+            }
+            // 8. Count of Area Model Instances
+            pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
+            for model_instance in area.model_instances.iter_mut() {
+                // 9. Area's Model Instance Name
+                pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
+                // 10. Area's Model Instance Position
+                pos += write_vec(&mut buffer, &model_instance.position)?;
             }
         }
+        // 11. Count of Model Hash Map
+        pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
         for (key, value) in self.model_map.iter_mut() {
-            pos += write_add(&mut buffer, &key.to_string().as_bytes())?;
+            // 12. Model Hash Map Name
+            pos += write_str(&mut buffer, &key.to_string())?;
+            // 13. Count of Model Hash Map Submodel
+            pos += write_add(&mut buffer, &value.submodels.len().to_be_bytes())?;
+            for submodel in value.submodels.iter_mut() {
+                // 14. Model Hash Map Submodel Name
+                pos += write_str(&mut buffer, &submodel.name.to_string())?;
+                // 15. Model Hash Map Texture Polygon Count
+                pos += write_add(&mut buffer, &submodel.texture_polygons.len().to_be_bytes())?;
+                for texture_polygon in submodel.texture_polygons.iter_mut() {
+                    // 16. Model Hash Map Texture Polygon Name
+                    pos += write_str(&mut buffer, &texture_polygon.texture_name.to_string())?;
+                    // 17. Model Hash Map Texture Polygon Vertices
+                    pos += write_vec(&mut buffer, &texture_polygon.vertices)?;
+                }
+                // 18. Count of Model Hash Map Color Polygons
+                pos += write_add(&mut buffer, &submodel.color_polygons.len().to_be_bytes())?;
+                for color_polygons in submodel.color_polygons.iter_mut() {
+                    // 19. Model Hash Map Color Polygons Vertices
+                    pos += write_vec(&mut buffer, &color_polygons.vertices)?;
+                    // 20. Model Hash Map COlor Polygons Color
+                    pos += write_vec(&mut buffer, &color_polygons.color)?;
+                }
+            }
         }
         Ok(())
     }
@@ -125,4 +162,19 @@ impl World {
 fn write_add(buffer: &mut File, data: &[u8])  -> io::Result<(usize)> {
     let bytesWritten = buffer.write(data)?;
     Ok((bytesWritten))
+}
+
+fn write_vec(buffer: &mut File, data: &Vec<f32>) -> io::Result<(usize)> {
+    let mut total_bytes: usize = 0;
+    for item in data {
+        total_bytes += write_add(buffer, &item.to_be_bytes())?;
+    }
+    Ok((total_bytes))
+}
+
+fn write_str(buffer: &mut File, data: &str)  -> io::Result<(usize)> {
+    let bytesWrittenSize = write_add(buffer, &data.len().to_be_bytes())?;
+    let bytesWrittenStr = write_add(buffer, data.as_bytes())?;
+    //let bytesWritten = buffer.write(data)?;
+    Ok((bytesWrittenSize + bytesWrittenStr))
 }

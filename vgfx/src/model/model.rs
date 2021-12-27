@@ -3,6 +3,7 @@ use crate::BFile;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
+use crate::ColorPolygon;
 use crate::SubModel;
 use crate::Shader;
 #[derive(Clone)]
@@ -66,14 +67,14 @@ impl Model {
             }
             cuboids.push(Cuboid::new(position,  glm::vec4(1.0, 1.0, 1.0, 0.1), glm::vec4(0.0,0.0,1.0,1.0), size.x, size.y, size.z));
         }
-        model.insert_submodel(glm::vec3(0.0,0.0, 0.0), size, &mut cuboids);
+        model.insert_submodel(glm::vec3(0.0,0.0, 0.0), size, &mut cuboids, &mut Vec::new());
         return model;
     }
 
     pub fn from_single_cuboid(&mut self, cuboid: &mut Cuboid) {
         let mut cuboid_vec: Vec<Cuboid> = Vec::new();
         cuboid_vec.push(cuboid.clone());
-        self.sub_models.push(SubModel::new(cuboid.position, cuboid.size(), &mut cuboid_vec));
+        self.sub_models.push(SubModel::new(cuboid.position, cuboid.size(), &mut cuboid_vec, &mut Vec::new()));
     }
 
     pub fn pos_from_cuboid(&mut self) -> glm::Vec3
@@ -81,8 +82,8 @@ impl Model {
         return self.sub_models[0].cuboids[0].position;
     }
 
-    pub fn insert_submodel(&mut self, position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>) {
-        self.sub_models.push(SubModel::new(position, size, cuboids));
+    pub fn insert_submodel(&mut self, position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>, color_polygons: &mut Vec<ColorPolygon>) {
+        self.sub_models.push(SubModel::new(position, size, cuboids, color_polygons));
     }
 
     pub fn draw(&mut self, shader: &mut Shader) {

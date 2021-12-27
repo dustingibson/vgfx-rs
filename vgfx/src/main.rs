@@ -10,6 +10,7 @@ use gl;
 use gfx::shader::Shader;
 use gfx::shader::ShaderContainer;
 use geo::cuboid::Cuboid;
+use geo::color_polygon::ColorPolygon;
 use geo::plane::Plane;
 use geo::label_2d::Label2D;
 use geo::quad::Quad;

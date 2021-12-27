@@ -87,7 +87,7 @@ impl Plane {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer);
             gl::VertexAttribPointer(2, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
-            gl::DrawArrays(gl::TRIANGLES, 0, 12*3);
+            gl::DrawArrays(gl::TRIANGLES, 0, 6*3);
 
             gl::DisableVertexAttribArray(0);
             gl::DisableVertexAttribArray(1);
@@ -129,7 +129,7 @@ impl Plane {
 
     fn init_color_array(color: glm::Vec4) -> Vec<GLfloat> {
         let mut resulting_vector: Vec<GLfloat> = Vec::new();
-        for x in 0..12 {
+        for x in 0..6 {
             resulting_vector.push(color.x);
             resulting_vector.push(color.y);
             resulting_vector.push(color.z);

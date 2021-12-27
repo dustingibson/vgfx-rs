@@ -3,11 +3,13 @@ use gl::types::*;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
+use crate::ColorPolygon;
 use crate::Shader;
 #[derive(Clone)]
 
 pub struct SubModel {
     pub cuboids: Vec<Cuboid>,
+    pub color_polygons: Vec<ColorPolygon>,
     pub position: glm::Vec3,
     pub size: glm::Vec3,
     pub vertex_buffer: GLuint,
@@ -18,7 +20,7 @@ pub struct SubModel {
 }
 
 impl SubModel {
-    pub fn new(position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>) -> Self {
+    pub fn new(position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>, color_polygons: &mut Vec<ColorPolygon>) -> Self {
 
         let mut vertex_buffer: GLuint = 0;
         let mut color_buffer: GLuint = 0;
@@ -34,6 +36,13 @@ impl SubModel {
             color_array.append(&mut cur_cuboid.color_array);
             normal_array.append(&mut cur_cuboid.normal_array);
             texture_array.append(&mut cur_cuboid.texture_array);
+        }
+
+        for cur_color_polygon in color_polygons.iter_mut() {
+            vertex_array.append(&mut cur_color_polygon.vertex_array);
+            color_array.append(&mut cur_color_polygon.color_array);
+            normal_array.append(&mut cur_color_polygon.normal_array);
+            texture_array.append(&mut cur_color_polygon.texture_array);
         }
         
         unsafe {
@@ -80,12 +89,13 @@ impl SubModel {
         return SubModel {
             position: position,
             cuboids: cuboids.to_vec(),
+            color_polygons: color_polygons.to_vec(),
             size: size,
             color_buffer: color_buffer,
             normal_buffer: normal_buffer,
             vertex_buffer: vertex_buffer,
             texture_buffer: texture_buffer,
-            length:  cuboids.len() as i32
+            length:  (cuboids.len()*12) as i32 + color_polygons.len() as i32
         };
     }
 
@@ -115,7 +125,7 @@ impl SubModel {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.texture_buffer);
             gl::VertexAttribPointer(3, 2, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
-            gl::DrawArrays(gl::TRIANGLES, 0, self.length*12*3);
+            gl::DrawArrays(gl::TRIANGLES, 0, self.length*3);
 
             gl::DisableVertexAttribArray(0);
             gl::DisableVertexAttribArray(1);
