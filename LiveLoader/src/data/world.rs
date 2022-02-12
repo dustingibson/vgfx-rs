@@ -57,7 +57,7 @@ impl World {
                     //serde_json::from_str(&res).unwrap();
                     let area: AreaInstance = match serde_json::from_str(&res) {
                         Ok(areaInstance) => areaInstance,
-                        Err(err) => AreaInstance { color_polygons: Vec::new(), texture_polygons: Vec::new(), model_instances: Vec::new() }
+                        Err(err) => AreaInstance { texture_polygons: Vec::new(), model_instances: Vec::new() }
                     };
                     self.areas.push(area);
                 },
@@ -109,48 +109,32 @@ impl World {
                 // 4. Area's Texture Polygon Texture Vertices
                 pos += write_vec(&mut buffer, &area_texture.vertices)?;
             }
-            // 5. Count of Area Color Polygons
-            pos += write_add(&mut buffer, &area.color_polygons.len().to_be_bytes())?;
-            for area_color in area.color_polygons.iter_mut() {
-                // 6. Area's Color Polygon Colors
-                pos += write_vec(&mut buffer, &area_color.color)?;
-                // 7. Area's Color Polygon Vertices
-                pos += write_vec(&mut buffer, &area_color.vertices)?;
-            }
-            // 8. Count of Area Model Instances
+            // 5. Count of Area Model Instances
             pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
             for model_instance in area.model_instances.iter_mut() {
-                // 9. Area's Model Instance Name
+                // 6. Area's Model Instance Name
                 pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
-                // 10. Area's Model Instance Position
+                // 7. Area's Model Instance Position
                 pos += write_vec(&mut buffer, &model_instance.position)?;
             }
         }
-        // 11. Count of Model Hash Map
+        // 8. Count of Model Hash Map
         pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
         for (key, value) in self.model_map.iter_mut() {
-            // 12. Model Hash Map Name
+            // 9. Model Hash Map Name
             pos += write_str(&mut buffer, &key.to_string())?;
-            // 13. Count of Model Hash Map Submodel
+            // 10. Count of Model Hash Map Submodel
             pos += write_add(&mut buffer, &value.submodels.len().to_be_bytes())?;
             for submodel in value.submodels.iter_mut() {
-                // 14. Model Hash Map Submodel Name
+                // 11. Model Hash Map Submodel Name
                 pos += write_str(&mut buffer, &submodel.name.to_string())?;
-                // 15. Model Hash Map Texture Polygon Count
+                // 12. Model Hash Map Texture Polygon Count
                 pos += write_add(&mut buffer, &submodel.texture_polygons.len().to_be_bytes())?;
                 for texture_polygon in submodel.texture_polygons.iter_mut() {
-                    // 16. Model Hash Map Texture Polygon Name
+                    // 13. Model Hash Map Texture Polygon Name
                     pos += write_str(&mut buffer, &texture_polygon.texture_name.to_string())?;
-                    // 17. Model Hash Map Texture Polygon Vertices
+                    // 14. Model Hash Map Texture Polygon Vertices
                     pos += write_vec(&mut buffer, &texture_polygon.vertices)?;
-                }
-                // 18. Count of Model Hash Map Color Polygons
-                pos += write_add(&mut buffer, &submodel.color_polygons.len().to_be_bytes())?;
-                for color_polygons in submodel.color_polygons.iter_mut() {
-                    // 19. Model Hash Map Color Polygons Vertices
-                    pos += write_vec(&mut buffer, &color_polygons.vertices)?;
-                    // 20. Model Hash Map COlor Polygons Color
-                    pos += write_vec(&mut buffer, &color_polygons.color)?;
                 }
             }
         }

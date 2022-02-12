@@ -32,9 +32,9 @@ impl WorldEditor {
         let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 1.0, 0.2);
         let mut block_label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.4, 0.0), 1.0, 0.2);
 
-        let mut cursor_model = Model::new(glm::vec3(0.0,0.0,0.0));
+        let mut cursor_model = Model::new("cursor".to_string(), glm::vec3(0.0,0.0,0.0));
         let mut cursor_cuboid = Cuboid::from_texture(sdl_payload, camera.position, "brick".to_string(), 0.05, 0.05, 0.05);
-        cursor_model.from_single_cuboid(& mut cursor_cuboid);
+        cursor_model.from_single_cuboid("test".to_string(), & mut cursor_cuboid);
 
         return WorldEditor {
             cursor: cursor_model,
@@ -56,12 +56,12 @@ impl WorldEditor {
         {
             let mut size: f32 = 0.1;
             let final_pos = glm::vec3(camera.position.x + dist*camera.front.x, camera.position.y + dist*camera.front.y, camera.position.z + dist*camera.front.z);
-            let mut marker_model = Model::new(final_pos);
+            let mut marker_model = Model::new("insert".to_string(), final_pos);
             //glm::vec4(0.0,0.0,1.0,1.0)
             let mut marker_cuboid = Cuboid::from_texture(sdl_context, final_pos, "brick".to_string(), size, size, size);
             let mut block_str = format!("{} {} {}", final_pos.x, final_pos.y, final_pos.z);
             self.block_label.change_text(sdl_context, block_str);
-            marker_model.from_single_cuboid(&mut marker_cuboid);
+            marker_model.from_single_cuboid("test".to_string(), &mut marker_cuboid);
             self.markers.push(marker_model);
             if(self.markers.len() == 4)
             {

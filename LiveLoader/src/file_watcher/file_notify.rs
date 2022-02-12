@@ -6,13 +6,15 @@ use std::sync::mpsc::channel;
 use std::time::Duration;
 
 pub struct FileNotify {
-    base_folder: String
+    base_folder: String,
+    out_folder: String
 }
 
 impl FileNotify {
-    pub fn new(base_folder: String) -> FileNotify {
+    pub fn new(base_folder: String, out_folder: String) -> FileNotify {
         return FileNotify {
-            base_folder: base_folder
+            base_folder: base_folder,
+            out_folder: out_folder
         }
     }
 
@@ -37,7 +39,7 @@ impl FileNotify {
                         },
                         Err(e) => {}
                     }
-                    world.save(self.base_folder.to_string());
+                    world.save(self.out_folder.to_string());
                 },
                 Err(e) => println!("watch error: {:?}", e),
             }

@@ -380,3 +380,5 @@ InteropTests/NativeTests/out
 *.tmf
 
 vgfx/target
+
+*.pak

@@ -8,7 +8,6 @@ pub struct ModelInstance {
 
 #[derive(Serialize, Deserialize)]
 pub struct AreaInstance {
-    pub color_polygons: Vec<ColorPolygon>,
     pub texture_polygons: Vec<TexturePolygon>,
     pub model_instances: Vec<ModelInstance>
 }
@@ -22,14 +21,7 @@ pub struct Model {
 #[derive(Serialize, Deserialize)]
 pub struct SubModel {
     pub name: String,
-    pub color_polygons: Vec<ColorPolygon>,
     pub texture_polygons: Vec<TexturePolygon>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ColorPolygon {
-    pub vertices: Vec<f32>,
-    pub color: Vec<f32>
 }
 
 #[derive(Serialize, Deserialize)]

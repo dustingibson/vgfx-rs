@@ -3,46 +3,41 @@ use gl::types::*;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
-use crate::ColorPolygon;
+use crate::TexturePolygon;
 use crate::Shader;
 #[derive(Clone)]
 
 pub struct SubModel {
+    pub name: String,
     pub cuboids: Vec<Cuboid>,
-    pub color_polygons: Vec<ColorPolygon>,
+    pub texture_polygons: Vec<TexturePolygon>,
     pub position: glm::Vec3,
-    pub size: glm::Vec3,
     pub vertex_buffer: GLuint,
-    pub color_buffer: GLuint,
     pub normal_buffer: GLuint,
     pub texture_buffer: GLuint,
     pub length: i32
 }
 
 impl SubModel {
-    pub fn new(position: glm::Vec3, size: glm::Vec3, cuboids: &mut Vec<Cuboid>, color_polygons: &mut Vec<ColorPolygon>) -> Self {
+    pub fn new(name: String, position: glm::Vec3, cuboids: &mut Vec<Cuboid>, texture_polygons: &mut Vec<TexturePolygon>) -> Self {
 
         let mut vertex_buffer: GLuint = 0;
-        let mut color_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
         let mut vertex_array = vec![];
-        let mut color_array = vec![];
         let mut normal_array = vec![];
         let mut texture_array = vec![];
 
         for cur_cuboid in cuboids.iter_mut() {
             vertex_array.append(&mut cur_cuboid.vertex_array);
-            color_array.append(&mut cur_cuboid.color_array);
             normal_array.append(&mut cur_cuboid.normal_array);
             texture_array.append(&mut cur_cuboid.texture_array);
         }
 
-        for cur_color_polygon in color_polygons.iter_mut() {
-            vertex_array.append(&mut cur_color_polygon.vertex_array);
-            color_array.append(&mut cur_color_polygon.color_array);
-            normal_array.append(&mut cur_color_polygon.normal_array);
-            texture_array.append(&mut cur_color_polygon.texture_array);
+        for cur_texture_polygon in texture_polygons.iter_mut() {
+            vertex_array.append(&mut cur_texture_polygon.vertex_array);
+            normal_array.append(&mut cur_texture_polygon.normal_array);
+            texture_array.append(&mut cur_texture_polygon.texture_array);
         }
         
         unsafe {
@@ -55,16 +50,16 @@ impl SubModel {
                 gl::STATIC_DRAW);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
-        unsafe {
-            gl::GenBuffers(1, &mut color_buffer);
-            gl::BindBuffer(gl::ARRAY_BUFFER, color_buffer);
-            gl::BufferData(
-                gl::ARRAY_BUFFER, 
-                (color_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-                color_array.as_ptr() as *const gl::types::GLvoid, 
-                gl::STATIC_DRAW);
-            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        }
+        // unsafe {
+        //     gl::GenBuffers(1, &mut color_buffer);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, color_buffer);
+        //     gl::BufferData(
+        //         gl::ARRAY_BUFFER, 
+        //         (color_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+        //         color_array.as_ptr() as *const gl::types::GLvoid, 
+        //         gl::STATIC_DRAW);
+        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        // }
         unsafe {
             gl::GenBuffers(1, &mut normal_buffer);
             gl::BindBuffer(gl::ARRAY_BUFFER, normal_buffer);
@@ -87,15 +82,14 @@ impl SubModel {
         }
 
         return SubModel {
+            name: name,
             position: position,
             cuboids: cuboids.to_vec(),
-            color_polygons: color_polygons.to_vec(),
-            size: size,
-            color_buffer: color_buffer,
+            texture_polygons: texture_polygons.to_vec(),
             normal_buffer: normal_buffer,
             vertex_buffer: vertex_buffer,
             texture_buffer: texture_buffer,
-            length:  (cuboids.len()*12) as i32 + color_polygons.len() as i32
+            length:  (cuboids.len()*12) as i32 + texture_polygons.len() as i32
         };
     }
 
@@ -112,10 +106,6 @@ impl SubModel {
             gl::EnableVertexAttribArray(0);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);
             gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
-
-            gl::EnableVertexAttribArray(1);
-            gl::BindBuffer(gl::ARRAY_BUFFER, self.color_buffer);
-            gl::VertexAttribPointer(1, 4, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
             gl::EnableVertexAttribArray(2);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer);

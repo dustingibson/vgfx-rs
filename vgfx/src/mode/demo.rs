@@ -7,25 +7,27 @@ use std::time::Duration;
 extern crate nalgebra_glm as glm;
 
 use crate::Cuboid;
-use crate::ColorPolygon;
+use crate::TexturePolygon;
 use crate::Plane;
 use crate::ShaderContainer;
 use crate::Model;
 use crate::Camera;
 use crate::Label2D;
 use crate::SDLContext;
+use crate::World;
 
 pub struct Demo {
     pub model: Model,
     pub plane: Plane,
-    pub label: Label2D
+    pub label: Label2D,
+    pub world: World
 }
 
 impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let mut model: Model = Model::new(glm::vec3(0.0,0.0,0.0));
+        let mut model: Model = Model::new("new".to_string(), glm::vec3(0.0,0.0,0.0));
         let mut cuboids: Vec<Cuboid> = vec![];
-        let mut color_polygons: Vec<ColorPolygon> = vec![];
+        let mut texture_polygons: Vec<TexturePolygon> = vec![];
         let light_pos = glm::vec3(5.0, 5.0, 5.0);
         // for i in 0..20 {
         //     for j in 0..20 {
@@ -34,18 +36,19 @@ impl Demo {
         //         }
         //     }
         // }
-        color_polygons.push( ColorPolygon::new(sdl_payload, glm::vec3(5.0, 5.0, 5.0), glm::vec4(0.0, 0.0, 0.0, 0.0) ));
+        texture_polygons.push( TexturePolygon::new(sdl_payload, glm::vec3(0.0, 0.0, 5.0), "select".to_string()));
         //let mut text: Text = Text::new( sdl_payload, "Test".to_string(), glm::vec3(0.0,0.0,0.0) );
         //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec4(1.0, 0.5, 0.31, 0.5), glm::vec4(0.0,0.0,1.0,1.0), 1.0, 1.0, 2.0));
         //Cuboid::from_texture(sdl_context, light_pos, "brick".to_string(), 1.0, 1.0, 1.0);
         //cuboids.push( Cuboid::from_texture(sdl_payload, light_pos, "select".to_string(), 1.0, 1.0, 1.0));
         let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
 
-        model.insert_submodel(glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids, &mut color_polygons);
+        model.insert_submodel("test_triangle".to_string(), glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids, &mut texture_polygons);
         
         //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
         //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
         return Demo {
+            world: World::new_load(sdl_payload),
             model: model,
             plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0),
             label: label
