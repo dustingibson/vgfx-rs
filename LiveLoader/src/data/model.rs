@@ -8,24 +8,36 @@ pub struct ModelInstance {
 
 #[derive(Serialize, Deserialize)]
 pub struct AreaInstance {
-    pub texture_polygons: Vec<TexturePolygon>,
     pub model_instances: Vec<ModelInstance>
 }
 
-#[derive(Serialize, Deserialize)]
+pub struct TextureInfo {
+    pub name: String,
+    pub ambient_color: Vec<f32>,
+    pub diffuse_color: Vec<f32>,
+    pub specular_color: Vec<f32>,
+    pub optical_density: f32,
+    pub dissolve: f32,
+    pub illum: i32,
+    pub img: Vec<u8>,
+}
+
 pub struct Model {
     pub name: String,
-    pub submodels: Vec<SubModel>
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SubModel {
-    pub name: String,
-    pub texture_polygons: Vec<TexturePolygon>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct TexturePolygon {
+    pub faces: Vec<Face>,
     pub vertices: Vec<f32>,
-    pub texture_name: String
+    pub texture_mappings: Vec<f32>,
+    pub normals: Vec<f32>,
+    pub texture_info: Vec<TextureInfo>
+}
+
+pub struct FaceValue {
+    pub vertex_index: usize,
+    pub texture_map_index: usize,
+    pub normals_index: usize
+}
+
+pub struct Face {
+    pub texture_info_index: i64,
+    pub faces: Vec<FaceValue>
 }

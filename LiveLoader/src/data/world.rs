@@ -1,6 +1,7 @@
 use crate::Model;
 use crate::AreaInstance;
 use crate::ModelInstance;
+use crate::FaceValue;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
@@ -8,11 +9,12 @@ use std::io;
 use std::str::Bytes;
 use serde_json::{Result, Value};
 
+use super::model::TextureInfo;
+
 
 pub struct World {
     base_folder: String,
     model_map: HashMap<String, Model>,
-    models: Vec<ModelInstance>,
     areas: Vec<AreaInstance>
 }
 
@@ -22,7 +24,6 @@ impl World {
         return World {
             base_folder: base_folder,
             model_map: HashMap::new(),
-            models: Vec::new(),
             areas: Vec::new()
         }
     }
@@ -36,7 +37,7 @@ impl World {
                 Some(fname) => {
                     match fname.to_str() {
                         Some(cont_fname) => {
-                            if cont_fname.contains(".json") {
+                            if cont_fname.contains(".json") || cont_fname.contains(".obj") || cont_fname.contains(".mtl") {
                                 paths.push(self.base_folder.to_string() + "/" + &sub_dir + "/" + &cont_fname.to_string());
                             }
                         },
@@ -45,9 +46,33 @@ impl World {
                 },
                 None => {}
             };
-            println!("{:?}", path.file_name().ok_or("No file"));
+            //println!("{:?}", path.file_name().ok_or("No file"));
         }
-        Ok((paths))
+        Ok(paths)
+    }
+
+    pub fn get_dir(&mut self, sub_dir: String) -> io::Result<Vec<String>> {
+        let mut paths: Vec<String> = vec![];
+        for entry in fs::read_dir(self.base_folder.to_string() + "/" + &sub_dir.to_string())? {
+            let entry = entry?;
+            let path = entry.path();
+
+            match path.file_name() {
+                Some(fname) => {
+                    match fname.to_str() {
+                        Some(cont_fname) => {
+                            if !cont_fname.contains(".") {
+                                paths.push(sub_dir.to_string() + "/" + &cont_fname.to_string());
+                            }
+                        },
+                        None => {}
+                    };
+                },
+                None => {}
+            };
+            //println!("{:?}", path.file_name().ok_or("No file"));
+        }
+        Ok(paths)
     }
 
     pub fn set_areas(&mut self, paths: Vec<String>) {
@@ -57,7 +82,7 @@ impl World {
                     //serde_json::from_str(&res).unwrap();
                     let area: AreaInstance = match serde_json::from_str(&res) {
                         Ok(areaInstance) => areaInstance,
-                        Err(err) => AreaInstance { texture_polygons: Vec::new(), model_instances: Vec::new() }
+                        Err(err) => AreaInstance { model_instances: Vec::new() }
                     };
                     self.areas.push(area);
                 },
@@ -66,16 +91,60 @@ impl World {
         }
     }
 
+    pub fn process_face_value(&mut self, content: String) -> FaceValue {
+        let mut face_values = content.split('/');
+        let first_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
+        let second_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
+        let third_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
+        return FaceValue {
+            vertex_index: first_index,
+            texture_map_index: second_index,
+            normals_index: third_index
+        }
+    }
+
+    // pub fn process_texture_info(&mut self, fname: String) -> TextureInfo {
+
+    // }
+
+    pub fn process_model(&mut self, content: String) {
+        let mut lines = content.split(",");
+        for line in lines {
+            let mut comp = line.split(" ");
+            let first_val = comp.next().unwrap();
+            if first_val == "v" {
+                let v1: f32 = comp.next().unwrap().parse().unwrap();
+                let v2: f32 = comp.next().unwrap().parse().unwrap();
+                let v3: f32 = comp.next().unwrap().parse().unwrap();
+            }
+            else if first_val == "vn" {
+                let normu: f32 = comp.next().unwrap().parse().unwrap();
+                let normv: f32 = comp.next().unwrap().parse().unwrap();
+            }
+            else if first_val == "f" {
+                let first_face = self.process_face_value(comp.next().unwrap().to_string());
+                let second_face = self.process_face_value(comp.next().unwrap().to_string());
+                let third_face = self.process_face_value(comp.next().unwrap().to_string());
+            }
+            else if first_val == "usemtl" {
+
+            }
+            else if first_val == "mtllib" {
+                let fname = comp.next().unwrap();
+            }
+        }
+    }
+
     pub fn set_models(&mut self, paths: Vec<String>) {
         for path in paths.iter() {
             match fs::read_to_string(path) {
                 Ok(res) => { 
-                    //serde_json::from_str(&res).unwrap();
-                    let model: Model = match serde_json::from_str(&res) {
-                        Ok(model) => model,
-                        Err(err) => Model { name: "error".to_string(), submodels: Vec::new() }
-                    };
-                    self.model_map.insert(model.name.to_string(), model);
+                    if path.contains(".obj") {
+
+                    }
+                    else if path.contains(".mtl") {
+
+                    }
                 },
                 Err(err) => { println!("{}", err.to_string()) }
             }
@@ -84,6 +153,7 @@ impl World {
 
     pub fn create_if_exists(base_folder: String) {
         let world_file = [base_folder,"/world.pak".to_string()].join("");
+        println!("{}", world_file.to_string());
         if !std::path::Path::new(&world_file).exists() { 
             match File::create(&world_file) {
                 Err(why) => panic!("Unable to write world file to {}", why),
@@ -91,74 +161,75 @@ impl World {
             };
          }
     }
-
-
-    pub fn save(&mut self, base_folder: String) -> io::Result<()> {
-        let world_file = [base_folder,"/world.pak".to_string()].join("");
-        let mut pos: usize = 0;
-        let mut buffer = File::create(world_file)?;
-
-        // 1. Count of Areas
-        pos += write_add(&mut buffer, &self.areas.len().to_be_bytes())?;
-        for area in self.areas.iter_mut() {
-            // 2. Count of Area Texture Polygons
-            pos += write_add(&mut buffer, &area.texture_polygons.len().to_be_bytes())?;
-            for area_texture in area.texture_polygons.iter_mut() {
-                // 3. Area's Texture Polygon Texture Name
-                pos += write_str(&mut buffer, &area_texture.texture_name)?;
-                // 4. Area's Texture Polygon Texture Vertices
-                pos += write_vec(&mut buffer, &area_texture.vertices)?;
-            }
-            // 5. Count of Area Model Instances
-            pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
-            for model_instance in area.model_instances.iter_mut() {
-                // 6. Area's Model Instance Name
-                pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
-                // 7. Area's Model Instance Position
-                pos += write_vec(&mut buffer, &model_instance.position)?;
-            }
-        }
-        // 8. Count of Model Hash Map
-        pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
-        for (key, value) in self.model_map.iter_mut() {
-            // 9. Model Hash Map Name
-            pos += write_str(&mut buffer, &key.to_string())?;
-            // 10. Count of Model Hash Map Submodel
-            pos += write_add(&mut buffer, &value.submodels.len().to_be_bytes())?;
-            for submodel in value.submodels.iter_mut() {
-                // 11. Model Hash Map Submodel Name
-                pos += write_str(&mut buffer, &submodel.name.to_string())?;
-                // 12. Model Hash Map Texture Polygon Count
-                pos += write_add(&mut buffer, &submodel.texture_polygons.len().to_be_bytes())?;
-                for texture_polygon in submodel.texture_polygons.iter_mut() {
-                    // 13. Model Hash Map Texture Polygon Name
-                    pos += write_str(&mut buffer, &texture_polygon.texture_name.to_string())?;
-                    // 14. Model Hash Map Texture Polygon Vertices
-                    pos += write_vec(&mut buffer, &texture_polygon.vertices)?;
-                }
-            }
-        }
-        Ok(())
-    }
 }
 
 
-fn write_add(buffer: &mut File, data: &[u8])  -> io::Result<(usize)> {
+//     pub fn save(&mut self, base_folder: String) -> io::Result<()> {
+//         let world_file = [base_folder,"/world.pak".to_string()].join("");
+//         let mut pos: usize = 0;
+//         let mut buffer = File::create(world_file)?;
+
+//         // 1. Count of Areas
+//         pos += write_add(&mut buffer, &self.areas.len().to_be_bytes())?;
+//         for area in self.areas.iter_mut() {
+//             // 2. Count of Area Texture Polygons
+//             pos += write_add(&mut buffer, &area.texture_polygons.len().to_be_bytes())?;
+//             for area_texture in area.texture_polygons.iter_mut() {
+//                 // 3. Area's Texture Polygon Texture Name
+//                 pos += write_str(&mut buffer, &area_texture.texture_name)?;
+//                 // 4. Area's Texture Polygon Texture Vertices
+//                 pos += write_vec(&mut buffer, &area_texture.vertices)?;
+//             }
+//             // 5. Count of Area Model Instances
+//             pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
+//             for model_instance in area.model_instances.iter_mut() {
+//                 // 6. Area's Model Instance Name
+//                 pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
+//                 // 7. Area's Model Instance Position
+//                 pos += write_vec(&mut buffer, &model_instance.position)?;
+//             }
+//         }
+//         // 8. Count of Model Hash Map
+//         pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
+//         for (key, value) in self.model_map.iter_mut() {
+//             // 9. Model Hash Map Name
+//             pos += write_str(&mut buffer, &key.to_string())?;
+//             // 10. Count of Model Hash Map Submodel
+//             pos += write_add(&mut buffer, &value.submodels.len().to_be_bytes())?;
+//             for submodel in value.submodels.iter_mut() {
+//                 // 11. Model Hash Map Submodel Name
+//                 pos += write_str(&mut buffer, &submodel.name.to_string())?;
+//                 // 12. Model Hash Map Texture Polygon Count
+//                 pos += write_add(&mut buffer, &submodel.texture_polygons.len().to_be_bytes())?;
+//                 for texture_polygon in submodel.texture_polygons.iter_mut() {
+//                     // 13. Model Hash Map Texture Polygon Name
+//                     pos += write_str(&mut buffer, &texture_polygon.texture_name.to_string())?;
+//                     // 14. Model Hash Map Texture Polygon Vertices
+//                     pos += write_vec(&mut buffer, &texture_polygon.vertices)?;
+//                 }
+//             }
+//         }
+//         Ok(())
+//     }
+// }
+
+
+fn write_add(buffer: &mut File, data: &[u8])  -> io::Result<usize> {
     let bytesWritten = buffer.write(data)?;
-    Ok((bytesWritten))
+    Ok(bytesWritten)
 }
 
-fn write_vec(buffer: &mut File, data: &Vec<f32>) -> io::Result<(usize)> {
+fn write_vec(buffer: &mut File, data: &Vec<f32>) -> io::Result<usize> {
     let mut total_bytes: usize = 0;
     for item in data {
         total_bytes += write_add(buffer, &item.to_be_bytes())?;
     }
-    Ok((total_bytes))
+    Ok(total_bytes)
 }
 
-fn write_str(buffer: &mut File, data: &str)  -> io::Result<(usize)> {
+fn write_str(buffer: &mut File, data: &str)  -> io::Result<usize> {
     let bytesWrittenSize = write_add(buffer, &data.len().to_be_bytes())?;
     let bytesWrittenStr = write_add(buffer, data.as_bytes())?;
     //let bytesWritten = buffer.write(data)?;
-    Ok((bytesWrittenSize + bytesWrittenStr))
+    Ok(bytesWrittenSize + bytesWrittenStr)
 }

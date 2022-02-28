@@ -27,19 +27,26 @@ impl FileNotify {
                 Ok(event) => {
                     match world.get_paths("areas".to_string()) {
                         Ok(paths) => { 
-                            println!("{}", paths.join(",").to_string());
+                            println!("Areas: {}", paths.join(",").to_string());
                             world.set_areas(paths);
                         },
                         Err(e) => {}
                     }
-                    match world.get_paths("models".to_string()) {
-                        Ok(paths) => { 
-                            println!("{}", paths.join(",").to_string());
-                            world.set_models(paths);
+                    match world.get_dir("models".to_string()) {
+                        Ok(dirs) => {
+                            for dir in dirs {
+                                match world.get_paths(dir.to_string()) {
+                                    Ok(paths) => { 
+                                        println!("Models: {}", paths.join(",").to_string());
+                                        world.set_models(paths);
+                                    },
+                                    Err(e) => {}
+                                }
+                            }
                         },
                         Err(e) => {}
                     }
-                    world.save(self.out_folder.to_string());
+                    //world.save(self.out_folder.to_string());
                 },
                 Err(e) => println!("watch error: {:?}", e),
             }
