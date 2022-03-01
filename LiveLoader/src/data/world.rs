@@ -1,15 +1,17 @@
 use crate::Model;
 use crate::AreaInstance;
 use crate::ModelInstance;
+use crate::TextureInfo;
+use crate::Face;
+
 use crate::FaceValue;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
 use std::io;
+use std::path;
 use std::str::Bytes;
 use serde_json::{Result, Value};
-
-use super::model::TextureInfo;
 
 
 pub struct World {
@@ -99,16 +101,114 @@ impl World {
         return FaceValue {
             vertex_index: first_index,
             texture_map_index: second_index,
-            normals_index: third_index
+            normals_index: third_index,
+            texture_info_index: 0
         }
     }
 
-    // pub fn process_texture_info(&mut self, fname: String) -> TextureInfo {
+    pub fn init_texture_info(&mut self) -> TextureInfo {
+        return TextureInfo { 
+            name: "".to_string(),
+            ambient_color: vec![],
+            diffuse_color: vec![],
+            specular_color: vec![],
+            emissive_coeficient: vec![],
+            transmission_filter: vec![],
+            specular_highlights: 10.0,
+            optical_density: 1.0,
+            dissolve: 1.0,
+            illum: 1,
+            img: vec![]
+        };
+    }
 
-    // }
+    pub fn get_byet_from_file(&mut self, fname: String) -> io::Result<Vec<u8>> {
+        match fs::read(fname) {
+            Ok(res) => { 
+                Ok(res)
+            },
+            Err(err) => { panic!("{}", err.to_string()) }
+        }
+    }
+
+    pub fn process_texture_info(&mut self, dir_name: String, fname: String) -> io::Result<Vec<TextureInfo>> {
+        match fs::read_to_string(fname) {
+            Ok(res) => { 
+                let mut new_res = res.replace("\t", "");
+                let mut lines = new_res.split('\n');
+                let mut texture_infos = vec![];
+                let mut texture_info = self.init_texture_info();
+                for line in lines {
+                    let mut vals = line.split(' ');
+                    let first_val = vals.next().unwrap();
+                    if first_val  == "newmtl" {
+                        if texture_info.name == "" {                    
+                            texture_infos.push(texture_info);
+                            texture_info = self.init_texture_info();
+                        }
+                        texture_info.name = vals.next().unwrap().to_string();
+                    }
+                    else if first_val == "Ns" {
+                        texture_info.specular_highlights = vals.next().unwrap().parse().unwrap();
+                    }
+                    else if first_val == "Ni" {
+                        texture_info.optical_density = vals.next().unwrap().parse().unwrap();
+    
+                    }
+                    else if first_val == "d" {
+                        texture_info.optical_density = vals.next().unwrap().parse().unwrap();
+    
+                    }
+                    else if first_val == "Tr" {
+                        texture_info.optical_density = vals.next().unwrap().parse().unwrap();
+    
+                    }
+                    else if first_val == "Tf" {
+                        texture_info.transmission_filter.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.transmission_filter.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.transmission_filter.push(vals.next().unwrap().parse().unwrap());
+                    }
+                    else if first_val == "illum" {
+                        texture_info.illum = vals.next().unwrap().parse().unwrap();
+    
+                    }
+                    else if first_val == "Ka" {
+                        texture_info.ambient_color.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.ambient_color.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.ambient_color.push(vals.next().unwrap().parse().unwrap());
+
+                    }
+                    else if first_val == "Kd" {
+                        texture_info.diffuse_color.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.diffuse_color.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.diffuse_color.push(vals.next().unwrap().parse().unwrap());
+                    }
+                    else if first_val == "Ks" {
+                        texture_info.specular_color.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.specular_color.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.specular_color.push(vals.next().unwrap().parse().unwrap());
+                    }
+                    else if first_val == "Ke" {
+                        texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
+                        texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
+                    }
+                    else if first_val == "map_Ka" {
+                        let texture_fname = vals.next().unwrap().to_string();
+                        texture_info.img = self.get_byet_from_file(texture_fname).unwrap();
+                    }
+                }
+                Ok(texture_infos)
+            },
+            Err(err) => { 
+                panic!("{}", err.to_string()) 
+            }
+        }
+    }
 
     pub fn process_model(&mut self, content: String) {
         let mut lines = content.split(",");
+        let mut cur_texture = "";
         for line in lines {
             let mut comp = line.split(" ");
             let first_val = comp.next().unwrap();
@@ -122,12 +222,15 @@ impl World {
                 let normv: f32 = comp.next().unwrap().parse().unwrap();
             }
             else if first_val == "f" {
-                let first_face = self.process_face_value(comp.next().unwrap().to_string());
-                let second_face = self.process_face_value(comp.next().unwrap().to_string());
-                let third_face = self.process_face_value(comp.next().unwrap().to_string());
+                let mut cur_face =  Face {
+                    faces: vec![]
+                };
+                cur_face.faces.push(self.process_face_value(comp.next().unwrap().to_string()));
+                cur_face.faces.push(self.process_face_value(comp.next().unwrap().to_string()));
+                cur_face.faces.push(self.process_face_value(comp.next().unwrap().to_string()));
             }
             else if first_val == "usemtl" {
-
+                cur_texture = comp.next().unwrap();
             }
             else if first_val == "mtllib" {
                 let fname = comp.next().unwrap();
@@ -135,12 +238,17 @@ impl World {
         }
     }
 
+    pub fn to_fname(&mut self, path_str: String) -> Option<String> {
+        let path = std::path::Path::new(&path_str);
+        return Some(path.file_name()?.to_str()?.to_string());
+    }
+
     pub fn set_models(&mut self, paths: Vec<String>) {
         for path in paths.iter() {
             match fs::read_to_string(path) {
                 Ok(res) => { 
                     if path.contains(".obj") {
-
+                        println!("{}", self.to_fname(path.to_string()).unwrap());
                     }
                     else if path.contains(".mtl") {
 
