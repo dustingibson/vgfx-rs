@@ -102,7 +102,7 @@ impl World {
             vertex_index: first_index,
             texture_map_index: second_index,
             normals_index: third_index,
-            texture_info_index: 0
+            texture_info_index: 0 // TODO: Pass texture vec and name. Find the index of the value.
         }
     }
 
@@ -122,7 +122,7 @@ impl World {
         };
     }
 
-    pub fn get_byet_from_file(&mut self, fname: String) -> io::Result<Vec<u8>> {
+    pub fn get_byte_from_file(&mut self, fname: String) -> io::Result<Vec<u8>> {
         match fs::read(fname) {
             Ok(res) => { 
                 Ok(res)
@@ -132,17 +132,18 @@ impl World {
     }
 
     pub fn process_texture_info(&mut self, dir_name: String, fname: String) -> io::Result<Vec<TextureInfo>> {
-        match fs::read_to_string(fname) {
+        match fs::read_to_string([dir_name.to_string(), "/".to_string(), fname, ".mtl".to_string()].join("")) {
             Ok(res) => { 
                 let mut new_res = res.replace("\t", "");
                 let mut lines = new_res.split('\n');
                 let mut texture_infos = vec![];
                 let mut texture_info = self.init_texture_info();
                 for line in lines {
-                    let mut vals = line.split(' ');
+                    let mut rep_val = line.trim();
+                    let mut vals = rep_val.split(' ');
                     let first_val = vals.next().unwrap();
                     if first_val  == "newmtl" {
-                        if texture_info.name == "" {                    
+                        if texture_info.name != "" {                    
                             texture_infos.push(texture_info);
                             texture_info = self.init_texture_info();
                         }
@@ -195,7 +196,7 @@ impl World {
                     }
                     else if first_val == "map_Ka" {
                         let texture_fname = vals.next().unwrap().to_string();
-                        texture_info.img = self.get_byet_from_file(texture_fname).unwrap();
+                        texture_info.img = self.get_byte_from_file([dir_name.to_string(), "/".to_string(), texture_fname].join("")).unwrap();
                     }
                 }
                 Ok(texture_infos)
@@ -206,6 +207,7 @@ impl World {
         }
     }
 
+    // TODO: Complete the process model
     pub fn process_model(&mut self, content: String) {
         let mut lines = content.split(",");
         let mut cur_texture = "";
@@ -238,9 +240,15 @@ impl World {
         }
     }
 
-    pub fn to_fname(&mut self, path_str: String) -> Option<String> {
+    pub fn to_fname(&mut self, path_str: String) -> String {
         let path = std::path::Path::new(&path_str);
-        return Some(path.file_name()?.to_str()?.to_string());
+        return path.file_name().unwrap().to_str().unwrap().to_string().replace(".obj", "").replace(".mtl", "")
+    }
+
+    pub fn to_dir(&mut self, path_str: String) -> String {
+        let path = std::path::Path::new(&path_str);
+        let parent = path.parent().unwrap().to_str().unwrap();
+        return parent.to_string();
     }
 
     pub fn set_models(&mut self, paths: Vec<String>) {
@@ -248,10 +256,11 @@ impl World {
             match fs::read_to_string(path) {
                 Ok(res) => { 
                     if path.contains(".obj") {
-                        println!("{}", self.to_fname(path.to_string()).unwrap());
-                    }
-                    else if path.contains(".mtl") {
-
+                        //self.to_fname(path.to_string()).unwrap();
+                        let mut mtl_name = self.to_fname(path.clone().to_string());
+                        let mut dir_name = self.to_dir(path.clone().to_string());
+                        let all_texture_info = self.process_texture_info(dir_name,  mtl_name  ).unwrap();
+                        // TODO: Now add the model
                     }
                 },
                 Err(err) => { println!("{}", err.to_string()) }
@@ -261,7 +270,6 @@ impl World {
 
     pub fn create_if_exists(base_folder: String) {
         let world_file = [base_folder,"/world.pak".to_string()].join("");
-        println!("{}", world_file.to_string());
         if !std::path::Path::new(&world_file).exists() { 
             match File::create(&world_file) {
                 Err(why) => panic!("Unable to write world file to {}", why),

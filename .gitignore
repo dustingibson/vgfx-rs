@@ -382,3 +382,5 @@ InteropTests/NativeTests/out
 vgfx/target
 
 *.pak
+LiveLoader/target/rls/.rustc_info.json
+LiveLoader/target/rls/.rustc_info.json
