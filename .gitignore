@@ -380,6 +380,7 @@ InteropTests/NativeTests/out
 *.tmf
 
 vgfx/target
+LiveLoader/target
 
 *.pak
 LiveLoader/target/rls/.rustc_info.json
