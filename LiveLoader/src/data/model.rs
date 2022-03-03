@@ -34,13 +34,9 @@ pub struct Model {
     pub texture_info: Vec<TextureInfo>
 }
 
-pub struct FaceValue {
+pub struct Face {
     pub texture_info_index: usize,
     pub vertex_index: usize,
     pub texture_map_index: usize,
     pub normals_index: usize
-}
-
-pub struct Face {
-    pub faces: Vec<FaceValue>
 }

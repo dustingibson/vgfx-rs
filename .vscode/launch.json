@@ -7,7 +7,7 @@
 
         {
             "name": "(Windows) Launch",
-            "type": "cppvsdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/LiveLoader/target/debug/LiveLoader.exe",
             "args": ["demo"],

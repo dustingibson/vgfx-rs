@@ -7,7 +7,6 @@ use data::model::Model;
 use data::model::ModelInstance;
 use data::model::AreaInstance;
 use data::model::Face;
-use data::model::FaceValue;
 use data::model::TextureInfo;
 use file_watcher::file_notify::FileNotify;
 

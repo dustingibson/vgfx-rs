@@ -3,8 +3,6 @@ use crate::AreaInstance;
 use crate::ModelInstance;
 use crate::TextureInfo;
 use crate::Face;
-
-use crate::FaceValue;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
@@ -93,16 +91,16 @@ impl World {
         }
     }
 
-    pub fn process_face_value(&mut self, content: String) -> FaceValue {
+    pub fn process_face_value(&mut self, content: String, texture_index: usize) -> Face {
         let mut face_values = content.split('/');
         let first_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
         let second_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
         let third_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
-        return FaceValue {
+        return Face {
             vertex_index: first_index,
             texture_map_index: second_index,
             normals_index: third_index,
-            texture_info_index: 0 // TODO: Pass texture vec and name. Find the index of the value.
+            texture_info_index: texture_index
         }
     }
 
@@ -122,6 +120,17 @@ impl World {
         };
     }
 
+    pub fn init_model(&mut self) -> Model {
+        return Model { 
+            name: "".to_string(),
+            faces: vec![],
+            vertices: vec![],
+            texture_mappings: vec![],
+            normals: vec![],
+            texture_info: vec![]
+        };
+    }
+
     pub fn get_byte_from_file(&mut self, fname: String) -> io::Result<Vec<u8>> {
         match fs::read(fname) {
             Ok(res) => { 
@@ -132,7 +141,7 @@ impl World {
     }
 
     pub fn process_texture_info(&mut self, dir_name: String, fname: String) -> io::Result<Vec<TextureInfo>> {
-        match fs::read_to_string([dir_name.to_string(), "/".to_string(), fname, ".mtl".to_string()].join("")) {
+        match fs::read_to_string([dir_name.to_string(), "/".to_string(), fname].join("")) {
             Ok(res) => { 
                 let mut new_res = res.replace("\t", "");
                 let mut lines = new_res.split('\n');
@@ -199,6 +208,7 @@ impl World {
                         texture_info.img = self.get_byte_from_file([dir_name.to_string(), "/".to_string(), texture_fname].join("")).unwrap();
                     }
                 }
+                texture_infos.push(texture_info);
                 Ok(texture_infos)
             },
             Err(err) => { 
@@ -207,37 +217,48 @@ impl World {
         }
     }
 
-    // TODO: Complete the process model
-    pub fn process_model(&mut self, content: String) {
-        let mut lines = content.split(",");
-        let mut cur_texture = "";
+    pub fn process_model(&mut self, content: String, dir_name: String) -> Model {
+        let mut lines = content.split("\n");
+        let mut model = self.init_model();
+        let mut cur_texture_index = 0;
         for line in lines {
-            let mut comp = line.split(" ");
+            let mut comp = line.trim().split(" ");
             let first_val = comp.next().unwrap();
             if first_val == "v" {
-                let v1: f32 = comp.next().unwrap().parse().unwrap();
-                let v2: f32 = comp.next().unwrap().parse().unwrap();
-                let v3: f32 = comp.next().unwrap().parse().unwrap();
+                comp.next().unwrap();
+                model.vertices.push(comp.next().unwrap().parse().unwrap());
+                model.vertices.push(comp.next().unwrap().parse().unwrap());
+                model.vertices.push(comp.next().unwrap().parse().unwrap());
             }
             else if first_val == "vn" {
-                let normu: f32 = comp.next().unwrap().parse().unwrap();
-                let normv: f32 = comp.next().unwrap().parse().unwrap();
+                model.normals.push(comp.next().unwrap().parse().unwrap());
+                model.normals.push(comp.next().unwrap().parse().unwrap());
             }
             else if first_val == "f" {
-                let mut cur_face =  Face {
-                    faces: vec![]
-                };
-                cur_face.faces.push(self.process_face_value(comp.next().unwrap().to_string()));
-                cur_face.faces.push(self.process_face_value(comp.next().unwrap().to_string()));
-                cur_face.faces.push(self.process_face_value(comp.next().unwrap().to_string()));
+                model.faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
+                model.faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
+                model.faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
             }
             else if first_val == "usemtl" {
-                cur_texture = comp.next().unwrap();
+                let texture_key = comp.next().unwrap().to_string();
+                cur_texture_index = model.texture_info.iter().position(|x| x.name == texture_key).unwrap();
             }
             else if first_val == "mtllib" {
-                let fname = comp.next().unwrap();
+                let mut cur_str = "".to_string();
+                loop {
+                    let new_word = comp.next();
+                    if new_word.is_none() {
+                        break;
+                    }
+                    cur_str.push_str(" ");
+                    cur_str.push_str(new_word.unwrap());
+                }
+                cur_str.remove(0);
+                model.texture_info = self.process_texture_info(dir_name.to_string(), cur_str).unwrap();
+                //let fname = comp.next().unwrap();
             }
         }
+        return model;
     }
 
     pub fn to_fname(&mut self, path_str: String) -> String {
@@ -256,11 +277,10 @@ impl World {
             match fs::read_to_string(path) {
                 Ok(res) => { 
                     if path.contains(".obj") {
-                        //self.to_fname(path.to_string()).unwrap();
-                        let mut mtl_name = self.to_fname(path.clone().to_string());
-                        let mut dir_name = self.to_dir(path.clone().to_string());
-                        let all_texture_info = self.process_texture_info(dir_name,  mtl_name  ).unwrap();
-                        // TODO: Now add the model
+                        let mut mtl_name = self.to_fname(path.to_string());
+                        let mut dir_name = self.to_dir(path.to_string());
+                        let model = self.process_model(res, dir_name);
+                        self.model_map.insert(mtl_name, model);
                     }
                 },
                 Err(err) => { println!("{}", err.to_string()) }
