@@ -27,10 +27,10 @@ pub struct TextureInfo {
 
 pub struct Model {
     pub name: String,
-    pub faces: Vec<Face>,
-    pub vertices: Vec<f32>,
-    pub texture_mappings: Vec<f32>,
-    pub normals: Vec<f32>,
+    pub faces: Vec<Vec<Face>>,
+    pub vertices: Vec<Vec<f32>>,
+    pub texture_mappings: Vec<Vec<f32>>,
+    pub normals: Vec<Vec<f32>>,
     pub texture_info: Vec<TextureInfo>
 }
 

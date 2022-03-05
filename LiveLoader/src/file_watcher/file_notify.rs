@@ -46,7 +46,7 @@ impl FileNotify {
                         },
                         Err(e) => {}
                     }
-                    //world.save(self.out_folder.to_string());
+                    world.save(self.out_folder.to_string());
                 },
                 Err(e) => println!("watch error: {:?}", e),
             }

@@ -226,18 +226,24 @@ impl World {
             let first_val = comp.next().unwrap();
             if first_val == "v" {
                 comp.next().unwrap();
-                model.vertices.push(comp.next().unwrap().parse().unwrap());
-                model.vertices.push(comp.next().unwrap().parse().unwrap());
-                model.vertices.push(comp.next().unwrap().parse().unwrap());
+                let mut vertices: Vec<f32> = vec![];
+                vertices.push(comp.next().unwrap().parse().unwrap());
+                vertices.push(comp.next().unwrap().parse().unwrap());
+                vertices.push(comp.next().unwrap().parse().unwrap());
+                model.vertices.push(vertices);
             }
             else if first_val == "vn" {
-                model.normals.push(comp.next().unwrap().parse().unwrap());
-                model.normals.push(comp.next().unwrap().parse().unwrap());
+                let mut normals: Vec<f32> = vec![];
+                normals.push(comp.next().unwrap().parse().unwrap());
+                normals.push(comp.next().unwrap().parse().unwrap());
+                model.normals.push(normals);
             }
             else if first_val == "f" {
-                model.faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
-                model.faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
-                model.faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
+                let mut faces: Vec<Face> = vec![];
+                faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
+                faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
+                faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
+                model.faces.push(faces);
             }
             else if first_val == "usemtl" {
                 let texture_key = comp.next().unwrap().to_string();
@@ -297,57 +303,96 @@ impl World {
             };
          }
     }
+
+    pub fn save(&mut self, base_folder: String) -> io::Result<()> {
+        let world_file = [base_folder,"/world.pak".to_string()].join("");
+        let mut pos: usize = 0;
+        let mut buffer = File::create(world_file)?;
+
+        // 1. Count of Areas
+        pos += write_add(&mut buffer, &self.areas.len().to_be_bytes())?;
+        for area in self.areas.iter_mut() {
+            // 2. Count of Area Model Instances
+            pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
+            for model_instance in area.model_instances.iter_mut() {
+                // 3. Area's Model Instance Name
+                pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
+                // 4. Area's Model Instance Position
+                pos += write_vec3(&mut buffer, &model_instance.position)?;
+            }
+        }
+        // 5. Count of Model Hash Map
+        pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
+        for (key, value) in self.model_map.iter_mut() {
+            // 6. Model Hash Map Name
+            pos += write_str(&mut buffer, &key.to_string())?;
+            // 7. Count of Texture Info
+            pos += write_add(&mut buffer, &value.texture_info.len().to_be_bytes())?;
+            for texture_info in value.texture_info.iter_mut() {
+                // 8. Texture Info Name
+                pos += write_str(&mut buffer, &key.to_string())?;
+                // 9. Texture Info Ambient Color
+                pos += write_vec3(&mut buffer, &texture_info.ambient_color)?;
+                // 10. Texture Info Diffuse Color
+                pos += write_vec3(&mut buffer, &texture_info.diffuse_color)?;
+                // 11. Texture Info Specular Color
+                pos += write_vec3(&mut buffer, &texture_info.specular_color)?;
+                // 12. Texture Info Emissive Coeficient
+                pos += write_vec3(&mut buffer, &texture_info.emissive_coeficient)?;
+                // 13. Texture Info Transmission Filter
+                pos += write_vec3(&mut buffer, &texture_info.transmission_filter)?;
+                // 14. Texture Info Optical Density
+                pos += write_add(&mut buffer, &texture_info.optical_density.to_be_bytes())?;
+                // 15. Texture Info Dissolve
+                pos += write_add(&mut buffer, &texture_info.dissolve.to_be_bytes())?;
+                // 16. Texture Info Specular Highlights
+                pos += write_add(&mut buffer, &texture_info.specular_highlights.to_be_bytes())?;
+                // 17. Texture Info Illum
+                pos += write_add(&mut buffer, &texture_info.illum.to_be_bytes())?;
+                // 18. Texture Info Image Size
+                pos += write_add(&mut buffer, &texture_info.img.len().to_be_bytes())?;
+                // 19. Texture Info
+                pos += write_add(&mut buffer, &texture_info.img)?;
+            }
+            // 20. Count of faces
+            pos += write_add(&mut buffer, &value.faces.len().to_be_bytes())?;
+            for face in value.faces.iter_mut() {
+                for i in 0..3 {
+                    // 21. Face Texture Info Index
+                    pos += write_add(&mut buffer, &face[i].texture_info_index.to_be_bytes())?;
+                    // 22. Face Texture Vertex Index
+                    pos += write_add(&mut buffer, &face[i].vertex_index.to_be_bytes())?;
+                    // 23. Face Texture Map Index
+                    pos += write_add(&mut buffer, &face[i].texture_map_index.to_be_bytes())?;
+                    // 24. Face Texture Normals Index
+                    pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
+                }
+            }
+            // 25. Count of Vertices
+            pos += write_add(&mut buffer, &value.vertices.len().to_be_bytes())?;
+            for vertices in value.vertices.iter_mut() {
+                // 26. Vertices
+                pos += write_vec3(&mut buffer, &vertices)?;
+            }
+            // 27. Count of Texture Mappings
+            pos += write_add(&mut buffer, &value.texture_mappings.len().to_be_bytes())?;
+            for texture_mappings in value.texture_mappings.iter_mut() {
+                // 28. Texture Mappings
+                pos += write_vec2(&mut buffer, &texture_mappings)?;
+            }
+            // 29. Count of Normals
+            pos += write_add(&mut buffer, &value.normals.len().to_be_bytes())?;
+            for normals in value.normals.iter_mut() {
+                // 30. Normals
+                pos += write_vec3(&mut buffer, &normals)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 
-//     pub fn save(&mut self, base_folder: String) -> io::Result<()> {
-//         let world_file = [base_folder,"/world.pak".to_string()].join("");
-//         let mut pos: usize = 0;
-//         let mut buffer = File::create(world_file)?;
 
-//         // 1. Count of Areas
-//         pos += write_add(&mut buffer, &self.areas.len().to_be_bytes())?;
-//         for area in self.areas.iter_mut() {
-//             // 2. Count of Area Texture Polygons
-//             pos += write_add(&mut buffer, &area.texture_polygons.len().to_be_bytes())?;
-//             for area_texture in area.texture_polygons.iter_mut() {
-//                 // 3. Area's Texture Polygon Texture Name
-//                 pos += write_str(&mut buffer, &area_texture.texture_name)?;
-//                 // 4. Area's Texture Polygon Texture Vertices
-//                 pos += write_vec(&mut buffer, &area_texture.vertices)?;
-//             }
-//             // 5. Count of Area Model Instances
-//             pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
-//             for model_instance in area.model_instances.iter_mut() {
-//                 // 6. Area's Model Instance Name
-//                 pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
-//                 // 7. Area's Model Instance Position
-//                 pos += write_vec(&mut buffer, &model_instance.position)?;
-//             }
-//         }
-//         // 8. Count of Model Hash Map
-//         pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
-//         for (key, value) in self.model_map.iter_mut() {
-//             // 9. Model Hash Map Name
-//             pos += write_str(&mut buffer, &key.to_string())?;
-//             // 10. Count of Model Hash Map Submodel
-//             pos += write_add(&mut buffer, &value.submodels.len().to_be_bytes())?;
-//             for submodel in value.submodels.iter_mut() {
-//                 // 11. Model Hash Map Submodel Name
-//                 pos += write_str(&mut buffer, &submodel.name.to_string())?;
-//                 // 12. Model Hash Map Texture Polygon Count
-//                 pos += write_add(&mut buffer, &submodel.texture_polygons.len().to_be_bytes())?;
-//                 for texture_polygon in submodel.texture_polygons.iter_mut() {
-//                     // 13. Model Hash Map Texture Polygon Name
-//                     pos += write_str(&mut buffer, &texture_polygon.texture_name.to_string())?;
-//                     // 14. Model Hash Map Texture Polygon Vertices
-//                     pos += write_vec(&mut buffer, &texture_polygon.vertices)?;
-//                 }
-//             }
-//         }
-//         Ok(())
-//     }
-// }
 
 
 fn write_add(buffer: &mut File, data: &[u8])  -> io::Result<usize> {
@@ -361,6 +406,14 @@ fn write_vec(buffer: &mut File, data: &Vec<f32>) -> io::Result<usize> {
         total_bytes += write_add(buffer, &item.to_be_bytes())?;
     }
     Ok(total_bytes)
+}
+
+fn write_vec3(buffer: &mut File, data: &Vec<f32>) -> io::Result<usize> {
+    return write_vec(buffer, data);
+}
+
+fn write_vec2(buffer: &mut File, data: &Vec<f32>) -> io::Result<usize> {
+    return write_vec(buffer, data);
 }
 
 fn write_str(buffer: &mut File, data: &str)  -> io::Result<usize> {
