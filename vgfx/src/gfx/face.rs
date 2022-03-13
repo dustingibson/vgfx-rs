@@ -16,16 +16,16 @@ pub struct FaceRender {
 
 #[derive(Clone)]
 pub struct FacePartitionRender {
-    pub faces: Vec<FaceRender>,
-    pub texture: Texture
+    pub faces: Vec<Vec<FaceRender>>,
+    pub texture_index: usize
 }
 
 impl FacePartitionRender {
 
-    pub fn new(sdl_context: &mut SDLContext, texture: Texture) -> Self {
+    pub fn new(sdl_context: &mut SDLContext, texture_index: usize) -> Self {
         return FacePartitionRender {
             faces: vec![],
-            texture: texture
+            texture_index: texture_index
         }
     }
 

@@ -5,31 +5,34 @@ extern crate nalgebra_glm as glm;
 use crate::TexturePolygon;
 use crate::SubModel;
 use crate::Shader;
+use crate::gfx::face::FacePartitionRender;
 use crate::gfx::texture::Texture;
-use crate::world::world_model::WorldFacePartition;
 #[derive(Clone)]
 
 pub struct ModelInstance {
     pub model_name: String,
-    pub position: Vec<f32>
+    pub position: Vec<f32>,
+    pub face_partitions: Vec<FacePartitionRender>
 }
 
 pub struct AreaInstance {
     pub model_instances: Vec<ModelInstance>
 }
 
+// TODO: If needed optimize face partitions by model instead of instance
+// Tradeoff cost of memory vs cost of processing streaming VBOs
 pub struct Model {
     pub name: String,
-    pub face_partitions: Vec<WorldFacePartition>,
-    pub textures: Vec<Texture>
+    pub textures: Vec<Texture>,
+    pub face_partitions: Vec<FacePartitionRender>
 }
 
 impl Model {
     pub fn new(name: String) -> Self {
         return Model {
             name: name.to_string(),
-            face_partitions: vec![],
-            textures: vec![]
+            textures: vec![],
+            face_partitions: vec![]
         };
     }
 }

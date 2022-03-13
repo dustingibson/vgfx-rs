@@ -238,6 +238,7 @@ impl World {
                 let mut normals: Vec<f32> = vec![];
                 normals.push(comp.next().unwrap().parse().unwrap());
                 normals.push(comp.next().unwrap().parse().unwrap());
+                normals.push(comp.next().unwrap().parse().unwrap());
                 model.normals.push(normals);
             }
             else if first_val == "f" {
@@ -247,10 +248,19 @@ impl World {
                 faces.push(self.process_face_value(comp.next().unwrap().to_string()));
                 cur_face_partition.faces.push(faces);
             }
+            else if first_val == "vt" {
+                let mut texture_map: Vec<f32> = vec![];
+                texture_map.push(comp.next().unwrap().parse().unwrap());
+                texture_map.push(comp.next().unwrap().parse().unwrap());
+                model.texture_mappings.push(texture_map);
+            }
             else if first_val == "usemtl" {
                 let texture_key = comp.next().unwrap().to_string();
                 cur_texture_index = model.texture_info.iter().position(|x| x.name == texture_key).unwrap();
-                let mut cur_face_partition = FacePartition { faces: vec![], texture_info_index: cur_texture_index };
+                if cur_face_partition.faces.len() > 0 {
+                    model.faces.push(cur_face_partition);
+                }
+                cur_face_partition = FacePartition { faces: vec![], texture_info_index: cur_texture_index };
             }
             else if first_val == "mtllib" {
                 let mut cur_str = "".to_string();
@@ -266,6 +276,9 @@ impl World {
                 model.texture_info = self.process_texture_info(dir_name.to_string(), cur_str).unwrap();
                 //let fname = comp.next().unwrap();
             }
+        }
+        if cur_face_partition.faces.len() > 0 {
+            model.faces.push(cur_face_partition);
         }
         return model;
     }
@@ -333,7 +346,7 @@ impl World {
             pos += write_add(&mut buffer, &value.texture_info.len().to_be_bytes())?;
             for texture_info in value.texture_info.iter_mut() {
                 // 8. Texture Info Name
-                pos += write_str(&mut buffer, &key.to_string())?;
+                pos += write_str(&mut buffer, &texture_info.name)?;
                 // 9. Texture Info Ambient Color
                 pos += write_vec3(&mut buffer, &texture_info.ambient_color)?;
                 // 10. Texture Info Diffuse Color

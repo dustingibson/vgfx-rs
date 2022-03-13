@@ -4,6 +4,8 @@ use crate::ModelInstance;
 use crate::dep::events::SDLContext;
 use crate::Texture;
 use crate::geo::texture_polygon::TexturePolygon;
+use crate::gfx::face::FacePartitionRender;
+use crate::gfx::face::FaceRender;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
@@ -37,12 +39,8 @@ impl World {
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
-    pub fn load(&mut self, sdl_context: &mut SDLContext ,base_folder: String) -> io::Result<World> {
+    pub fn load(&mut self, sdl_context: &mut SDLContext, base_folder: String) -> io::Result<World> {
         let mut world = World::new();
-        let mut vertices: Vec<Vec<f32>> = vec![];
-        let mut texture_maps: Vec<Vec<f32>> = vec![];
-        let mut normals: Vec<Vec<f32>> = vec![];
-        let mut textures: Vec<Texture> = vec![];
         let world_file = [base_folder.to_string(),"/world.pak".to_string()].join("");
         let mut file = File::open(world_file)?;
         let mut buffer = vec![];
@@ -52,6 +50,7 @@ impl World {
         // 1. Count of Areas
         let num_areas = read_usize(&buffer, &mut pos);
         for i in 0..num_areas {
+            let mut cur_model_instance = vec![];
             // 2. Count of Area Model Instances
             let num_model_instances = read_usize(&buffer, &mut pos);
             for j in 0..num_model_instances {
@@ -59,13 +58,25 @@ impl World {
                 let model_instance_name = read_str(&buffer, &mut pos);
                 // 4. Area's Model Instance Position
                 let model_instance_pos = read_vec3(&buffer, &mut pos);
+                cur_model_instance.push(ModelInstance{ 
+                    model_name: model_instance_name,
+                    position: model_instance_pos,
+                    face_partitions: vec![]
+                });
             }
+            world.areas.push(AreaInstance { model_instances: cur_model_instance });
         }
         // 5. Count of Model Hash Map
         let hash_map_cnt = read_usize(&buffer, &mut pos);
         for i in 0..hash_map_cnt {
+
+            let mut vertices: Vec<Vec<f32>> = vec![];
+            let mut texture_maps: Vec<Vec<f32>> = vec![];
+            let mut normals: Vec<Vec<f32>> = vec![];
+
             // 6. Model Hash Map Name
             let model_name = read_str(&buffer, &mut pos);
+            let mut cur_model = Model::new(model_name);
             // 7. Count of Texture Info
             let texture_cnt = read_usize(&buffer, &mut pos);
             for j in 0..texture_cnt {
@@ -92,92 +103,61 @@ impl World {
                 cur_texture.texture_properties.illum = read_i32(&buffer, &mut pos);
                 // 18. Texture Info Image Size
                 let img_size = read_usize(&buffer, &mut pos);
-                // 19. Texture Image Byte Data
-                let img_bytes = read_to_array(&buffer, pos, img_size);
-                pos += img_size;
-                cur_texture.createTextureBufferFromByteData(&img_bytes);
-                textures.push(cur_texture);
+                // 19. Texture Image Byte Data (If Image Exist)
+                if img_size > 0 {
+                    let img_bytes = read_to_array(&buffer, pos, img_size);
+                    pos += img_size;
+                    cur_texture.createTextureBufferFromByteData(&img_bytes);
+                }
+                cur_model.textures.push(cur_texture);
             }
+            // 20. Count of Vertices
+            let vertices_cnt = read_usize(&buffer, &mut pos);
+            for i in 0..vertices_cnt {
+                // 21. Vertices
+                vertices.push(read_vec3(&buffer, &mut pos));
+            }
+            // 22. Count of Texture Mappings
+            let texture_maps_cnt = read_usize(&buffer, &mut pos);
+            for i in 0..texture_maps_cnt {
+                // 23. Texture Mappings
+                texture_maps.push(read_vec2(&buffer, &mut pos));
+            }
+            // 24. Count of Normals
+            let normals_cnt = read_usize(&buffer, &mut pos);
+            for i in 0..normals_cnt {
+                // 25. Normals
+                normals.push(read_vec3(&buffer, &mut pos));
+            }
+            // 26. Count of Face Partitions
+            let face_partitions_cnt = read_usize(&buffer, &mut pos);
+            for i in 0..face_partitions_cnt {
+                // 27. Count of Faces
+                let faces_cnt = read_usize(&buffer, &mut pos);
+                // 28. Texture Info Index
+                let texture_info_index = read_usize(&buffer, &mut pos);
+                let mut cur_face_partition = FacePartitionRender::new(sdl_context, texture_info_index);
+                for j in 0..faces_cnt {
+                    let mut face_set = vec![];
+                    for k in 0..3 {
+                        // 29. Face Texture Vertex Index
+                        let texture_vertex_index = read_usize(&buffer, &mut pos);
+                        // 30. Face Texture Map Index
+                        let texture_map_index = read_usize(&buffer, &mut pos);
+                        // 31. Face Texture Normals Index
+                        let texture_normals_index = read_usize(&buffer, &mut pos);
+                        face_set.push(FaceRender{
+                            texture_buffer: texture_maps[texture_map_index].clone(),
+                            normal_buffer: normals[texture_normals_index].clone(),
+                            vertex_buffer: vertices[texture_vertex_index].clone()
+                        });
+                    }
+                    cur_face_partition.faces.push(face_set);
+                }
+                cur_model.face_partitions.push(cur_face_partition);
+            }
+            world.model_map.insert(cur_model.name.to_string(), cur_model);
         }
-        // 20. Count of Vertices
-        let vertices_cnt = read_usize(&buffer, &mut pos);
-        for i in 1..vertices_cnt {
-            // 21. Vertices
-            vertices.push(read_vec3(&buffer, &mut pos));
-        }
-        // 22. Count of Texture Mappings
-        let texture_maps_cnt = read_usize(&buffer, &mut pos);
-        for i in 1..texture_maps_cnt {
-            // 23. Texture Mappings
-            texture_maps.push(read_vec2(&buffer, &mut pos));
-        }
-        // 24. Count of Normals
-        let normals_cnt = read_usize(&buffer, &mut pos);
-        for i in 1..normals_cnt {
-            // 25. Normals
-            normals.push(read_vec3(&buffer, &mut pos));
-        }
-        // 26. Count 
-        // // 1. Count of Areas
-        // let num_areas = read_usize(&buffer, &mut pos);
-        // for i in 0..num_areas {
-        //     // 2. Count of Area Texture Polygons
-        //     let num_text_poly = read_usize(&buffer, &mut pos);
-        //     let mut texture_polys = Vec::new();
-        //     for  j in 0..num_text_poly {
-        //         // 3. Area's Texture Polygon Texture Name
-        //         let texture_name = read_str(&buffer, &mut pos);
-        //         // 4. Area's Texture Polygon Texture Vertices
-        //         let poly_vert = read_vec(&buffer, 3, &mut pos);
-        //         texture_polys.push(TexturePolygon::new(sdl_context, to_vec3(poly_vert), texture_name));
-        //     }
-        //     // 5. Count of Area Model Instances
-        //     let num_model_instances = read_usize(&buffer, &mut pos);
-        //     let mut model_inst = Vec::new();
-        //     for j in 0..num_model_instances {
-        //         // 6. Area's Model Instance Name
-        //         let model_name = read_str(&buffer, &mut pos);
-        //         // 7. Area's Model Instance Position
-        //         let model_pos = read_vec(&buffer, 3, &mut pos);
-        //         model_inst.push(ModelInstance {
-        //             model_name: model_name,
-        //             position: model_pos
-        //         });
-        //     }
-        //     world.areas.push(AreaInstance {
-        //         texture_polygons: texture_polys,
-        //         model_instances: model_inst
-        //     });
-        // }  
-        // // 8. Count of Model Hash Map
-        // let num_hash_map = read_usize(&buffer, &mut pos);
-        // for i in 0..num_hash_map {
-        //     // 9. Model Hash Map Name
-        //     let model_key = read_str(&buffer, &mut pos);
-        //     // 10. Count of Model Hash Map Submodel
-        //     let num_submodel = read_usize(&buffer, &mut pos);
-        //     //let mut submodels = Vec::new();
-        //     for j in 0..num_submodel {
-        //         // 11. Model Hash Map Submodel Name
-        //         let submodel_name = read_str(&buffer, &mut pos);
-        //         // 12. Model Hash Map Texture Polygon Count
-        //         let num_poly_count = read_usize(&buffer, &mut pos);
-        //         let mut texture_polygons = Vec::new();
-        //         for k in 0..num_poly_count {
-        //             // 13. Model Hash Map Texture Polygon Name
-        //             let model_poly_name = read_str(&buffer, &mut pos);
-        //             // 14. Model Hash Map Texture Polygon Vertices
-        //             let poly_vert = read_vec(&buffer, 3, &mut pos);
-        //             texture_polygons.push(TexturePolygon::new(sdl_context, to_vec3(poly_vert), model_poly_name));
-        //         }
-        //         // submodels.push(SubModelComponent {
-        //         //     name: submodel_name,
-        //         //     texture_polygons: texture_polygons
-        //         // });
-        //     }
-        //     let model_key_copy  = model_key.clone();
-        //     //world.model_map.insert(model_key, ModelComponent { name: model_key_copy, sub_models: submodels } );
-        // }
         Ok(world)
     }
 }

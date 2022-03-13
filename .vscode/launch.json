@@ -6,13 +6,24 @@
     "configurations": [
 
         {
-            "name": "(Windows) Launch",
+            "name": "LiveLoader (Windows) Launch",
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/LiveLoader/target/debug/LiveLoader.exe",
             "args": ["demo"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true
+        },
+        {
+            "name": "Vgfx (Windows) Launch",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/vgfx/target/debug/vgfx-rs.exe",
+            "args": ["demo"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}/vgfx",
             "environment": [],
             "externalConsole": true
         },
