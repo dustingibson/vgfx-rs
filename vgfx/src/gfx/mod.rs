@@ -2,3 +2,4 @@ pub mod shader;
 pub mod camera;
 pub mod texture;
 pub mod text;
+pub mod face;

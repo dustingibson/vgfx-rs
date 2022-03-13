@@ -1,17 +1,13 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-pub struct ModelInstance {
+pub struct WorldModelInstance {
     pub model_name: String,
     pub position: Vec<f32>
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct AreaInstance {
-    pub model_instances: Vec<ModelInstance>
+pub struct WorldAreaInstance {
+    pub model_instances: Vec<WorldModelInstance>
 }
 
-pub struct TextureInfo {
+pub struct WorldTextureInfo {
     pub name: String,
     pub ambient_color: Vec<f32>,
     pub diffuse_color: Vec<f32>,
@@ -25,21 +21,21 @@ pub struct TextureInfo {
     pub img: Vec<u8>,
 }
 
-pub struct Model {
+pub struct WorldModel {
     pub name: String,
-    pub faces: Vec<FacePartition>,
+    pub faces: Vec<WorldFacePartition>,
     pub vertices: Vec<Vec<f32>>,
     pub texture_mappings: Vec<Vec<f32>>,
     pub normals: Vec<Vec<f32>>,
-    pub texture_info: Vec<TextureInfo>
+    pub texture_info: Vec<WorldTextureInfo>
 }
 
-pub struct FacePartition {
+pub struct WorldFacePartition {
     pub texture_info_index: usize,
-    pub faces: Vec<Vec<Face>>
+    pub faces: Vec<Vec<WorldFace>>
 }
 
-pub struct Face {
+pub struct WorldFace {
     pub vertex_index: usize,
     pub texture_map_index: usize,
     pub normals_index: usize

@@ -2,14 +2,12 @@ use gl;
 use gl::types::*;
 extern crate nalgebra_glm as glm;
 
-use crate::Cuboid;
 use crate::TexturePolygon;
 use crate::Shader;
 #[derive(Clone)]
 
 pub struct SubModel {
     pub name: String,
-    pub cuboids: Vec<Cuboid>,
     pub texture_polygons: Vec<TexturePolygon>,
     pub position: glm::Vec3,
     pub vertex_buffer: GLuint,
@@ -19,7 +17,7 @@ pub struct SubModel {
 }
 
 impl SubModel {
-    pub fn new(name: String, position: glm::Vec3, cuboids: &mut Vec<Cuboid>, texture_polygons: &mut Vec<TexturePolygon>) -> Self {
+    pub fn new(name: String, position: glm::Vec3, texture_polygons: &mut Vec<TexturePolygon>) -> Self {
 
         let mut vertex_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
@@ -27,13 +25,7 @@ impl SubModel {
         let mut vertex_array = vec![];
         let mut normal_array = vec![];
         let mut texture_array = vec![];
-
-        for cur_cuboid in cuboids.iter_mut() {
-            vertex_array.append(&mut cur_cuboid.vertex_array);
-            normal_array.append(&mut cur_cuboid.normal_array);
-            texture_array.append(&mut cur_cuboid.texture_array);
-        }
-
+        
         for cur_texture_polygon in texture_polygons.iter_mut() {
             vertex_array.append(&mut cur_texture_polygon.vertex_array);
             normal_array.append(&mut cur_texture_polygon.normal_array);
@@ -84,12 +76,11 @@ impl SubModel {
         return SubModel {
             name: name,
             position: position,
-            cuboids: cuboids.to_vec(),
             texture_polygons: texture_polygons.to_vec(),
             normal_buffer: normal_buffer,
             vertex_buffer: vertex_buffer,
             texture_buffer: texture_buffer,
-            length:  (cuboids.len()*12) as i32 + texture_polygons.len() as i32
+            length: texture_polygons.len() as i32
         };
     }
 

@@ -5,8 +5,6 @@ use sdl2::keyboard::Keycode;
 use sdl2::keyboard::Scancode;
 use std::time::Duration;
 extern crate nalgebra_glm as glm;
-
-use crate::Cuboid;
 use crate::Plane;
 use crate::Shader;
 use crate::ShaderContainer;
@@ -54,7 +52,7 @@ impl ModelEditor {
     pub fn draw(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
         unsafe { gl::UseProgram(shader.get_shader("fragment".to_string()).program_id); }
         for model in self.models.iter_mut() {
-            model.draw(&mut shader.get_shader("fragment".to_string()));
+            // model.draw(&mut shader.get_shader("fragment".to_string()));
         }
         camera.set_projection_ortho(shader);
         self.main_label.draw(camera, &mut shader.get_shader("fragment".to_string()));

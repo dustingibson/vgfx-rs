@@ -11,6 +11,8 @@ use std::path;
 use std::str::Bytes;
 use serde_json::{Result, Value};
 
+use super::model::FacePartition;
+
 
 pub struct World {
     base_folder: String,
@@ -91,7 +93,7 @@ impl World {
         }
     }
 
-    pub fn process_face_value(&mut self, content: String, texture_index: usize) -> Face {
+    pub fn process_face_value(&mut self, content: String) -> Face {
         let mut face_values = content.split('/');
         let first_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
         let second_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
@@ -99,8 +101,7 @@ impl World {
         return Face {
             vertex_index: first_index,
             texture_map_index: second_index,
-            normals_index: third_index,
-            texture_info_index: texture_index
+            normals_index: third_index
         }
     }
 
@@ -221,6 +222,7 @@ impl World {
         let mut lines = content.split("\n");
         let mut model = self.init_model();
         let mut cur_texture_index = 0;
+        let mut cur_face_partition = FacePartition { faces: vec![], texture_info_index: 0 };
         for line in lines {
             let mut comp = line.trim().split(" ");
             let first_val = comp.next().unwrap();
@@ -240,14 +242,15 @@ impl World {
             }
             else if first_val == "f" {
                 let mut faces: Vec<Face> = vec![];
-                faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
-                faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
-                faces.push(self.process_face_value(comp.next().unwrap().to_string(), cur_texture_index));
-                model.faces.push(faces);
+                faces.push(self.process_face_value(comp.next().unwrap().to_string()));
+                faces.push(self.process_face_value(comp.next().unwrap().to_string()));
+                faces.push(self.process_face_value(comp.next().unwrap().to_string()));
+                cur_face_partition.faces.push(faces);
             }
             else if first_val == "usemtl" {
                 let texture_key = comp.next().unwrap().to_string();
                 cur_texture_index = model.texture_info.iter().position(|x| x.name == texture_key).unwrap();
+                let mut cur_face_partition = FacePartition { faces: vec![], texture_info_index: cur_texture_index };
             }
             else if first_val == "mtllib" {
                 let mut cur_str = "".to_string();
@@ -351,40 +354,45 @@ impl World {
                 pos += write_add(&mut buffer, &texture_info.illum.to_be_bytes())?;
                 // 18. Texture Info Image Size
                 pos += write_add(&mut buffer, &texture_info.img.len().to_be_bytes())?;
-                // 19. Texture Info
+                // 19. Texture Info Image Byte Data
                 pos += write_add(&mut buffer, &texture_info.img)?;
             }
-            // 20. Count of faces
-            pos += write_add(&mut buffer, &value.faces.len().to_be_bytes())?;
-            for face in value.faces.iter_mut() {
-                for i in 0..3 {
-                    // 21. Face Texture Info Index
-                    pos += write_add(&mut buffer, &face[i].texture_info_index.to_be_bytes())?;
-                    // 22. Face Texture Vertex Index
-                    pos += write_add(&mut buffer, &face[i].vertex_index.to_be_bytes())?;
-                    // 23. Face Texture Map Index
-                    pos += write_add(&mut buffer, &face[i].texture_map_index.to_be_bytes())?;
-                    // 24. Face Texture Normals Index
-                    pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
-                }
-            }
-            // 25. Count of Vertices
+            // 20. Count of Vertices
             pos += write_add(&mut buffer, &value.vertices.len().to_be_bytes())?;
             for vertices in value.vertices.iter_mut() {
-                // 26. Vertices
+                // 21. Vertices
                 pos += write_vec3(&mut buffer, &vertices)?;
             }
-            // 27. Count of Texture Mappings
+            // 22. Count of Texture Mappings
             pos += write_add(&mut buffer, &value.texture_mappings.len().to_be_bytes())?;
             for texture_mappings in value.texture_mappings.iter_mut() {
-                // 28. Texture Mappings
+                // 23. Texture Mappings
                 pos += write_vec2(&mut buffer, &texture_mappings)?;
             }
-            // 29. Count of Normals
+            // 24. Count of Normals
             pos += write_add(&mut buffer, &value.normals.len().to_be_bytes())?;
             for normals in value.normals.iter_mut() {
-                // 30. Normals
+                // 25. Normals
                 pos += write_vec3(&mut buffer, &normals)?;
+            }
+            // 26. Count of face partitions
+            pos += write_add(&mut buffer, &value.faces.len().to_be_bytes())?;
+            for face_partitions in value.faces.iter_mut() {
+                // 27. Count of faces in face partitions
+                pos += write_add(&mut buffer, &face_partitions.faces.len().to_be_bytes())?;
+                // 28. Texture Info Index of Partition
+                pos + write_add(&mut buffer, &face_partitions.texture_info_index.to_be_bytes())?;
+                for face in face_partitions.faces.iter_mut() {
+                    for i in 0..3 {
+                        // 29. Face Texture Vertex Index
+                        pos += write_add(&mut buffer, &face[i].vertex_index.to_be_bytes())?;
+                        // 30. Face Texture Map Index
+                        pos += write_add(&mut buffer, &face[i].texture_map_index.to_be_bytes())?;
+                        // 31. Face Texture Normals Index
+                        pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
+                    }
+                }
+
             }
         }
         Ok(())

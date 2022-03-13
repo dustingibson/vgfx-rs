@@ -1,15 +1,46 @@
 use gl;
 use gl::types::*;
 use std::collections::HashMap;
+use std::convert::TryInto;
 use sdl2::surface::Surface;
 
 use crate::BFile;
 extern crate nalgebra_glm as glm;
 
+
+#[derive(Clone)]
+pub struct  TextureProperties {
+    pub ambient_color: Vec<f32>,
+    pub diffuse_color: Vec<f32>,
+    pub specular_color: Vec<f32>,
+    pub emissive_coeficient: Vec<f32>,
+    pub transmission_filter: Vec<f32>,
+    pub optical_density: f32,
+    pub dissolve: f32,
+    pub specular_highlights: f32,
+    pub illum: i32,
+}
+
 #[derive(Clone)]
 pub struct TextureImage {
     pub key: String,
     pub rect: glm::Vec4
+}
+
+impl TextureProperties {
+    pub fn new() -> Self{
+        return TextureProperties {
+            ambient_color: vec![],
+            diffuse_color: vec![],
+            specular_color: vec![],
+            emissive_coeficient: vec![],
+            transmission_filter: vec![],
+            specular_highlights: 10.0,
+            optical_density: 1.0,
+            dissolve: 1.0,
+            illum: 1,
+        }
+    }
 }
 
 impl TextureImage {
@@ -25,46 +56,20 @@ impl TextureImage {
 
 #[derive(Clone)]
 pub struct Texture {
+    pub name: String,
     pub texture_id: GLuint,
-    pub texture_images: HashMap<String, TextureImage>
+    pub texture_images: HashMap<String, TextureImage>,
+    pub texture_properties: TextureProperties
 }
 
 impl Texture {
 
     pub fn new(name: String) -> Self {
-
-        let mut texture_buffer: GLuint = 0;
-        let mut surface: Surface = match sdl2::image::LoadSurface::from_file(format!("res/texture/{}.jpg", name)) {
-            Ok(val) => val,
-            Err(val) => panic!("unable to load")
-        };
-
-        let img_data = surface.raw();
-        //unsafe { println!("{:?}",(*img_data).pixels); }
-
-        let mut test_texture = Self::testVector();
-
-        unsafe {
-            //let mut surface: sdl2::surface::Surface =  SDL_LoadBMP("texture.bmp");
-            gl::GenTextures(1, &mut texture_buffer);
-            gl::BindTexture(gl::TEXTURE_2D, texture_buffer);
-
-
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
-            
-            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGB, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
-            //gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGB as i32, 5000 as i32, 5000 as i32, 0, gl::RGB, gl::UNSIGNED_BYTE, (image_bytes.as_mut_ptr()) as *const gl::types::GLvoid);
-            gl::GenerateMipmap(gl::TEXTURE_2D);
-        }
-        let mut texture_images: HashMap<String, TextureImage> = HashMap::new();
-
-
         return Texture {
-            texture_id: texture_buffer,
-            texture_images: texture_images
+            name: name,
+            texture_id: 0,
+            texture_images: HashMap::new(),
+            texture_properties: TextureProperties::new()
         }
     }
 
@@ -131,15 +136,32 @@ impl Texture {
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
         return Texture {
+            name: name,
             texture_id: texture_buffer,
-            texture_images: texture_images
+            texture_images: texture_images,
+            texture_properties: TextureProperties::new()
         }
     }
 
-    pub fn blank() -> Self {
-        return Texture {
-            texture_id: 1,
-            texture_images: HashMap::new()
+    pub fn createTextureBufferFromByteData(&mut self, image_bytes: &[u8]) {
+        let mut rwops: sdl2::rwops::RWops = match sdl2::rwops::RWops::from_bytes(&image_bytes) {
+            Ok(val) => val,
+            Err(val) => panic!("unable to load rwop")
+        };
+        let mut surface = match sdl2::image::ImageRWops::load_png(&mut rwops) {
+            Ok(val) => val,
+            Err(val) => panic!("unable to load surface")
+        };
+        let img_data = surface.raw();
+        unsafe {
+            gl::GenTextures(1, &mut self.texture_id);
+            gl::BindTexture(gl::TEXTURE_2D, self.texture_id);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::BGRA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
+            gl::GenerateMipmap(gl::TEXTURE_2D);
         }
     }
 
@@ -157,8 +179,10 @@ impl Texture {
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
         return Texture {
+            name: "".to_string(),
             texture_id: texture_buffer,
-            texture_images: HashMap::new()
+            texture_images: HashMap::new(),
+            texture_properties: TextureProperties::new()
         }
     }
 

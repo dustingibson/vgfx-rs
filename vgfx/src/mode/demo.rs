@@ -6,7 +6,6 @@ use sdl2::keyboard::Scancode;
 use std::time::Duration;
 extern crate nalgebra_glm as glm;
 
-use crate::Cuboid;
 use crate::TexturePolygon;
 use crate::Plane;
 use crate::ShaderContainer;
@@ -25,8 +24,7 @@ pub struct Demo {
 
 impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let mut model: Model = Model::new("new".to_string(), glm::vec3(0.0,0.0,0.0));
-        let mut cuboids: Vec<Cuboid> = vec![];
+        //let mut model: Model = Model::new("new".to_string(), glm::vec3(0.0,0.0,0.0));
         let mut texture_polygons: Vec<TexturePolygon> = vec![];
         let light_pos = glm::vec3(5.0, 5.0, 5.0);
         // for i in 0..20 {
@@ -43,13 +41,13 @@ impl Demo {
         //cuboids.push( Cuboid::from_texture(sdl_payload, light_pos, "select".to_string(), 1.0, 1.0, 1.0));
         let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
 
-        model.insert_submodel("test_triangle".to_string(), glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut cuboids, &mut texture_polygons);
+        //model.insert_submodel("test_triangle".to_string(), glm::vec3(0.0,0.0, 0.0), glm::vec3(30.0,30.0,30.0), &mut texture_polygons);
         
         //cuboids.push(Cuboid::new(glm::vec3(3.0,0.0,2.0), glm::vec3(1.0, 0.5, 0.31), 1.0, 1.0, 2.0));
         //cuboids.push(Cuboid::new(light_pos, glm::vec3(5.0, 7.0, 7.0), 1.0, 1.0, 1.0));
         return Demo {
             world: World::new_load(sdl_payload),
-            model: model,
+            model: Model::new("error".to_string()),
             plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0),
             label: label
         };
@@ -62,7 +60,7 @@ impl Demo {
     pub fn draw_cuboids(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         self.plane.draw(&mut shader_container.get_shader("fragment".to_string()));
-        self.model.draw(&mut shader_container.get_shader("fragment".to_string()));
+        //self.model.draw(&mut shader_container.get_shader("fragment".to_string()));
         self.draw_hud(camera, shader_container);
         //self.label.draw(camera, &mut shader_container.get_shader("fragment".to_string()));
     }

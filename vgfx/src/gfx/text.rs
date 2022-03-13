@@ -1,13 +1,5 @@
 use gl;
 use gl::types::*;
-use std::fs;
-use std::ffi::CString;
-use std::os::raw::c_char;
-use std::ptr::null;
-use std::ptr::null_mut;
-use std::mem;
-use std::collections::HashMap;
-use sdl2::ttf::Sdl2TtfContext;
 use sdl2::ttf::PartialRendering;
 use sdl2::surface::Surface;
 use sdl2::ttf;
