@@ -5,6 +5,7 @@ use crate::dep::events::SDLContext;
 use crate::Texture;
 use crate::geo::texture_polygon::TexturePolygon;
 use crate::gfx::face::FacePartitionRender;
+use crate::gfx::shader::Shader;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
@@ -38,6 +39,16 @@ impl World {
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
+    pub fn draw(&mut self, shader: &mut Shader) {
+        // TODO: Replace with renderer data structure
+        for area in self.areas.iter_mut() {
+            for model_instance in area.model_instances.iter_mut() {
+                let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
+                model.draw(shader, &mut model_instance.position);
+            }
+        }
+    }
+
     pub fn load(&mut self, sdl_context: &mut SDLContext, base_folder: String) -> io::Result<World> {
         let mut world = World::new();
         let world_file = [base_folder.to_string(),"/world.pak".to_string()].join("");
@@ -59,7 +70,7 @@ impl World {
                 let model_instance_pos = read_vec3(&buffer, &mut pos);
                 cur_model_instance.push(ModelInstance{ 
                     model_name: model_instance_name,
-                    position: model_instance_pos,
+                    position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
                     face_partitions: vec![]
                 });
             }

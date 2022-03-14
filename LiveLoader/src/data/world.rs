@@ -79,16 +79,19 @@ impl World {
 
     pub fn set_areas(&mut self, paths: Vec<String>) {
         for path in paths.iter() {
-            match fs::read_to_string(path) {
-                Ok(res) => { 
-                    //serde_json::from_str(&res).unwrap();
-                    let area: AreaInstance = match serde_json::from_str(&res) {
-                        Ok(areaInstance) => areaInstance,
-                        Err(err) => AreaInstance { model_instances: Vec::new() }
-                    };
-                    self.areas.push(area);
-                },
-                Err(err) => { println!("{}", err.to_string()) }
+            if path.contains(".json") {
+                match fs::read_to_string(path) {
+                    Ok(res) => {
+                        let area: AreaInstance = match serde_json::from_str(&res) {
+                            Ok(areaInstance) => areaInstance,
+                            Err(err) => {
+                                panic!("{}", err.to_string());
+                            }
+                        };
+                        self.areas.push(area);
+                    },
+                    Err(err) => { println!("{}", err.to_string()) }
+                }
             }
         }
     }

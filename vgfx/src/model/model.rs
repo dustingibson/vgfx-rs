@@ -5,13 +5,14 @@ extern crate nalgebra_glm as glm;
 use crate::TexturePolygon;
 use crate::SubModel;
 use crate::Shader;
+use crate::dep::events::SDLContext;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::texture::Texture;
 #[derive(Clone)]
 
 pub struct ModelInstance {
     pub model_name: String,
-    pub position: Vec<f32>,
+    pub position: glm::Vec3,
     pub face_partitions: Vec<FacePartitionRender>
 }
 
@@ -34,5 +35,11 @@ impl Model {
             textures: vec![],
             face_partitions: vec![]
         };
+    }
+
+    pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3) {
+        for face_partition in self.face_partitions.iter_mut() {
+            face_partition.draw(shader, position);
+        }
     }
 }

@@ -88,11 +88,11 @@ impl FacePartitionRender {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer_id);
             gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
-            gl::EnableVertexAttribArray(2);
+            gl::EnableVertexAttribArray(1);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer_id);
             gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
-            gl::EnableVertexAttribArray(3);
+            gl::EnableVertexAttribArray(2);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.texture_buffer_id);
             gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 

@@ -135,7 +135,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     }
 
     //Clean up
-    demo.clean_up_cuboids();
+    demo.clean_up();
     unsafe{ gl::DeleteVertexArrays(1, &vertex_array_id); }
     shader_container.clean_up();
 
