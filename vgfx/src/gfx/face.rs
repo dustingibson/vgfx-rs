@@ -8,24 +8,64 @@ extern crate nalgebra_glm as glm;
 extern crate libc;
 
 #[derive(Clone)]
-pub struct FaceRender {
+pub struct FacePartitionRender {
     pub vertex_buffer: Vec<GLfloat>,
     pub normal_buffer: Vec<GLfloat>,
-    pub texture_buffer: Vec<GLfloat>
-}
-
-#[derive(Clone)]
-pub struct FacePartitionRender {
-    pub faces: Vec<Vec<FaceRender>>,
+    pub texture_buffer: Vec<GLfloat>,
+    pub vertex_buffer_id: GLuint,
+    pub normal_buffer_id: GLuint,
+    pub texture_buffer_id: GLuint,
+    pub length: i32,
     pub texture_index: usize
 }
 
 impl FacePartitionRender {
 
-    pub fn new(sdl_context: &mut SDLContext, texture_index: usize) -> Self {
-        return FacePartitionRender {
-            faces: vec![],
-            texture_index: texture_index
+    pub fn new(vertex_buffer: Vec<GLfloat>, normal_buffer: Vec<GLfloat>, texture_buffer: Vec<GLfloat>, texture_index: usize, length: i32) -> Self {
+        let mut partition = FacePartitionRender {
+            texture_index: texture_index,
+            vertex_buffer: vertex_buffer,
+            normal_buffer: normal_buffer,
+            texture_buffer: texture_buffer,
+            vertex_buffer_id: 0,
+            texture_buffer_id: 0,
+            normal_buffer_id: 0,
+            length: length
+        };
+        partition.initGL();
+        return partition;
+    }
+
+    pub fn initGL(&mut self) {
+        unsafe {
+            gl::GenBuffers(1, &mut self.vertex_buffer_id);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer_id);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, 
+                (self.vertex_buffer.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+                self.vertex_buffer.as_ptr() as *const gl::types::GLvoid, 
+                gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        }
+        unsafe {
+            gl::GenBuffers(1, &mut self.normal_buffer_id);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer_id);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, 
+                (self.normal_buffer.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+                self.normal_buffer.as_ptr() as *const gl::types::GLvoid, 
+                gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
+        }
+        unsafe {
+            gl::GenBuffers(1, &mut self.texture_buffer_id);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.texture_buffer_id);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, 
+                (self.texture_buffer.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+                self.texture_buffer.as_ptr() as *const gl::types::GLvoid, 
+                gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
     }
 
@@ -34,7 +74,38 @@ impl FacePartitionRender {
         }
     }
 
-    pub fn draw(&mut self) {
-        
+    pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3) {
+        unsafe {
+
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, 1);
+            shader.set_texture(1);
+
+            gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model(position)[(0,0)]);
+            gl::Uniform1i(shader.get_uniform_location("textured".to_string()), 1);
+
+            gl::EnableVertexAttribArray(0);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer_id);
+            gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
+
+            gl::EnableVertexAttribArray(2);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.normal_buffer_id);
+            gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
+
+            gl::EnableVertexAttribArray(3);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.texture_buffer_id);
+            gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
+
+            gl::DrawArrays(gl::TRIANGLES, 0, self.length*3);
+
+            gl::DisableVertexAttribArray(0);
+            gl::DisableVertexAttribArray(1);
+        }
     }
+
+    pub fn get_model(&mut self, position: &mut glm::Vec3) -> glm::Mat4 { 
+        let c_model: glm::Mat4 = glm::Mat4::identity();
+        return glm::translate(&c_model, position);
+    }
+
 }

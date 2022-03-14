@@ -5,7 +5,6 @@ use crate::dep::events::SDLContext;
 use crate::Texture;
 use crate::geo::texture_polygon::TexturePolygon;
 use crate::gfx::face::FacePartitionRender;
-use crate::gfx::face::FaceRender;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
@@ -134,11 +133,12 @@ impl World {
             for i in 0..face_partitions_cnt {
                 // 27. Count of Faces
                 let faces_cnt = read_usize(&buffer, &mut pos);
+                let mut texture_buffer = vec![];
+                let mut normal_buffer = vec![];
+                let mut vertex_buffer = vec![];
                 // 28. Texture Info Index
                 let texture_info_index = read_usize(&buffer, &mut pos);
-                let mut cur_face_partition = FacePartitionRender::new(sdl_context, texture_info_index);
                 for j in 0..faces_cnt {
-                    let mut face_set = vec![];
                     for k in 0..3 {
                         // 29. Face Texture Vertex Index
                         let texture_vertex_index = read_usize(&buffer, &mut pos);
@@ -146,15 +146,16 @@ impl World {
                         let texture_map_index = read_usize(&buffer, &mut pos);
                         // 31. Face Texture Normals Index
                         let texture_normals_index = read_usize(&buffer, &mut pos);
-                        face_set.push(FaceRender{
-                            texture_buffer: texture_maps[texture_map_index].clone(),
-                            normal_buffer: normals[texture_normals_index].clone(),
-                            vertex_buffer: vertices[texture_vertex_index].clone()
-                        });
+                        
+                        texture_buffer = texture_buffer.iter().chain(&texture_maps[texture_map_index]).map(|&x|x).collect::<Vec<f32>>();
+                        normal_buffer = normal_buffer.iter().chain(&normals[texture_normals_index]).map(|&x|x).collect::<Vec<f32>>();
+                        vertex_buffer = vertex_buffer.iter().chain(&vertices[texture_vertex_index]).map(|&x|x).collect::<Vec<f32>>();
                     }
-                    cur_face_partition.faces.push(face_set);
                 }
-                cur_model.face_partitions.push(cur_face_partition);
+                cur_model.face_partitions.push(FacePartitionRender::new(
+                    vertex_buffer, normal_buffer, texture_buffer,
+                    texture_info_index, faces_cnt as i32
+                ));
             }
             world.model_map.insert(cur_model.name.to_string(), cur_model);
         }
