@@ -10,6 +10,7 @@ use std::io;
 use std::path;
 use std::str::Bytes;
 use serde_json::{Result, Value};
+use std::str::Split;
 
 use super::model::FacePartition;
 
@@ -96,12 +97,18 @@ impl World {
         }
     }
 
+    pub fn process_split(vals: &mut Split<char>) -> String {
+        return vals.next().unwrap().to_string();
+    }
+
     pub fn process_face_value(&mut self, content: String) -> Face {
         let mut face_values = content.split('/');
+        let mode = if face_values.clone().count() == 2 {2} else {3};
         let first_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
         let second_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
-        let third_index: usize = face_values.next().unwrap().parse::<usize>().unwrap() - 1;
+        let third_index: usize = if mode == 2 { 0 } else { face_values.next().unwrap().parse::<usize>().unwrap() - 1};
         return Face {
+            mode: mode,
             vertex_index: first_index,
             texture_map_index: second_index,
             normals_index: third_index
@@ -400,12 +407,16 @@ impl World {
                 pos + write_add(&mut buffer, &face_partitions.texture_info_index.to_be_bytes())?;
                 for face in face_partitions.faces.iter_mut() {
                     for i in 0..3 {
-                        // 29. Face Texture Vertex Index
+                        // 29. Face Mode
+                        pos += write_add(&mut buffer, &[face[i].mode])?;
+                        // 30. Face Texture Vertex Index
                         pos += write_add(&mut buffer, &face[i].vertex_index.to_be_bytes())?;
-                        // 30. Face Texture Map Index
+                        // 31. Face Texture Map Index
                         pos += write_add(&mut buffer, &face[i].texture_map_index.to_be_bytes())?;
-                        // 31. Face Texture Normals Index
-                        pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
+                        // 32. Face Texture Normals Index (If Applicable)
+                        if face[i].mode == 3 {
+                            pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
+                        }
                     }
                 }
 

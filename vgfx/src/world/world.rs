@@ -48,6 +48,16 @@ impl World {
             }
         }
     }
+    
+    pub fn clean_up(&mut self) {
+        // TODO: Replace with renderer data structure
+        for area in self.areas.iter_mut() {
+            for model_instance in area.model_instances.iter_mut() {
+                let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
+                model.clean_up();
+            }
+        }
+    }
 
     pub fn load(&mut self, sdl_context: &mut SDLContext, base_folder: String) -> io::Result<World> {
         let mut world = World::new();
@@ -83,6 +93,7 @@ impl World {
             let mut vertices: Vec<Vec<f32>> = vec![];
             let mut texture_maps: Vec<Vec<f32>> = vec![];
             let mut normals: Vec<Vec<f32>> = vec![];
+            let mut mode: u8 = 0;
 
             // 6. Model Hash Map Name
             let model_name = read_str(&buffer, &mut pos);
@@ -125,7 +136,13 @@ impl World {
             let vertices_cnt = read_usize(&buffer, &mut pos);
             for i in 0..vertices_cnt {
                 // 21. Vertices
-                vertices.push(read_vec3(&buffer, &mut pos));
+                let mut vert = read_vec3(&buffer, &mut pos);
+                let scale = 0.007;
+                vert[0] = vert[0]*scale;
+                vert[1] = vert[1]*scale;
+                vert[2] = vert[2]*scale;
+                //vertices.push( vec![vert[0]*0.2, vert[1]*0.2, vert[2]*0.2] );
+                vertices.push(vert);
             }
             // 22. Count of Texture Mappings
             let texture_maps_cnt = read_usize(&buffer, &mut pos);
@@ -151,21 +168,24 @@ impl World {
                 let texture_info_index = read_usize(&buffer, &mut pos);
                 for j in 0..faces_cnt {
                     for k in 0..3 {
-                        // 29. Face Texture Vertex Index
+                        // 29. Face Mode
+                        mode = read_u8(&buffer, &mut pos);
+                        // 30. Face Texture Vertex Index
                         let texture_vertex_index = read_usize(&buffer, &mut pos);
-                        // 30. Face Texture Map Index
+                        // 31. Face Texture Map Index
                         let texture_map_index = read_usize(&buffer, &mut pos);
-                        // 31. Face Texture Normals Index
-                        let texture_normals_index = read_usize(&buffer, &mut pos);
-                        
+                        // 32. Face Texture Normals Index (if applicable)
+                        if mode == 3 {
+                            let texture_normals_index = read_usize(&buffer, &mut pos);
+                            normal_buffer = normal_buffer.iter().chain(&normals[texture_normals_index]).map(|&x|x).collect::<Vec<f32>>();
+                        }
                         texture_buffer = texture_buffer.iter().chain(&texture_maps[texture_map_index]).map(|&x|x).collect::<Vec<f32>>();
-                        normal_buffer = normal_buffer.iter().chain(&normals[texture_normals_index]).map(|&x|x).collect::<Vec<f32>>();
                         vertex_buffer = vertex_buffer.iter().chain(&vertices[texture_vertex_index]).map(|&x|x).collect::<Vec<f32>>();
                     }
                 }
                 cur_model.face_partitions.push(FacePartitionRender::new(
                     vertex_buffer, normal_buffer, texture_buffer,
-                    texture_info_index, faces_cnt as i32
+                    texture_info_index, faces_cnt as i32, mode
                 ));
             }
             world.model_map.insert(cur_model.name.to_string(), cur_model);
@@ -191,6 +211,12 @@ fn read(data: &Vec<u8>, pos: usize, size: usize) -> Vec<u8> {
 fn read_to_array(data: &Vec<u8>, pos: usize, size: usize) -> &[u8] {
     let buffer_slice = &data[pos..pos+size];
     return buffer_slice;
+}
+
+fn read_u8(data: &Vec<u8>, pos: &mut usize) -> u8 {
+    let buffer_slice = read(data, *pos, 1);
+    *pos = *pos + 1;
+    return u8::from_be_bytes(buffer_slice.try_into().unwrap());
 }
 
 fn read_f32(data: &Vec<u8>, pos: &mut usize) -> f32 {

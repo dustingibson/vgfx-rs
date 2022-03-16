@@ -26,6 +26,7 @@ use world::world::World;
 use dep::events::SDLContext;
 use utils::bfile::BFile;
 use utils::state::SwitchState;
+use utils::vec_ops::VecOps;
 use std::env;
 
 

@@ -98,6 +98,7 @@ impl Shader {
         curShader.add_uniform("view".to_string());
         curShader.add_uniform("textureSample".to_string());
         curShader.add_uniform("textured".to_string());
+        curShader.add_uniform("ambientColor".to_string());
         //curShader.add_uniform("lightPos".to_string());
         return curShader;
     }

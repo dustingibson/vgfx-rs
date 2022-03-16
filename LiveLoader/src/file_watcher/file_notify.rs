@@ -18,13 +18,14 @@ impl FileNotify {
         }
     }
 
-    pub fn watch_files(&self, world: &mut World)  -> notify::Result<()> {
+    pub fn watch_files(&self, base_folder: String)  -> notify::Result<()> {
         let (tx, rx) = channel();
         let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2))?;
         watcher.watch(self.base_folder.to_string(), RecursiveMode::Recursive);
         loop {
             match rx.recv() {
                 Ok(event) => {
+                    let mut world = World::new(base_folder.to_string());
                     match world.get_paths("areas".to_string()) {
                         Ok(paths) => { 
                             println!("Areas: {}", paths.join(",").to_string());

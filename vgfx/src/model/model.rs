@@ -39,7 +39,13 @@ impl Model {
 
     pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3) {
         for face_partition in self.face_partitions.iter_mut() {
-            face_partition.draw(shader, position);
+            face_partition.draw(shader, position, &mut self.textures[face_partition.texture_index]);
+        }
+    }
+
+    pub fn clean_up(&mut self) {
+        for face_partition in self.face_partitions.iter_mut() {
+            face_partition.clean_up();
         }
     }
 }

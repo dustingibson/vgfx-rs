@@ -40,6 +40,7 @@ pub struct FacePartition {
 }
 
 pub struct Face {
+    pub mode: u8,
     pub vertex_index: usize,
     pub texture_map_index: usize,
     pub normals_index: usize
