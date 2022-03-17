@@ -1,5 +1,8 @@
 use gl;
 use gl::types::*;
+use libc::c_void;
+use sdl2::gfx::rotozoom::RotozoomSurface;
+use sdl2::sys::SDL_RendererFlip;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use sdl2::surface::Surface;
@@ -146,6 +149,24 @@ impl Texture {
         }
     }
 
+    pub fn flipSurface(&mut self, surface: &Surface) {
+        unsafe {
+            let pitch = surface.pitch();
+            let height = surface.height();
+            let mut buffer = vec![0; pitch as usize];
+            let img_data = surface.raw();
+            let mut pixels = (*img_data).pixels as *mut c_void;
+            for i in 0..surface.height()/2 {
+                let mut botPos = ( ( (height- i - 1)*pitch ) as isize) as isize;
+                let mut topRow = pixels.add((i * pitch) as usize);
+                let mut botRow = pixels.add(botPos as usize);
+                std::ptr::copy_nonoverlapping(topRow, buffer.as_mut_ptr() as *mut c_void, pitch as usize);
+                std::ptr::copy_nonoverlapping(botRow, topRow, pitch as usize);
+                std::ptr::copy_nonoverlapping(buffer.as_mut_ptr() as *mut c_void, botRow, pitch as usize);
+            }
+        }
+    }
+
     pub fn createTextureBufferFromByteData(&mut self, image_bytes: &[u8]) {
         let mut rwops: sdl2::rwops::RWops = match sdl2::rwops::RWops::from_bytes(&image_bytes) {
             Ok(val) => val,
@@ -155,6 +176,7 @@ impl Texture {
             Ok(val) => val,
             Err(val) => panic!("unable to load surface")
         };
+        self.flipSurface(&surface);
         let img_data = surface.raw();
         unsafe {
             gl::GenTextures(1, &mut self.texture_id);
