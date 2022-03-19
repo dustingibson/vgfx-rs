@@ -65,8 +65,18 @@ impl World {
             for model_instance in area.model_instances.iter_mut() {
                 if model_instance.model_name == model_name {
                     model_instance.face_partitions = face_partitions.to_owned();
+                    self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
                 }
             }
+        }
+    }
+
+    pub fn scale_vec(&mut self, partitions: &mut Vec<FacePartitionRender>, scale: f32) {
+        for partition in partitions.iter_mut() {
+            for vertex in partition.vertex_buffer.iter_mut() {
+                *vertex = scale * *vertex;
+            }
+            partition.initGL();
         }
     }
 
@@ -89,16 +99,19 @@ impl World {
                 let model_instance_name = read_str(&buffer, &mut pos);
                 // 4. Area's Model Instance Position
                 let model_instance_pos = read_vec3(&buffer, &mut pos);
+                // 5. Area's Model Instance Scale
+                let model_instance_scale = read_f32(&buffer, &mut pos);
                 let mut new_model_instance = ModelInstance{ 
                     model_name: model_instance_name.to_string(),
                     position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
-                    face_partitions: vec![]
+                    face_partitions: vec![],
+                    scale: model_instance_scale
                 };
                 cur_model_instance.push(new_model_instance);
             }
             world.areas.push(AreaInstance { model_instances: cur_model_instance });
         }
-        // 5. Count of Model Hash Map
+        // 6. Count of Model Hash Map
         let hash_map_cnt = read_usize(&buffer, &mut pos);
         for i in 0..hash_map_cnt {
 
@@ -107,36 +120,36 @@ impl World {
             let mut normals: Vec<Vec<f32>> = vec![];
             let mut mode: u8 = 0;
 
-            // 6. Model Hash Map Name
+            // 7. Model Hash Map Name
             let model_name = read_str(&buffer, &mut pos);
             let mut cur_model = Model::new(model_name);
-            // 7. Count of Texture Info
+            // 8. Count of Texture Info
             let texture_cnt = read_usize(&buffer, &mut pos);
             for j in 0..texture_cnt {
-                // 8. Texutre Info Name
+                // 9. Texutre Info Name
                 let texture_name = read_str(&buffer, &mut pos);
                 let mut cur_texture = Texture::new(texture_name);
-                // 9. Texture Info Ambient Color
+                // 10. Texture Info Ambient Color
                 cur_texture.texture_properties.ambient_color = read_vec3(&buffer, &mut pos);
-                // 10. Texture Info Diffuse Color
+                // 11. Texture Info Diffuse Color
                 cur_texture.texture_properties.diffuse_color = read_vec3(&buffer, &mut pos);
-                // 11. Texture Info Specular Color
+                // 12. Texture Info Specular Color
                 cur_texture.texture_properties.specular_color = read_vec3(&buffer, &mut pos);
-                // 12. Texture Info Emissive Coeficient
+                // 13. Texture Info Emissive Coeficient
                 cur_texture.texture_properties.emissive_coeficient = read_vec3(&buffer, &mut pos);
-                // 13. Texture Info Transmission FIlter
+                // 14. Texture Info Transmission FIlter
                 cur_texture.texture_properties.transmission_filter = read_vec3(&buffer, &mut pos);
-                // 14. Texture Info Optical Desntiy
+                // 15. Texture Info Optical Desntiy
                 cur_texture.texture_properties.optical_density = read_f32(&buffer, &mut pos);
-                // 15. Texture Info Dissolve
+                // 16. Texture Info Dissolve
                 cur_texture.texture_properties.dissolve = read_f32(&buffer, &mut pos);
-                // 16. Texture Info Specular Highlights
+                // 17. Texture Info Specular Highlights
                 cur_texture.texture_properties.specular_highlights = read_f32(&buffer, &mut pos);
-                // 17. Texture Info Illum
+                // 18. Texture Info Illum
                 cur_texture.texture_properties.illum = read_i32(&buffer, &mut pos);
-                // 18. Texture Info Image Size
+                // 19. Texture Info Image Size
                 let img_size = read_usize(&buffer, &mut pos);
-                // 19. Texture Image Byte Data (If Image Exist)
+                // 20. Texture Image Byte Data (If Image Exist)
                 if img_size > 0 {
                     let img_bytes = read_to_array(&buffer, pos, img_size);
                     pos += img_size;
@@ -144,50 +157,45 @@ impl World {
                 }
                 cur_model.textures.push(cur_texture);
             }
-            // 20. Count of Vertices
+            // 21. Count of Vertices
             let vertices_cnt = read_usize(&buffer, &mut pos);
             for i in 0..vertices_cnt {
-                // 21. Vertices
+                // 22. Vertices
                 let mut vert = read_vec3(&buffer, &mut pos);
-                let scale = 0.007;
-                vert[0] = vert[0]*scale;
-                vert[1] = vert[1]*scale;
-                vert[2] = vert[2]*scale;
-                //vertices.push( vec![vert[0]*0.2, vert[1]*0.2, vert[2]*0.2] );
                 vertices.push(vert);
             }
-            // 22. Count of Texture Mappings
+            // 23. Count of Texture Mappings
             let texture_maps_cnt = read_usize(&buffer, &mut pos);
             for i in 0..texture_maps_cnt {
-                // 23. Texture Mappings
+                // 24. Texture Mappings
                 texture_maps.push(read_vec2(&buffer, &mut pos));
             }
-            // 24. Count of Normals
+            // 25. Count of Normals
             let normals_cnt = read_usize(&buffer, &mut pos);
             for i in 0..normals_cnt {
-                // 25. Normals
+                // 26. Normals
                 normals.push(read_vec3(&buffer, &mut pos));
             }
-            // 26. Count of Face Partitions
+            // 27. Count of Face Partitions
             let face_partitions_cnt = read_usize(&buffer, &mut pos);
             let mut tmp_face_partitions = vec![];
             for i in 0..face_partitions_cnt {
-                // 27. Count of Faces
+                // 28. Count of Faces
                 let faces_cnt = read_usize(&buffer, &mut pos);
                 let mut texture_buffer = vec![];
                 let mut normal_buffer = vec![];
                 let mut vertex_buffer = vec![];
-                // 28. Texture Info Index
+                // 29. Texture Info Index
                 let texture_info_index = read_usize(&buffer, &mut pos);
                 for j in 0..faces_cnt {
                     for k in 0..3 {
-                        // 29. Face Mode
+                        // 30. Face Mode
                         mode = read_u8(&buffer, &mut pos);
-                        // 30. Face Texture Vertex Index
+                        // 31. Face Texture Vertex Index
                         let texture_vertex_index = read_usize(&buffer, &mut pos);
-                        // 31. Face Texture Map Index
+                        // 32. Face Texture Map Index
                         let texture_map_index = read_usize(&buffer, &mut pos);
-                        // 32. Face Texture Normals Index (if applicable)
+                        // 33. Face Texture Normals Index (if applicable)
                         if mode == 3 {
                             let texture_normals_index = read_usize(&buffer, &mut pos);
                             normal_buffer = normal_buffer.iter().chain(&normals[texture_normals_index]).map(|&x|x).collect::<Vec<f32>>();
@@ -198,7 +206,8 @@ impl World {
                 }
                 let mut face_partition = FacePartitionRender::new(
                     vertex_buffer, normal_buffer, texture_buffer,
-                    texture_info_index, faces_cnt as i32, mode
+                    texture_info_index, faces_cnt as i32, mode,
+                    false
                 );
                 tmp_face_partitions.push(face_partition);
                 // cur_model.face_partitions.push(FacePartitionRender::new(

@@ -345,75 +345,77 @@ impl World {
                 pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
                 // 4. Area's Model Instance Position
                 pos += write_vec3(&mut buffer, &model_instance.position)?;
+                // 5. Area's Model Instance Scale
+                pos += write_add(&mut buffer, &model_instance.scale.to_be_bytes())?;
             }
         }
-        // 5. Count of Model Hash Map
+        // 6. Count of Model Hash Map
         pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
         for (key, value) in self.model_map.iter_mut() {
-            // 6. Model Hash Map Name
+            // 7. Model Hash Map Name
             pos += write_str(&mut buffer, &key.to_string())?;
-            // 7. Count of Texture Info
+            // 8. Count of Texture Info
             pos += write_add(&mut buffer, &value.texture_info.len().to_be_bytes())?;
             for texture_info in value.texture_info.iter_mut() {
-                // 8. Texture Info Name
+                // 9. Texture Info Name
                 pos += write_str(&mut buffer, &texture_info.name)?;
-                // 9. Texture Info Ambient Color
+                // 10. Texture Info Ambient Color
                 pos += write_vec3(&mut buffer, &texture_info.ambient_color)?;
-                // 10. Texture Info Diffuse Color
+                // 11. Texture Info Diffuse Color
                 pos += write_vec3(&mut buffer, &texture_info.diffuse_color)?;
-                // 11. Texture Info Specular Color
+                // 12. Texture Info Specular Color
                 pos += write_vec3(&mut buffer, &texture_info.specular_color)?;
-                // 12. Texture Info Emissive Coeficient
+                // 13. Texture Info Emissive Coeficient
                 pos += write_vec3(&mut buffer, &texture_info.emissive_coeficient)?;
-                // 13. Texture Info Transmission Filter
+                // 14. Texture Info Transmission Filter
                 pos += write_vec3(&mut buffer, &texture_info.transmission_filter)?;
-                // 14. Texture Info Optical Density
+                // 15. Texture Info Optical Density
                 pos += write_add(&mut buffer, &texture_info.optical_density.to_be_bytes())?;
-                // 15. Texture Info Dissolve
+                // 16. Texture Info Dissolve
                 pos += write_add(&mut buffer, &texture_info.dissolve.to_be_bytes())?;
-                // 16. Texture Info Specular Highlights
+                // 17. Texture Info Specular Highlights
                 pos += write_add(&mut buffer, &texture_info.specular_highlights.to_be_bytes())?;
-                // 17. Texture Info Illum
+                // 18. Texture Info Illum
                 pos += write_add(&mut buffer, &texture_info.illum.to_be_bytes())?;
-                // 18. Texture Info Image Size
+                // 19. Texture Info Image Size
                 pos += write_add(&mut buffer, &texture_info.img.len().to_be_bytes())?;
-                // 19. Texture Info Image Byte Data
+                // 20. Texture Info Image Byte Data
                 pos += write_add(&mut buffer, &texture_info.img)?;
             }
-            // 20. Count of Vertices
+            // 21. Count of Vertices
             pos += write_add(&mut buffer, &value.vertices.len().to_be_bytes())?;
             for vertices in value.vertices.iter_mut() {
-                // 21. Vertices
+                // 22. Vertices
                 pos += write_vec3(&mut buffer, &vertices)?;
             }
-            // 22. Count of Texture Mappings
+            // 23. Count of Texture Mappings
             pos += write_add(&mut buffer, &value.texture_mappings.len().to_be_bytes())?;
             for texture_mappings in value.texture_mappings.iter_mut() {
-                // 23. Texture Mappings
+                // 24. Texture Mappings
                 pos += write_vec2(&mut buffer, &texture_mappings)?;
             }
-            // 24. Count of Normals
+            // 25. Count of Normals
             pos += write_add(&mut buffer, &value.normals.len().to_be_bytes())?;
             for normals in value.normals.iter_mut() {
-                // 25. Normals
+                // 26. Normals
                 pos += write_vec3(&mut buffer, &normals)?;
             }
-            // 26. Count of face partitions
+            // 27. Count of face partitions
             pos += write_add(&mut buffer, &value.faces.len().to_be_bytes())?;
             for face_partitions in value.faces.iter_mut() {
-                // 27. Count of faces in face partitions
+                // 28. Count of faces in face partitions
                 pos += write_add(&mut buffer, &face_partitions.faces.len().to_be_bytes())?;
-                // 28. Texture Info Index of Partition
+                // 29. Texture Info Index of Partition
                 pos + write_add(&mut buffer, &face_partitions.texture_info_index.to_be_bytes())?;
                 for face in face_partitions.faces.iter_mut() {
                     for i in 0..3 {
-                        // 29. Face Mode
+                        // 30. Face Mode
                         pos += write_add(&mut buffer, &[face[i].mode])?;
-                        // 30. Face Texture Vertex Index
+                        // 31. Face Texture Vertex Index
                         pos += write_add(&mut buffer, &face[i].vertex_index.to_be_bytes())?;
-                        // 31. Face Texture Map Index
+                        // 32. Face Texture Map Index
                         pos += write_add(&mut buffer, &face[i].texture_map_index.to_be_bytes())?;
-                        // 32. Face Texture Normals Index (If Applicable)
+                        // 33. Face Texture Normals Index (If Applicable)
                         if face[i].mode == 3 {
                             pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
                         }

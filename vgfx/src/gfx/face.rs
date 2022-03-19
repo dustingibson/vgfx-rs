@@ -25,7 +25,7 @@ pub struct FacePartitionRender {
 
 impl FacePartitionRender {
 
-    pub fn new(vertex_buffer: Vec<GLfloat>, normal_buffer: Vec<GLfloat>, texture_buffer: Vec<GLfloat>, texture_index: usize, length: i32, mode: u8) -> Self {
+    pub fn new(vertex_buffer: Vec<GLfloat>, normal_buffer: Vec<GLfloat>, texture_buffer: Vec<GLfloat>, texture_index: usize, length: i32, mode: u8, init_gl: bool) -> Self {
         let mut partition = FacePartitionRender {
             texture_index: texture_index,
             vertex_buffer: vertex_buffer,
@@ -37,7 +37,9 @@ impl FacePartitionRender {
             length: length,
             mode: mode
         };
-        partition.initGL();
+        if init_gl {
+            partition.initGL();
+        }
         return partition;
     }
 

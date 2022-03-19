@@ -3,7 +3,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize)]
 pub struct ModelInstance {
     pub model_name: String,
-    pub position: Vec<f32>
+    pub position: Vec<f32>,
+    pub scale: f32
 }
 
 #[derive(Serialize, Deserialize)]

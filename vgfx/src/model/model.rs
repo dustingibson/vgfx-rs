@@ -13,6 +13,7 @@ use crate::gfx::texture::Texture;
 pub struct ModelInstance {
     pub model_name: String,
     pub position: glm::Vec3,
+    pub scale: f32,
     pub face_partitions: Vec<FacePartitionRender>
 }
 
@@ -51,11 +52,12 @@ impl Model {
 }
 
 impl ModelInstance {
-    pub fn new(name: String, position: glm::Vec3) -> Self {
+    pub fn new(name: String, position: glm::Vec3, scale: f32) -> Self {
         return ModelInstance {
             model_name: name.to_string(),
             position: position,
-            face_partitions: vec![]
+            face_partitions: vec![],
+            scale: scale
         };
     }
 
