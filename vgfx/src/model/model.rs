@@ -49,3 +49,25 @@ impl Model {
         }
     }
 }
+
+impl ModelInstance {
+    pub fn new(name: String, position: glm::Vec3) -> Self {
+        return ModelInstance {
+            model_name: name.to_string(),
+            position: position,
+            face_partitions: vec![]
+        };
+    }
+
+    pub fn draw(&mut self, shader: &mut Shader, textures: &mut Vec<Texture>) {
+        for face_partition in self.face_partitions.iter_mut() {
+            face_partition.draw(shader, &mut self.position, &mut textures[face_partition.texture_index]);
+        }
+    }
+
+    pub fn clean_up(&mut self) {
+        for face_partition in self.face_partitions.iter_mut() {
+            face_partition.clean_up();
+        }
+    }
+}

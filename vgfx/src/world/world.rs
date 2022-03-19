@@ -44,17 +44,28 @@ impl World {
         for area in self.areas.iter_mut() {
             for model_instance in area.model_instances.iter_mut() {
                 let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-                model.draw(shader, &mut model_instance.position);
+                model_instance.draw(shader, & mut model.textures);
+                //model.draw(shader, &mut model_instance.position);
             }
         }
     }
     
-    pub fn clean_up(&mut self) {
+    pub fn clean_up(&mut self,) {
         // TODO: Replace with renderer data structure
         for area in self.areas.iter_mut() {
             for model_instance in area.model_instances.iter_mut() {
                 let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
                 model.clean_up();
+            }
+        }
+    }
+
+    pub fn add_partition(&mut self, areas: &mut Vec<AreaInstance>, model_name: String, face_partitions: Vec<FacePartitionRender>) {
+        for area in areas.iter_mut() {
+            for model_instance in area.model_instances.iter_mut() {
+                if model_instance.model_name == model_name {
+                    model_instance.face_partitions = face_partitions.to_owned();
+                }
             }
         }
     }
@@ -78,11 +89,12 @@ impl World {
                 let model_instance_name = read_str(&buffer, &mut pos);
                 // 4. Area's Model Instance Position
                 let model_instance_pos = read_vec3(&buffer, &mut pos);
-                cur_model_instance.push(ModelInstance{ 
-                    model_name: model_instance_name,
+                let mut new_model_instance = ModelInstance{ 
+                    model_name: model_instance_name.to_string(),
                     position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
                     face_partitions: vec![]
-                });
+                };
+                cur_model_instance.push(new_model_instance);
             }
             world.areas.push(AreaInstance { model_instances: cur_model_instance });
         }
@@ -158,6 +170,7 @@ impl World {
             }
             // 26. Count of Face Partitions
             let face_partitions_cnt = read_usize(&buffer, &mut pos);
+            let mut tmp_face_partitions = vec![];
             for i in 0..face_partitions_cnt {
                 // 27. Count of Faces
                 let faces_cnt = read_usize(&buffer, &mut pos);
@@ -183,11 +196,17 @@ impl World {
                         vertex_buffer = vertex_buffer.iter().chain(&vertices[texture_vertex_index]).map(|&x|x).collect::<Vec<f32>>();
                     }
                 }
-                cur_model.face_partitions.push(FacePartitionRender::new(
+                let mut face_partition = FacePartitionRender::new(
                     vertex_buffer, normal_buffer, texture_buffer,
                     texture_info_index, faces_cnt as i32, mode
-                ));
+                );
+                tmp_face_partitions.push(face_partition);
+                // cur_model.face_partitions.push(FacePartitionRender::new(
+                //     vertex_buffer, normal_buffer, texture_buffer,
+                //     texture_info_index, faces_cnt as i32, mode
+                // ));
             }
+            self.add_partition( &mut world.areas, cur_model.name.to_string(), tmp_face_partitions);
             world.model_map.insert(cur_model.name.to_string(), cur_model);
         }
         Ok(world)
