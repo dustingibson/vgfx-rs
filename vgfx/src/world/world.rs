@@ -17,7 +17,7 @@ use std::convert::TryInto;
 pub struct World {
     base_folder: String,
     model_map: HashMap<String, Model>,
-    areas: Vec<AreaInstance>,
+    model_instances: Vec<ModelInstance>,
     oct_tree: OctTree<ModelInstance>
 }
 
@@ -27,7 +27,7 @@ impl World {
         let mut world = World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
-            areas: Vec::new(),
+            model_instances: vec![],
             oct_tree: OctTree::new()
         };
         return world;
@@ -37,40 +37,51 @@ impl World {
         let mut world = World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
-            areas: Vec::new(),
+            model_instances: vec![],
             oct_tree: OctTree::new()
         };
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
     pub fn draw(&mut self, shader: &mut Shader) {
-        // TODO: Replace with renderer data structure
-        for area in self.areas.iter_mut() {
-            for model_instance in area.model_instances.iter_mut() {
-                let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-                model_instance.draw(shader, & mut model.textures);
-                //model.draw(shader, &mut model_instance.position);
-            }
+        let mut cur_instances: Vec<ModelInstance> = vec![];
+        //TODO: Make values relative to camera
+        self.oct_tree.get_items_from_range(&mut cur_instances, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0);
+        for model_instance in cur_instances.iter_mut() {
+            let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
+            model_instance.draw(shader, & mut model.textures);
+            // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
+            self.oct_tree.insert_item(model_instance.to_owned(), model_instance.position[0], model_instance.position[1], model_instance.position[2])
         }
     }
     
-    pub fn clean_up(&mut self,) {
-        // TODO: Replace with renderer data structure
-        for area in self.areas.iter_mut() {
-            for model_instance in area.model_instances.iter_mut() {
-                let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-                model.clean_up();
-            }
+    pub fn clean_up(&mut self) {
+        let mut all_instances: Vec<ModelInstance> = vec![];
+        self.oct_tree.get_all_items(&mut all_instances);
+        for model_instance in all_instances.iter_mut() {
+            let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
+            model.clean_up();
+            model_instance.clean_up();
         }
     }
 
-    pub fn add_partition(&mut self, areas: &mut Vec<AreaInstance>, model_name: String, face_partitions: Vec<FacePartitionRender>) {
-        for area in areas.iter_mut() {
-            for model_instance in area.model_instances.iter_mut() {
-                if model_instance.model_name == model_name {
-                    model_instance.face_partitions = face_partitions.to_owned();
-                    self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
-                }
+    pub fn add_partition(&mut self, model_instances: &mut OctTree<ModelInstance>, model_name: String, face_partitions: Vec<FacePartitionRender>) {
+        let mut all_instances: Vec<ModelInstance> = vec![];
+        model_instances.get_all_items( &mut all_instances);
+        for model_instance in all_instances.iter_mut() {
+            if model_instance.model_name == model_name {
+                model_instance.face_partitions = face_partitions.to_owned();
+                self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
+            }
+            model_instances.insert_item(model_instance.to_owned(), model_instance.position[0], model_instance.position[1], model_instance.position[2])
+        }
+    }
+
+    pub fn add_partition2(&mut self, model_instances: &mut Vec<ModelInstance>, model_name: String, face_partitions: Vec<FacePartitionRender>) {
+        for model_instance in model_instances.iter_mut() {
+            if model_instance.model_name == model_name {
+                model_instance.face_partitions = face_partitions.to_owned();
+                self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
             }
         }
     }
@@ -95,7 +106,7 @@ impl World {
         // 1. Count of Areas
         let num_areas = read_usize(&buffer, &mut pos);
         for i in 0..num_areas {
-            let mut cur_model_instance = vec![];
+            let mut cur_model_instance: Vec<ModelInstance> = vec![];
             // 2. Count of Area Model Instances
             let num_model_instances = read_usize(&buffer, &mut pos);
             for j in 0..num_model_instances {
@@ -111,9 +122,10 @@ impl World {
                     face_partitions: vec![],
                     scale: model_instance_scale
                 };
-                cur_model_instance.push(new_model_instance);
+                //world.model_instances.push(new_model_instance);
+                world.oct_tree.insert_item(new_model_instance, model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]);
             }
-            world.areas.push(AreaInstance { model_instances: cur_model_instance });
+            //world.areas.push(AreaInstance { model_instances: cur_model_instance });
         }
         // 6. Count of Model Hash Map
         let hash_map_cnt = read_usize(&buffer, &mut pos);
@@ -219,7 +231,8 @@ impl World {
                 //     texture_info_index, faces_cnt as i32, mode
                 // ));
             }
-            self.add_partition( &mut world.areas, cur_model.name.to_string(), tmp_face_partitions);
+            //self.add_partition2( &mut world.model_instances, cur_model.name.to_string(), tmp_face_partitions);
+            self.add_partition( &mut world.oct_tree, cur_model.name.to_string(), tmp_face_partitions);
             world.model_map.insert(cur_model.name.to_string(), cur_model);
         }
         Ok(world)

@@ -1,10 +1,11 @@
-const DEPTH_SIZE: u32 = 6;
-const MAX_SIZE: f32 = 50000.0;
+const DEPTH_SIZE: u32 = 3;
+const MAX_SIZE: f32 = 1000.0;
 
 pub struct OctTree<T> {
     root: CubeTree<T>,
     max_depth: u32,
-    max_size: f32
+    max_size: f32,
+    cnt: u32
 }
 
 struct CubeSet {
@@ -43,16 +44,23 @@ impl<T> OctTree<T> {
         return OctTree { 
             root: CubeTree::new(0.0, 0.0, 0.0, MAX_SIZE, MAX_SIZE, MAX_SIZE, 0, DEPTH_SIZE),
             max_depth: DEPTH_SIZE,
-            max_size: MAX_SIZE
+            max_size: MAX_SIZE,
+            cnt: 0
          }
     }
 
     pub fn insert_item(&mut self, payload: T, x: f32, y: f32, z: f32) {
         self.root.insert_payload(payload, x, y, z);
+        self.cnt += 1;
     }
 
     pub fn get_items_from_range(&mut self, out_payload: &mut Vec<T>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
         return self.root.get_range(out_payload, x1, y1, z1, x2, y2, z2);
+    }
+
+    pub fn get_all_items(&mut self, out_payload: &mut Vec<T>) {
+        // TODO: Can we do this by storing vector pointers somewhere instead of climbing tree?
+        return self.root.get_range(out_payload, 0.0, 0.0, 0.0, self.max_size, self.max_size, self.max_size);
     }
 
 }
@@ -197,14 +205,14 @@ impl<T> CubeTree<T> {
         }
     }
 
-    pub fn get_range( &mut self, payload_vec: &mut Vec<T>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
+    pub fn get_range( &mut self, payload_vec:  &mut Vec<T>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
         if self.is_leaf() {
             match self.payload {
-                Some(ref mut cur_payload_vec) => {
-                    //let mut unroll_payload = vec![];
-                    //unroll_payload =  unroll_payload.iter().chain(&cur_payload_vec).map(|&x|x).collect();
+                Some( ref mut cur_payload_vec) => {    
+                    // TODO: append swaps references self.payload will be emptied
+                    // Need to prevent this without borrow checker complaining
                     payload_vec.append(cur_payload_vec);
-                }
+                },
                 None => {}
             }
             return;
