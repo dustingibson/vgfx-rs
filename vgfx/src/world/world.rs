@@ -6,6 +6,7 @@ use crate::Texture;
 use crate::geo::texture_polygon::TexturePolygon;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::shader::Shader;
+use crate::utils::octo::OctTree;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
@@ -16,7 +17,8 @@ use std::convert::TryInto;
 pub struct World {
     base_folder: String,
     model_map: HashMap<String, Model>,
-    areas: Vec<AreaInstance>
+    areas: Vec<AreaInstance>,
+    oct_tree: OctTree<ModelInstance>
 }
 
 impl World {
@@ -25,7 +27,8 @@ impl World {
         let mut world = World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
-            areas: Vec::new()
+            areas: Vec::new(),
+            oct_tree: OctTree::new()
         };
         return world;
     }
@@ -34,7 +37,8 @@ impl World {
         let mut world = World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
-            areas: Vec::new()
+            areas: Vec::new(),
+            oct_tree: OctTree::new()
         };
         return world.load(sdl_context, "res".to_string()).unwrap();
     }

@@ -27,6 +27,7 @@ use dep::events::SDLContext;
 use utils::bfile::BFile;
 use utils::state::SwitchState;
 use utils::vec_ops::VecOps;
+use utils::octo::OctTree;
 use std::env;
 
 
