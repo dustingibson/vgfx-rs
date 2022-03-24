@@ -1,4 +1,4 @@
-const DEPTH_SIZE: u32 = 3;
+const DEPTH_SIZE: u32 = 5;
 const MAX_SIZE: f32 = 1000.0;
 
 pub struct OctTree<T> {
@@ -225,6 +225,8 @@ impl<T> CubeTree<T> {
         let pos6 = self.get_pos_from_point(x2, y1, z2);
         let pos7 = self.get_pos_from_point(x2, y2, z1);
         let pos8 = self.get_pos_from_point(x2, y2, z2);
+
+        //println!("{}", pos8);
 
         self.recurse_by_pos(payload_vec, pos1, x1, y1, z1, x2, y2, z2);
         self.recurse_by_pos(payload_vec, pos2, x1, y1, z1, x2, y2, z2);

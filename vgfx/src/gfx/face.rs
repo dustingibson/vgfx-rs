@@ -18,6 +18,7 @@ pub struct FacePartitionRender {
     pub vertex_buffer_id: GLuint,
     pub normal_buffer_id: GLuint,
     pub texture_buffer_id: GLuint,
+    pub vao: GLuint,
     pub length: i32,
     pub texture_index: usize,
     pub mode: u8
@@ -34,6 +35,7 @@ impl FacePartitionRender {
             vertex_buffer_id: 0,
             texture_buffer_id: 0,
             normal_buffer_id: 0,
+            vao: 0,
             length: length,
             mode: mode
         };
@@ -44,6 +46,9 @@ impl FacePartitionRender {
     }
 
     pub fn initGL(&mut self) {
+        unsafe {
+            gl::GenVertexArrays(1, &mut self.vao);
+        }
         unsafe {
             gl::GenBuffers(1, &mut self.vertex_buffer_id);
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer_id);
@@ -88,6 +93,7 @@ impl FacePartitionRender {
 
     pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3, texture: &mut Texture) {
         unsafe {
+            gl::BindVertexArray(self.vao);
             //let ambient_color = &texture.texture_properties.ambient_color;
 
             gl::ActiveTexture(gl::TEXTURE0);
@@ -116,11 +122,12 @@ impl FacePartitionRender {
             gl::BindBuffer(gl::ARRAY_BUFFER, self.texture_buffer_id);
             gl::VertexAttribPointer(2, 2, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());
 
-            gl::DrawArrays(gl::TRIANGLES, 0, self.length*9);
+            gl::DrawArrays(gl::TRIANGLES, 0, self.length*3);
 
             gl::DisableVertexAttribArray(0);
             gl::DisableVertexAttribArray(1);
             gl::DisableVertexAttribArray(2);
+            gl::EnableVertexAttribArray(0);
         }
     }
 

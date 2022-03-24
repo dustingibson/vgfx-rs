@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File, DirEntry};
 use std::io;
+use crate::Camera;
 extern crate nalgebra_glm as glm;
 use std::convert::TryInto;
 
@@ -43,10 +44,11 @@ impl World {
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
-    pub fn draw(&mut self, shader: &mut Shader) {
+    pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {
+        let mut range: f32 = 500.0;
         let mut cur_instances: Vec<ModelInstance> = vec![];
         //TODO: Make values relative to camera
-        self.oct_tree.get_items_from_range(&mut cur_instances, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0);
+        self.oct_tree.get_items_from_range(&mut cur_instances, camera.position.x - range, camera.position.y - range, camera.position.z - range, camera.position.x + range, camera.position.y + range, camera.position.z + range);
         for model_instance in cur_instances.iter_mut() {
             let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
             model_instance.draw(shader, & mut model.textures);

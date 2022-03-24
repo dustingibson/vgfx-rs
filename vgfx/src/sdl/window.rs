@@ -38,19 +38,22 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     
 
     let window = video_subsystem.window("rust-gl demo", WIDTH, HEIGHT)
-        .opengl()
         .position_centered()
+        .opengl()
         .build()
         .unwrap();
 
+
     gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
-
-
-    let _gl_context = window.gl_create_context().unwrap();
+    let mut canvas = window.into_canvas()
+        .index(find_sdl_gl_driver().unwrap())
+        .build()
+        .unwrap();
+    //let _gl_context = canvas.window().gl_create_context().unwrap();
     let _gl = gl::load_with(|s| video_subsystem.gl_get_proc_address(s) as *const std::os::raw::c_void);
+    canvas.window().gl_set_context_to_current();
 
     unsafe {
-        //gl::Viewport(0, 0, 1920, 1080);
         gl::ClearColor(0.0, 0.0, 0.4, 0.0);
         gl::Enable(gl::BLEND);
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
@@ -60,12 +63,6 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let mut sdl_timer = sdl_context.timer()?;
 
-    //Vertex array ID
-    let mut vertex_array_id: GLuint = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vertex_array_id);
-        gl::BindVertexArray(vertex_array_id);
-    }
     let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
 
     let mut shader_container: ShaderContainer = ShaderContainer::new();
@@ -82,6 +79,8 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let mut offset_mouse_x: i32 = 0;
     let mut offset_mouse_y: i32 = 0;
+
+
 
     'running: loop {
         start_ticks = sdl_timer.ticks();
@@ -128,15 +127,15 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
                 demo.run(&mut camera, &mut shader_container);
             }
         }
-        window.gl_swap_window();
+        //canvas.window().gl_swap_window();
+        canvas.present();
+
         delta_time = sdl_timer.ticks() - start_ticks;
         sleep_time = if (target_ms - delta_time as f32) < 0.0 {0} else { (target_ms - delta_time as f32) as u64};
         ::std::thread::sleep(Duration::from_millis(sleep_time));
     }
-
     //Clean up
     demo.clean_up();
-    unsafe{ gl::DeleteVertexArrays(1, &vertex_array_id); }
     shader_container.clean_up();
 
     Ok(())

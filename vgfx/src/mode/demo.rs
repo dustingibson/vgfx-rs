@@ -23,28 +23,21 @@ pub struct Demo {
 
 impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let mut texture_polygons: Vec<TexturePolygon> = vec![];
-        let light_pos = glm::vec3(5.0, 5.0, 5.0);
-        //let mut text: Text = Text::new( sdl_payload, "Test".to_string(), glm::vec3(0.0,0.0,0.0) );
         let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
         return Demo {
             world: World::new_load(sdl_payload),
-            // plane: Plane::new( glm::vec3(0.0,0.0,0.0), glm::vec4(0.0,1.0,0.0, 1.0), 10.0, 10.0),
             label: label
         };
     }
 
     pub fn draw(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
-        //self.plane.draw(&mut shader_container.get_shader("fragment".to_string()));
-        self.world.draw(&mut shader_container.get_shader("fragment".to_string()));
-        //self.model.draw(&mut shader_container.get_shader("fragment".to_string()));
+        self.world.draw(&mut shader_container.get_shader("fragment".to_string()), camera);
         self.draw_hud(camera, shader_container);
-        //self.label.draw(camera, &mut shader_container.get_shader("fragment".to_string()));
     }
 
     pub fn clean_up(&mut self) {
-        //self.plane.clean_up();
+        self.label.clean_up();
         self.world.clean_up();
     }
 

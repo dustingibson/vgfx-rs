@@ -22,12 +22,12 @@ impl ShaderContainer {
         let mut all_shaders = HashMap::new();
 
         let mut fragment_shader = Shader::new("fragment".to_string());
-        let mut color_shader = Shader::new("color".to_string());
+        //let mut color_shader = Shader::new("color".to_string());
         fragment_shader.add_uniform("lightPos".to_string());
         fragment_shader.add_uniform("textureSample".to_string());
         fragment_shader.add_uniform("textured".to_string());
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
-        all_shaders.insert("color".to_string(), color_shader.clone());
+        //all_shaders.insert("color".to_string(), color_shader.clone());
         //all_shaders.insert("textureSample".to_string(), Shader::new("textureSample".to_string()));
         return ShaderContainer {
             shaders: all_shaders,
