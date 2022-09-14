@@ -51,5 +51,8 @@ impl Demo {
         camera.set_projection(shader);
     }
 
+    pub fn draw_debug(&mut self, sdl_payload: &mut SDLContext) {
+        
+    }
 
 }

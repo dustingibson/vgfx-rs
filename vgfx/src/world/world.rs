@@ -1,11 +1,15 @@
+use gl::TextureBuffer;
+
 use crate::Model;
 use crate::AreaInstance;
 use crate::ModelInstance;
 use crate::dep::events::SDLContext;
 use crate::Texture;
 use crate::geo::texture_polygon::TexturePolygon;
+use crate::gfx::face;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::shader::Shader;
+use crate::gfx::texture_group::TextureGroupRenderer;
 use crate::utils::octo::OctTree;
 use std::collections::HashMap;
 use std::io::prelude::*;
@@ -14,12 +18,15 @@ use std::io;
 use crate::Camera;
 extern crate nalgebra_glm as glm;
 use std::convert::TryInto;
+use std::time::Instant;
+
 
 pub struct World {
     base_folder: String,
     model_map: HashMap<String, Model>,
     model_instances: Vec<ModelInstance>,
-    oct_tree: OctTree<ModelInstance>
+    oct_tree: OctTree<ModelInstance>,
+    texture_group: HashMap<String, TextureGroupRenderer>
 }
 
 impl World {
@@ -29,7 +36,8 @@ impl World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
             model_instances: vec![],
-            oct_tree: OctTree::new()
+            oct_tree: OctTree::new(),
+            texture_group: HashMap::new()
         };
         return world;
     }
@@ -39,65 +47,76 @@ impl World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
             model_instances: vec![],
-            oct_tree: OctTree::new()
+            oct_tree: OctTree::new(),
+            texture_group: HashMap::new()
         };
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
     pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {
-        let mut range: f32 = 500.0;
-        let mut cur_instances: Vec<ModelInstance> = vec![];
+        let mut range: f32 = 5000.0;
+        let mut cur_instances: Vec<Box<ModelInstance>> = vec![];
         //TODO: Make values relative to camera
         self.oct_tree.get_items_from_range(&mut cur_instances, camera.position.x - range, camera.position.y - range, camera.position.z - range, camera.position.x + range, camera.position.y + range, camera.position.z + range);
+        //self.oct_tree.get_all_items(& mut cur_instances);
+        let now = Instant::now();
+
         for model_instance in cur_instances.iter_mut() {
+            
+            //UNCOMMENT TO DRAW
             let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-            model_instance.draw(shader, & mut model.textures);
+            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]));
+            
             // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
-            self.oct_tree.insert_item(model_instance.to_owned(), model_instance.position[0], model_instance.position[1], model_instance.position[2])
+            self.oct_tree.insert_item(model_instance.clone(), model_instance.position[0], model_instance.position[1], model_instance.position[2]);
         }
+
+
+
+        // for (key, value) in self.texture_group.iter_mut() {
+        //     value.draw(shader, &mut glm::Vec3::new(1.0, 1.0, 1.0));
+        // }
+
+        let elapsed = now.elapsed();
+        //println!("Elapsed 1: {:.2?}", elapsed);
     }
     
     pub fn clean_up(&mut self) {
-        let mut all_instances: Vec<ModelInstance> = vec![];
-        self.oct_tree.get_all_items(&mut all_instances);
-        for model_instance in all_instances.iter_mut() {
-            let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-            model.clean_up();
-            model_instance.clean_up();
-        }
+        // let mut all_instances: Vec<ModelInstance> = vec![];
+        // self.oct_tree.get_all_items(&mut all_instances);
+        // for model_instance in all_instances.iter_mut() {
+        //     let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
+        //     model.clean_up();
+        //     model_instance.clean_up();
+        // }
     }
 
     pub fn add_partition(&mut self, model_instances: &mut OctTree<ModelInstance>, model_name: String, face_partitions: Vec<FacePartitionRender>) {
-        let mut all_instances: Vec<ModelInstance> = vec![];
-        model_instances.get_all_items( &mut all_instances);
-        for model_instance in all_instances.iter_mut() {
-            if model_instance.model_name == model_name {
-                model_instance.face_partitions = face_partitions.to_owned();
-                self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
-            }
-            model_instances.insert_item(model_instance.to_owned(), model_instance.position[0], model_instance.position[1], model_instance.position[2])
-        }
-    }
 
-    pub fn add_partition2(&mut self, model_instances: &mut Vec<ModelInstance>, model_name: String, face_partitions: Vec<FacePartitionRender>) {
-        for model_instance in model_instances.iter_mut() {
-            if model_instance.model_name == model_name {
-                model_instance.face_partitions = face_partitions.to_owned();
-                self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
-            }
-        }
+        self.model_map.get_mut(&model_name.to_string()).unwrap().face_partitions = face_partitions;
+        // let mut all_instances: Vec<Box<ModelInstance>> = vec![];
+        // model_instances.get_all_items( &mut all_instances);
+        // for model_instance in all_instances.iter_mut() {
+        //     if model_instance.model_name == model_name {
+        //         model_instance.face_partitions = face_partitions.to_owned();
+        //         self.scale_vec(& mut model_instance.face_partitions, model_instance.scale);
+        //     }
+        //     model_instances.insert_item(model_instance.to_owned(), model_instance.position[0], model_instance.position[1], model_instance.position[2])
+        // }
     }
 
     pub fn scale_vec(&mut self, partitions: &mut Vec<FacePartitionRender>, scale: f32) {
-        for partition in partitions.iter_mut() {
-            for vertex in partition.vertex_buffer.iter_mut() {
-                *vertex = scale * *vertex;
-            }
-            partition.initGL();
-        }
+        // for partition in partitions.iter_mut() {
+        //     for vertex in partition.vertex_buffer.iter_mut() {
+        //         *vertex = scale * *vertex;
+        //     }
+        //     partition.initGL();
+        // }
     }
 
     pub fn load(&mut self, sdl_context: &mut SDLContext, base_folder: String) -> io::Result<World> {
+        println!("Start Loading!");
+
         let mut world = World::new();
         let world_file = [base_folder.to_string(),"/world.pak".to_string()].join("");
         let mut file = File::open(world_file)?;
@@ -121,11 +140,10 @@ impl World {
                 let mut new_model_instance = ModelInstance{ 
                     model_name: model_instance_name.to_string(),
                     position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
-                    face_partitions: vec![],
                     scale: model_instance_scale
                 };
                 //world.model_instances.push(new_model_instance);
-                world.oct_tree.insert_item(new_model_instance, model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]);
+                world.oct_tree.insert_item(Box::new(new_model_instance), model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]);
             }
             //world.areas.push(AreaInstance { model_instances: cur_model_instance });
         }
@@ -173,7 +191,9 @@ impl World {
                     pos += img_size;
                     cur_texture.createTextureBufferFromByteData(&img_bytes);
                 }
-                cur_model.textures.push(cur_texture);
+                let mode = if img_size > 0  { 3 } else { 2 };
+                cur_model.textures.push(cur_texture.clone());
+                world.texture_group.insert(cur_texture.name.to_string(), TextureGroupRenderer::new(cur_texture) );
             }
             // 21. Count of Vertices
             let vertices_cnt = read_usize(&buffer, &mut pos);
@@ -225,7 +245,7 @@ impl World {
                 let mut face_partition = FacePartitionRender::new(
                     vertex_buffer, normal_buffer, texture_buffer,
                     texture_info_index, faces_cnt as i32, mode,
-                    false
+                    true
                 );
                 tmp_face_partitions.push(face_partition);
                 // cur_model.face_partitions.push(FacePartitionRender::new(
@@ -234,9 +254,11 @@ impl World {
                 // ));
             }
             //self.add_partition2( &mut world.model_instances, cur_model.name.to_string(), tmp_face_partitions);
-            self.add_partition( &mut world.oct_tree, cur_model.name.to_string(), tmp_face_partitions);
+            cur_model.face_partitions = tmp_face_partitions;
             world.model_map.insert(cur_model.name.to_string(), cur_model);
+            //self.add_partition( &mut world.oct_tree, cur_model.name.to_string(), tmp_face_partitions);
         }
+        println!("Completed Loading!");
         Ok(world)
     }
 }

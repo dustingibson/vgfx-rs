@@ -9,12 +9,10 @@ use crate::dep::events::SDLContext;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::texture::Texture;
 #[derive(Clone)]
-
 pub struct ModelInstance {
     pub model_name: String,
     pub position: glm::Vec3,
-    pub scale: f32,
-    pub face_partitions: Vec<FacePartitionRender>
+    pub scale: f32
 }
 
 pub struct AreaInstance {
@@ -56,20 +54,7 @@ impl ModelInstance {
         return ModelInstance {
             model_name: name.to_string(),
             position: position,
-            face_partitions: vec![],
             scale: scale
         };
-    }
-
-    pub fn draw(&mut self, shader: &mut Shader, textures: &mut Vec<Texture>) {
-        for face_partition in self.face_partitions.iter_mut() {
-            face_partition.draw(shader, &mut self.position, &mut textures[face_partition.texture_index]);
-        }
-    }
-
-    pub fn clean_up(&mut self) {
-        for face_partition in self.face_partitions.iter_mut() {
-            face_partition.clean_up();
-        }
     }
 }

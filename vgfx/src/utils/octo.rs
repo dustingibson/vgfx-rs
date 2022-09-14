@@ -1,11 +1,27 @@
+use std::clone;
+use std::rc::Rc;
+
+
 const DEPTH_SIZE: u32 = 5;
-const MAX_SIZE: f32 = 1000.0;
+const MAX_SIZE: f32 = 50000.0;
 
 pub struct OctTree<T> {
     root: CubeTree<T>,
     max_depth: u32,
     max_size: f32,
     cnt: u32
+}
+
+enum CubePosition {
+    None,
+    TopLeftFront,
+    TopLeftBack,
+    TopRightFront,
+    TopRightBack,
+    BotLeftFront,
+    BotLeftBack,
+    BotRightFront,
+    BotRightBack
 }
 
 struct CubeSet {
@@ -35,10 +51,10 @@ struct CubeTree<T> {
     z1: f32,
     z2: f32,
     
-    payload: Option<Vec<T>>
+    payload: Option<Vec<Box<T>>>
 }
 
-impl<T> OctTree<T> {
+impl<T> OctTree<T> where T: Clone {
 
     pub fn new() -> Self {
         return OctTree { 
@@ -49,16 +65,21 @@ impl<T> OctTree<T> {
          }
     }
 
-    pub fn insert_item(&mut self, payload: T, x: f32, y: f32, z: f32) {
-        self.root.insert_payload(payload, x, y, z);
-        self.cnt += 1;
+    pub fn insert_item(&mut self, payload: Box<T>, x: f32, y: f32, z: f32) {
+        self.root.insert_payload(payload, x, y, z, &mut 0);
+        //self.cnt += 1;
     }
 
-    pub fn get_items_from_range(&mut self, out_payload: &mut Vec<T>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
+    pub fn insert_item2(&mut self, payload: Box<T>, x: f32, y: f32, z: f32) {
+        self.root.insert_payload2(payload, x, y, z, &mut 0);
+        //self.cnt += 1;
+    }
+
+    pub fn get_items_from_range(&mut self, out_payload: &mut Vec<Box<T>>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
         return self.root.get_range(out_payload, x1, y1, z1, x2, y2, z2);
     }
 
-    pub fn get_all_items(&mut self, out_payload: &mut Vec<T>) {
+    pub fn get_all_items(&mut self, out_payload: &mut Vec<Box<T>>) {
         // TODO: Can we do this by storing vector pointers somewhere instead of climbing tree?
         return self.root.get_range(out_payload, 0.0, 0.0, 0.0, self.max_size, self.max_size, self.max_size);
     }
@@ -85,7 +106,7 @@ impl CubeSet {
     }
 }
 
-impl<T> CubeTree<T> {
+impl<T> CubeTree<T> where T: Clone {
     
     pub fn new( x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32, d: u32, n: u32 ) -> Self {
         let mut new_tree = CubeTree {
@@ -132,8 +153,11 @@ impl<T> CubeTree<T> {
         self.botRightBack = Some( Box::new ( CubeTree::new( mid_x, mid_y, mid_z, self.x2, self.y2, self.z2, dep + 1, n) ));
     }
 
-    pub fn insert_payload(&mut self, payload: T, x: f32, y: f32, z: f32) {
+    pub fn insert_payload(&mut self, payload: Box<T>, x: f32, y: f32, z: f32, d: &mut i32) {
+        *d = *d + 1;
         if self.is_leaf() {
+            //println!("Depth {}", d);
+            //println!("Insert at {} {} {} {} {} {}", self.x1, self.y1, self.z1, self.x2, self.y2, self.z2);
             match self.payload {
                 Some(ref mut payloadvec) => payloadvec.push(payload),
                 None => self.payload = Some(vec![])
@@ -141,62 +165,62 @@ impl<T> CubeTree<T> {
             return;
         }
         let pos = self.get_pos_from_point(x, y, z);
-        let cs = CubeSet::new(self);
+        //let cs = CubeSet::new(self);
         match pos {
 
             // Top Left Front
-            1 => {
+            CubePosition::TopLeftFront => {
                 match self.topLeftFront {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Left Back
-            2 => {
+            CubePosition::TopLeftBack => {
                 match self.topLeftBack {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Right Front
-            3 => {
+            CubePosition::TopRightFront => {
                 match self.topRightFront {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Right Back
-            4 => {
+            CubePosition::TopRightBack => {
                 match self.topRightBack {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             //  Bottom Left Front
-            5 => {
+            CubePosition::BotLeftFront => {
                 match self.botLeftFront {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Left Back
-            6 => {
+            CubePosition::BotLeftBack => {
                 match self.botLeftBack {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Right Front
-            7 => {
-                match self.botLeftFront {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+            CubePosition::BotRightFront => {
+                match self.botRightFront {
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Right Back
-            8 => {
+            CubePosition::BotRightBack => {
                 match self.botRightBack {
-                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z),
+                    Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
@@ -205,13 +229,98 @@ impl<T> CubeTree<T> {
         }
     }
 
-    pub fn get_range( &mut self, payload_vec:  &mut Vec<T>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
+    pub fn insert_payload2(&mut self, payload: Box<T>, x: f32, y: f32, z: f32, d: &mut i32) {
+        *d = *d + 1;
+        if self.is_leaf() {
+            //println!("Depth {}", d);
+            //println!("Insert at {} {} {} {} {} {}", self.x1, self.y1, self.z1, self.x2, self.y2, self.z2);
+            match self.payload {
+                Some(ref mut payloadvec) => {  },
+                None => self.payload = Some(vec![])
+            }
+            return;
+        }
+        let pos = self.get_pos_from_point(x, y, z);
+        //let cs = CubeSet::new(self);
+        match pos {
+
+            // Top Left Front
+            CubePosition::TopLeftFront => {
+                match self.topLeftFront {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Top Left Back
+            CubePosition::TopLeftBack => {
+                match self.topLeftBack {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Top Right Front
+            CubePosition::TopRightFront => {
+                match self.topRightFront {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Top Right Back
+            CubePosition::TopRightBack => {
+                match self.topRightBack {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            //  Bottom Left Front
+            CubePosition::BotLeftFront => {
+                match self.botLeftFront {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Bottom Left Back
+            CubePosition::BotLeftBack => {
+                match self.botLeftBack {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Bottom Right Front
+            CubePosition::BotRightFront => {
+                match self.botRightFront {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Bottom Right Back
+            CubePosition::BotRightBack => {
+                match self.botRightBack {
+                    Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
+                    None => {}
+                }
+            },
+            // Default
+            _ => { panic!("No position exists"); }
+        }
+    }
+
+    pub fn get_range( &mut self, payload_vec:  &mut Vec<Box<T>>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
         if self.is_leaf() {
             match self.payload {
                 Some( ref mut cur_payload_vec) => {    
                     // TODO: append swaps references self.payload will be emptied
-                    // Need to prevent this without borrow checker complaining
+                    // Need to prevent this without borrow checker complaining                    
+                    //payload_vec.extend(cur_payload_vec.clone());
+                     //cur_payload_vec.iter().clone();
+                     //println!("Payload Size {}", cur_payload_vec.len());
+
                     payload_vec.append(cur_payload_vec);
+                    
+                    //println!("Found! {} {} {} {} {} {}", x1, y1, z1, x2, y2, z2);
+                    //println!("Found at {} {} {} {} {} {}", self.x1, self.y1, self.z1, self.x2, self.y2, self.z2);
+
+                    //payload_vec.clone();
                 },
                 None => {}
             }
@@ -240,50 +349,52 @@ impl<T> CubeTree<T> {
 
     }
 
-    pub fn recurse_by_pos( &mut self, payload_vec: &mut Vec<T>, pos: u32, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32 ) {
-        match pos {
-            1 =>  
-                match self.topLeftFront { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            2 => 
-                match self.topLeftBack { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            3 => 
-                match self.topRightFront { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            4 => 
-                match self.topRightBack { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            5 => 
-                match self.botLeftFront { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            6 => 
-                match self.botLeftBack { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            7 => 
-                match self.botRightFront { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            8 => 
-                match self.botRightBack { 
-                    Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
-                    None => panic!("tree node not found")
-                }
-            _ => panic!("tree node position not found")
-        }
+    pub fn recurse_by_pos( &mut self, payload_vec: &mut Vec<Box<T>>, pos: CubePosition, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32 ) {
+        //if ( self.x1 >= x1 && self.x2 <= x2 ) || (self.y1 >= y1 && self.y2 <= y2) || (self.z1 >= z1 && self.z2 <= z2) {
+            match pos {
+                CubePosition::TopLeftFront =>  
+                    match self.topLeftFront { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::TopLeftBack => 
+                    match self.topLeftBack { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::TopRightFront => 
+                    match self.topRightFront { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::TopRightBack => 
+                    match self.topRightBack { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::BotLeftFront => 
+                    match self.botLeftFront { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::BotLeftBack => 
+                    match self.botLeftBack { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::BotRightFront => 
+                    match self.botRightFront { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                CubePosition::BotRightBack => 
+                    match self.botRightBack { 
+                        Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
+                        None => panic!("tree node not found")
+                    }
+                _ => panic!("tree node position not found")
+            }
+        //}
     }
 
     pub fn is_leaf(&mut self) -> bool {
@@ -294,20 +405,21 @@ impl<T> CubeTree<T> {
         }
     }
 
-    pub fn get_pos_from_point(&mut self, x: f32, y: f32, z: f32) -> u32 {
+    pub fn get_pos_from_point(&mut self, x: f32, y: f32, z: f32) -> CubePosition {
         let cube_set = CubeSet::new(self);
         let mut is_top = y < cube_set.mid_y;
         let mut is_left = x < cube_set.mid_x;
         let mut is_front = z < cube_set.mid_z;
 
-        if is_top && is_left && is_front { return 1; }
-        else if is_top && is_left && !is_front { return 2; }
-        else if is_top && !is_left && is_front  { return 3; }
-        else if is_top && !is_left && !is_front { return 4; }
-        else if !is_top && is_left  && is_front { return 5; }
-        else if !is_top && is_left && !is_front { return 6; }
-        else if !is_top && !is_left && is_front { return 7; }
-        else if !is_top && !is_left && !is_front { return 8; }
+
+        if is_top && is_left && is_front { return CubePosition::TopLeftFront; }
+        else if is_top && is_left && !is_front { return CubePosition::TopLeftBack; }
+        else if is_top && !is_left && is_front  { return CubePosition::TopRightFront; }
+        else if is_top && !is_left && !is_front { return CubePosition::TopRightBack; }
+        else if !is_top && is_left  && is_front { return CubePosition::BotLeftFront; }
+        else if !is_top && is_left && !is_front { return CubePosition::BotLeftBack; }
+        else if !is_top && !is_left && is_front { return CubePosition::BotRightFront; }
+        else if !is_top && !is_left && !is_front { return CubePosition::BotRightBack; }
 
         panic!("{}", "Error init tree");
     }

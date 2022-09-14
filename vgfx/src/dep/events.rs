@@ -11,7 +11,8 @@ pub struct SDLContext {
     pub ttf_context: Sdl2TtfContext,
     pub left_mouse_state: SwitchState,
     pub left_click: bool,
-    pub terrain_texture: Texture
+    pub terrain_texture: Texture,
+    pub ms: u32
 }
 
 impl SDLContext {
@@ -24,7 +25,8 @@ impl SDLContext {
                     event_pump: val,
                     ttf_context: ttf_context,
                     left_click: false,
-                    terrain_texture: Texture::from_package("test".to_string())
+                    terrain_texture: Texture::from_package("test".to_string()),
+                    ms: 0
                 };
              },
             Err(val) => { panic!("{}", val); }
@@ -42,6 +44,10 @@ impl SDLContext {
         {
             self.left_mouse_state.flip();
         }
+    }
+
+    pub fn update_ms(&mut self, ms: u32) {
+        self.ms = ms;
     }
 
     pub fn run(&mut self) {

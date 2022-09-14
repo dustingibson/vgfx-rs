@@ -29,12 +29,14 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     let mut start_ticks: u32 = 0;
     let mut end_ticks: u32 = 0;
     // Aim for 60 fps
-    let target_ms: f32 = (1.0/60.0)*1000.0;
+    let target_ms: f32 = (1.0/120.0)*1000.0;
     let mut delta_time: u32 = 0;
     let mut sleep_time: u64 = 0;
 
     let sdl_context: sdl2::Sdl = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
+
+    
     
 
     let window = video_subsystem.window("rust-gl demo", WIDTH, HEIGHT)
@@ -123,14 +125,13 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
             camera.set_projection( &mut shader_container);
-            if(command.eq("demo")) {
+            //if(command.eq("demo")) {
                 demo.run(&mut camera, &mut shader_container);
-            }
+            //}
         }
-        //canvas.window().gl_swap_window();
         canvas.present();
-
         delta_time = sdl_timer.ticks() - start_ticks;
+        sdl_payload.update_ms(delta_time);
         sleep_time = if (target_ms - delta_time as f32) < 0.0 {0} else { (target_ms - delta_time as f32) as u64};
         ::std::thread::sleep(Duration::from_millis(sleep_time));
     }
