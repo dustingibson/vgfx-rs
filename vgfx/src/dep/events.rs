@@ -1,4 +1,4 @@
-use gl;
+
 use sdl2::EventPump;
 use sdl2::ttf::Sdl2TtfContext;
 use crate::Texture;
@@ -17,7 +17,7 @@ pub struct SDLContext {
 
 impl SDLContext {
     pub fn new(sdl_context: sdl2::Sdl, ttf_context: Sdl2TtfContext ) -> Self {
-        let mut left_mouse_state: SwitchState = SwitchState::new();
+        let left_mouse_state: SwitchState = SwitchState::new();
         return match sdl_context.event_pump() {
             Ok(val) => { 
                 return SDLContext {

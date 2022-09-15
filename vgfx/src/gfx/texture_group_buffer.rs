@@ -1,16 +1,5 @@
 use gl;
 use gl::types::*;
-use std::mem;
-use crate::Shader;
-use crate::Texture;
-use crate::SDLContext;
-use crate::VecOps;
-use crate::model::model::ModelInstance;
-
-use super::face::FacePartitionRender;
-use super::text::Text;
-extern crate nalgebra_glm as glm;
-extern crate libc;
 
 #[derive(Clone)]
 pub struct TextureGroupBuffer {
@@ -23,7 +12,7 @@ pub struct TextureGroupBuffer {
 impl TextureGroupBuffer {
 
     pub fn new(texture_index: u32) -> Self {
-        let mut partition = TextureGroupBuffer {
+        let partition = TextureGroupBuffer {
             texture_index: texture_index as usize,
             vertex_buffer: vec![],
             normal_buffer: vec![],

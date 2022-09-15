@@ -1,19 +1,16 @@
-use gl::TextureBuffer;
+
 
 use crate::Model;
-use crate::AreaInstance;
 use crate::ModelInstance;
 use crate::dep::events::SDLContext;
 use crate::Texture;
-use crate::geo::texture_polygon::TexturePolygon;
-use crate::gfx::face;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::shader::Shader;
 use crate::gfx::texture_group::TextureGroupRenderer;
 use crate::utils::octo::OctTree;
 use std::collections::HashMap;
 use std::io::prelude::*;
-use std::fs::{self, File, DirEntry};
+use std::fs::{File};
 use std::io;
 use crate::Camera;
 extern crate nalgebra_glm as glm;
@@ -32,7 +29,7 @@ pub struct World {
 impl World {
 
     pub fn new() -> Self {
-        let mut world = World {
+        let world = World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
             model_instances: vec![],
@@ -54,17 +51,17 @@ impl World {
     }
 
     pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {
-        let mut range: f32 = 5000.0;
+        let range: f32 = 5000.0;
         let mut cur_instances: Vec<Box<ModelInstance>> = vec![];
         //TODO: Make values relative to camera
-        self.oct_tree.get_items_from_range(&mut cur_instances, camera.position.x - range, camera.position.y - range, camera.position.z - range, camera.position.x + range, camera.position.y + range, camera.position.z + range);
-        //self.oct_tree.get_all_items(& mut cur_instances);
+        //self.oct_tree.get_items_from_range(&mut cur_instances, camera.position.x - range, camera.position.y - range, camera.position.z - range, camera.position.x + range, camera.position.y + range, camera.position.z + range);
+        self.oct_tree.get_all_items(& mut cur_instances);
         let now = Instant::now();
 
         for model_instance in cur_instances.iter_mut() {
             
             //UNCOMMENT TO DRAW
-            let mut model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
+            let model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
             model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]));
             
             // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
@@ -127,7 +124,7 @@ impl World {
         // 1. Count of Areas
         let num_areas = read_usize(&buffer, &mut pos);
         for i in 0..num_areas {
-            let mut cur_model_instance: Vec<ModelInstance> = vec![];
+            let cur_model_instance: Vec<ModelInstance> = vec![];
             // 2. Count of Area Model Instances
             let num_model_instances = read_usize(&buffer, &mut pos);
             for j in 0..num_model_instances {
@@ -137,7 +134,7 @@ impl World {
                 let model_instance_pos = read_vec3(&buffer, &mut pos);
                 // 5. Area's Model Instance Scale
                 let model_instance_scale = read_f32(&buffer, &mut pos);
-                let mut new_model_instance = ModelInstance{ 
+                let new_model_instance = ModelInstance{ 
                     model_name: model_instance_name.to_string(),
                     position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
                     scale: model_instance_scale
@@ -199,7 +196,7 @@ impl World {
             let vertices_cnt = read_usize(&buffer, &mut pos);
             for i in 0..vertices_cnt {
                 // 22. Vertices
-                let mut vert = read_vec3(&buffer, &mut pos);
+                let vert = read_vec3(&buffer, &mut pos);
                 vertices.push(vert);
             }
             // 23. Count of Texture Mappings
@@ -242,7 +239,7 @@ impl World {
                         vertex_buffer = vertex_buffer.iter().chain(&vertices[texture_vertex_index]).map(|&x|x).collect::<Vec<f32>>();
                     }
                 }
-                let mut face_partition = FacePartitionRender::new(
+                let face_partition = FacePartitionRender::new(
                     vertex_buffer, normal_buffer, texture_buffer,
                     texture_info_index, faces_cnt as i32, mode,
                     true

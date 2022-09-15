@@ -1,6 +1,4 @@
 use gl;
-use gl::types::*;
-use sdl2::mouse::Cursor;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::keyboard::Scancode;
@@ -26,12 +24,12 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     const CENTER_X: f32 = WIDTH as f32 / 2.0;
     const CENTER_Y: f32 = HEIGHT as f32 / 2.0;
 
-    let mut start_ticks: u32 = 0;
-    let mut end_ticks: u32 = 0;
+    let mut start_ticks: u32;
+    let end_ticks: u32;
     // Aim for 60 fps
-    let target_ms: f32 = (1.0/120.0)*1000.0;
-    let mut delta_time: u32 = 0;
-    let mut sleep_time: u64 = 0;
+    let target_ms: f32 = (1.0/60.0)*1000.0;
+    let mut delta_time: u32;
+    let mut sleep_time: u64;
 
     let sdl_context: sdl2::Sdl = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -63,7 +61,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         gl::DepthFunc(gl::LESS);
     }
 
-    let mut sdl_timer = sdl_context.timer()?;
+    let sdl_timer = sdl_context.timer()?;
 
     let ttf_context = sdl2::ttf::init().map_err(|e| e.to_string())?;
 

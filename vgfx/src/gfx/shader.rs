@@ -2,10 +2,8 @@ use gl;
 use gl::types::*;
 use std::fs;
 use std::ffi::CString;
-use std::os::raw::c_char;
 use std::ptr::null;
 use std::ptr::null_mut;
-use std::mem;
 use std::collections::HashMap;
 extern crate nalgebra_glm as glm;
 
@@ -123,7 +121,6 @@ impl Shader {
         }
         if success <= 0 {
             println!("ERROR");
-            panic!(format!("Compile shader {} {}", shader_name, shader_types));
             let mut len = 0;
             unsafe { gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut len); }
             let mut buffer = Vec::with_capacity(len as usize);
@@ -131,6 +128,7 @@ impl Shader {
                 gl::GetShaderInfoLog(shader_id, len, null_mut(), buffer.as_mut_ptr() as *mut gl::types::GLchar);
                 buffer.set_len(len as usize);
             }
+            panic!("Compile shader {} {}", shader_name, shader_types);
         }
     }
 

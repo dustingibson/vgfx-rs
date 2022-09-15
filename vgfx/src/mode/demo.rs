@@ -1,15 +1,6 @@
 use gl;
-use gl::types::*;
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use sdl2::keyboard::Scancode;
-use std::time::Duration;
 extern crate nalgebra_glm as glm;
-
-use crate::TexturePolygon;
-use crate::Plane;
 use crate::ShaderContainer;
-use crate::Model;
 use crate::Camera;
 use crate::Label2D;
 use crate::SDLContext;
@@ -23,7 +14,7 @@ pub struct Demo {
 
 impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let mut label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
+        let label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
         return Demo {
             world: World::new_load(sdl_payload),
             label: label
@@ -47,7 +38,7 @@ impl Demo {
 
     pub fn draw_hud(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
         camera.set_projection_ortho(shader);
-        self.label.draw(camera, &mut shader.get_shader("fragment".to_string()));
+        self.label.draw(&mut shader.get_shader("fragment".to_string()));
         camera.set_projection(shader);
     }
 

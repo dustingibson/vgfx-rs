@@ -1,14 +1,14 @@
 use gl;
 use gl::types::*;
-use std::mem;
+
 use crate::Shader;
 use crate::Texture;
-use crate::SDLContext;
-use crate::VecOps;
-use crate::model::model::ModelInstance;
+
+
+
 
 use super::face::FacePartitionRender;
-use super::text::Text;
+
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
@@ -43,11 +43,11 @@ impl TextureGroupRenderer {
             mode: 2,
             texture: texture
         };
-        partition.initGL();
+        partition.init_gl();
         return partition;
     }
 
-    pub fn initGL(&mut self) {
+    pub fn init_gl(&mut self) {
         unsafe {
             gl::GenVertexArrays(1, &mut self.vao);
             gl::GenBuffers(1, &mut self.vertex_buffer_id);

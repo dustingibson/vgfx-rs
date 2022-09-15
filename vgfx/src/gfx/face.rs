@@ -1,12 +1,7 @@
 use gl;
 use gl::types::*;
-use std::mem;
 use crate::Shader;
 use crate::Texture;
-use crate::SDLContext;
-use crate::VecOps;
-
-use super::text::Text;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
@@ -40,12 +35,12 @@ impl FacePartitionRender {
             mode: mode
         };
         if init_gl {
-            partition.initGL();
+            partition.init_gl();
         }
         return partition;
     }
 
-    pub fn initGL(&mut self) {
+    pub fn init_gl(&mut self) {
         unsafe {
             gl::GenVertexArrays(1, &mut self.vao);
             gl::GenBuffers(1, &mut self.vertex_buffer_id);

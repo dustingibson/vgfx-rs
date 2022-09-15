@@ -2,10 +2,9 @@ use gl;
 use gl::types::*;
 use sdl2::ttf::PartialRendering;
 use sdl2::surface::Surface;
-use sdl2::ttf;
 use crate::SDLContext;
 use crate::Texture;
-use crate::Shader;
+
 
 extern crate nalgebra_glm as glm;
 
@@ -19,7 +18,7 @@ pub struct Text {
 
 impl Text {
     pub fn new(sdl_payload: &mut SDLContext, text: String, point: glm::Vec3) -> Self {
-        let mut texture_id: GLuint = 0;
+        let texture_id: GLuint = 0;
         let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", 128) {
             Ok(x) => x,
             Err(e) => panic!("Cannot load font")
@@ -31,7 +30,7 @@ impl Text {
         };
         return Text {
             //texture: unsafe { Texture::fromSurface(surface, (*img_data).pixels as *const gl::types::GLvoid) },
-            texture: Texture::fromSurface(surface),
+            texture: Texture::from_surface(surface),
             text: text,
             point: point
         }
@@ -49,7 +48,7 @@ impl Text {
             Err(e) => panic!("Cannot render font")
         };
         self.text = text;
-        self.texture = Texture::fromSurface(surface);
+        self.texture = Texture::from_surface(surface);
     }
 
     // pub fn draw(&mut self, shader: &mut Shader) {

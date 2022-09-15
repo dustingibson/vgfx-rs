@@ -1,8 +1,5 @@
 use gl;
 use gl::types::*;
-use std::mem;
-use crate::Shader;
-use crate::Texture;
 use crate::SDLContext;
 extern crate nalgebra_glm as glm;
 extern crate libc;
@@ -40,8 +37,7 @@ impl TexturePolygon {
     }
 
     pub fn clean_up(&mut self) {
-        unsafe {
-        }
+
     }
 
     fn init_vertex_array(point: glm::Vec3) -> Vec<GLfloat> {
@@ -73,17 +69,17 @@ impl TexturePolygon {
         ];
     }
 
-    fn init_texture_array(lowX: GLfloat, lowY: GLfloat, highX: GLfloat, highY: GLfloat) -> Vec<GLfloat> {
+    fn init_texture_array(low_x: GLfloat, low_y: GLfloat, high_x: GLfloat, high_y: GLfloat) -> Vec<GLfloat> {
         return vec![
             // 1 - DONE (front left)
-            lowX, highY,
-            highX, highY, 
-            highX, lowY,
+            low_x, high_y,
+            high_x, high_y, 
+            high_x, low_y,
 
             // 5 - DONE (front right)
-            lowX, highY,
-            highX, lowY, 
-            lowX, lowY
+            low_x, high_y,
+            high_x, low_y, 
+            low_x, low_y
         ];
     }
 

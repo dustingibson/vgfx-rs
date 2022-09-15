@@ -1,6 +1,6 @@
 use gl;
 use gl::types::*;
-use std::mem;
+
 use crate::Shader;
 extern crate nalgebra_glm as glm;
 extern crate libc;
@@ -115,13 +115,13 @@ impl Quad {
             points[3].x, points[3].y, points[3].z,
             points[1].x, points[1].y, points[1].z,
 
-            // highX, lowY, highZ,
-            // lowX, lowY, lowZ,
-            // highX,lowY,lowZ,
+            // high_x, low_y, high_z,
+            // low_x, low_y, low_z,
+            // high_x,low_y,low_z,
 
-            // highX,lowY, highZ,
-            // lowX, lowY, highZ,
-            // lowX, lowY,lowZ,
+            // high_x,low_y, high_z,
+            // low_x, low_y, high_z,
+            // low_x, low_y,low_z,
         ];
     }
 

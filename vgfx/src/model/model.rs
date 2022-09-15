@@ -1,13 +1,10 @@
-use gl;
-use crate::BFile;
-extern crate nalgebra_glm as glm;
 
-use crate::TexturePolygon;
-use crate::SubModel;
+
+extern crate nalgebra_glm as glm;
 use crate::Shader;
-use crate::dep::events::SDLContext;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::texture::Texture;
+
 #[derive(Clone)]
 pub struct ModelInstance {
     pub model_name: String,

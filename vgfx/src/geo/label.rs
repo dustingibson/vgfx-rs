@@ -1,6 +1,5 @@
 use gl;
 use gl::types::*;
-use std::mem;
 use crate::Shader;
 use crate::Text;
 use crate::SDLContext;
@@ -140,22 +139,22 @@ impl Label {
     }
 
     fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
-        let lowX: GLfloat = point.x + (width / -2.0); 
-        let highX: GLfloat = point.x + (width / 2.0);
-        let lowY: GLfloat = point.y + (height / -2.0);
-        let highY: GLfloat = point.y + (height / 2.0);
-        let lowZ: GLfloat = point.z + (depth / -2.0);
-        let highZ: GLfloat = point.z + (depth / 2.0);
+        let low_x: GLfloat = point.x + (width / -2.0); 
+        let high_x: GLfloat = point.x + (width / 2.0);
+        let low_y: GLfloat = point.y + (height / -2.0);
+        let high_y: GLfloat = point.y + (height / 2.0);
+        let low_z: GLfloat = point.z + (depth / -2.0);
+        let high_z: GLfloat = point.z + (depth / 2.0);
         return vec![
 
         //1
-            lowX, lowY,lowZ,
-            lowX, lowY, highZ,
-            lowX, highY, highZ,
+            low_x, low_y,low_z,
+            low_x, low_y, high_z,
+            low_x, high_y, high_z,
         //5
-            lowX, lowY,lowZ,
-            lowX, highY, highZ,
-            lowX, highY,lowZ,
+            low_x, low_y,low_z,
+            low_x, high_y, high_z,
+            low_x, high_y,low_z,
         ];
     }
 
@@ -185,21 +184,21 @@ impl Label {
     }
 
     fn init_texture_array() -> Vec<GLfloat> {
-        let lowX = 0.0;
-        let lowY = 0.0;
-        let highX = 1.0;
-        let highY = 1.0;
+        let low_x = 0.0;
+        let low_y = 0.0;
+        let high_x = 1.0;
+        let high_y = 1.0;
 
         return vec![
             // 1 - DONE (front left)
-            lowX, highY,
-            highX, highY, 
-            highX, lowY,
+            low_x, high_y,
+            high_x, high_y, 
+            high_x, low_y,
 
             // 5 - DONE (front right)
-            lowX, highY,
-            highX, lowY, 
-            lowX, lowY
+            low_x, high_y,
+            high_x, low_y, 
+            low_x, low_y
         ];
     }
 }

@@ -41,11 +41,15 @@ impl FileNotify {
                                         println!("Models: {}", paths.join(",").to_string());
                                         world.set_models(paths);
                                     },
-                                    Err(e) => {}
+                                    Err(_e) => {
+                                        panic!("{}", _e)
+                                    }
                                 }
                             }
                         },
-                        Err(e) => {}
+                        Err(_e) => {
+                            panic!("{}", _e);
+                        }
                     }
                     world.save(self.out_folder.to_string());
                 },

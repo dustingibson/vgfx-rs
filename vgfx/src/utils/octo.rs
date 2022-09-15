@@ -1,5 +1,5 @@
-use std::clone;
-use std::rc::Rc;
+
+
 
 
 const DEPTH_SIZE: u32 = 5;
@@ -14,14 +14,14 @@ pub struct OctTree<T> {
 
 enum CubePosition {
     None,
-    TopLeftFront,
-    TopLeftBack,
-    TopRightFront,
-    TopRightBack,
-    BotLeftFront,
-    BotLeftBack,
-    BotRightFront,
-    BotRightBack
+    LeftTopFront,
+    LeftTopBack,
+    RightTopFront,
+    RightTopBack,
+    LeftBotFront,
+    LeftBotBack,
+    RightBotFront,
+    RightBotBack
 }
 
 struct CubeSet {
@@ -34,15 +34,15 @@ struct CubeSet {
 }
 
 struct CubeTree<T> {
-    topLeftFront: Option<Box<CubeTree<T>>>,
-    topLeftBack: Option<Box<CubeTree<T>>>,
-    topRightFront: Option<Box<CubeTree<T>>>,
-    topRightBack: Option<Box<CubeTree<T>>>,
+    left_top_front: Option<Box<CubeTree<T>>>,
+    left_top_back: Option<Box<CubeTree<T>>>,
+    right_top_front: Option<Box<CubeTree<T>>>,
+    right_top_back: Option<Box<CubeTree<T>>>,
 
-    botLeftFront: Option<Box<CubeTree<T>>>,
-    botLeftBack: Option<Box<CubeTree<T>>>,
-    botRightFront: Option<Box<CubeTree<T>>>,
-    botRightBack: Option<Box<CubeTree<T>>>,
+    left_bot_front: Option<Box<CubeTree<T>>>,
+    left_bot_back: Option<Box<CubeTree<T>>>,
+    right_bot_front: Option<Box<CubeTree<T>>>,
+    right_bot_back: Option<Box<CubeTree<T>>>,
 
     x1: f32,
     y1: f32,
@@ -89,9 +89,9 @@ impl<T> OctTree<T> where T: Clone {
 impl CubeSet {
     
     pub fn new <T>(cube: &mut CubeTree<T>) -> Self {
-        let mut w = cube.x2 - cube.x1;
-        let mut h = cube.y2 - cube.y1;
-        let mut d = cube.z2 - cube.z1;
+        let w = cube.x2 - cube.x1;
+        let h = cube.y2 - cube.y1;
+        let d = cube.z2 - cube.z1;
         let mid_x = cube.x1 + (w / 2.0);
         let mid_y = cube.y1 + (h / 2.0);
         let mid_z = cube.z1 + (d / 2.0);
@@ -116,14 +116,14 @@ impl<T> CubeTree<T> where T: Clone {
             y2: y2,
             z1: z1,
             z2: z2,
-            topLeftFront: None,
-            topLeftBack: None,
-            topRightFront: None,
-            topRightBack: None,
-            botLeftFront: None,
-            botLeftBack: None,
-            botRightFront: None,
-            botRightBack: None,  
+            left_top_front: None,
+            left_top_back: None,
+            right_top_front: None,
+            right_top_back: None,
+            left_bot_front: None,
+            left_bot_back: None,
+            right_bot_front: None,
+            right_bot_back: None,  
             payload: None          
         };
         if n >= d {
@@ -133,24 +133,24 @@ impl<T> CubeTree<T> where T: Clone {
     }
 
     pub fn init_grid( &mut self, dep: u32, n: u32) {
-        let mut w = self.x2 - self.x1;
-        let mut h = self.y2 - self.y1;
-        let mut d = self.z2 - self.z1;
+        let w = self.x2 - self.x1;
+        let h = self.y2 - self.y1;
+        let d = self.z2 - self.z1;
         let mid_x = self.x1 + (w / 2.0);
         let mid_y = self.y1 + (h / 2.0);
         let mid_z = self.z1 + (d / 2.0);
 
-        self.topLeftFront = Some( Box::new ( CubeTree::new( self.x1, self.y1, self.z1, mid_x, mid_y, mid_z, dep + 1, n) ));
-        self.topLeftBack = Some( Box::new ( CubeTree::new( self.x1, self.y1, mid_z, mid_x, mid_y, self.z2, dep + 1, n) ));
+        self.left_top_front = Some( Box::new ( CubeTree::new( self.x1, self.y1, self.z1, mid_x, mid_y, mid_z, dep + 1, n) ));
+        self.left_top_back = Some( Box::new ( CubeTree::new( self.x1, self.y1, mid_z, mid_x, mid_y, self.z2, dep + 1, n) ));
         
-        self.topRightFront = Some( Box::new ( CubeTree::new( mid_x, self.y1, self.z1, self.x2, mid_y, mid_z, dep + 1, n) ));
-        self.topRightBack = Some( Box::new ( CubeTree::new( mid_x, self.y1, mid_z, self.x2, mid_y, self.z2, dep + 1, n) ));
+        self.right_top_front = Some( Box::new ( CubeTree::new( mid_x, self.y1, self.z1, self.x2, mid_y, mid_z, dep + 1, n) ));
+        self.right_top_back = Some( Box::new ( CubeTree::new( mid_x, self.y1, mid_z, self.x2, mid_y, self.z2, dep + 1, n) ));
         
-        self.botLeftFront = Some( Box::new ( CubeTree::new( self.x1, mid_y, self.z1, mid_x, self.y2, mid_z, dep + 1, n) ));
-        self.botLeftBack = Some( Box::new ( CubeTree::new( self.x1, mid_y, mid_z, mid_x, self.y2, self.z2, dep + 1, n ) ));
+        self.left_bot_front = Some( Box::new ( CubeTree::new( self.x1, mid_y, self.z1, mid_x, self.y2, mid_z, dep + 1, n) ));
+        self.left_bot_back = Some( Box::new ( CubeTree::new( self.x1, mid_y, mid_z, mid_x, self.y2, self.z2, dep + 1, n ) ));
 
-        self.botRightFront = Some( Box::new ( CubeTree::new( mid_x, mid_y, self.z1, self.x2, self.y2, mid_z, dep + 1, n) ));
-        self.botRightBack = Some( Box::new ( CubeTree::new( mid_x, mid_y, mid_z, self.x2, self.y2, self.z2, dep + 1, n) ));
+        self.right_bot_front = Some( Box::new ( CubeTree::new( mid_x, mid_y, self.z1, self.x2, self.y2, mid_z, dep + 1, n) ));
+        self.right_bot_back = Some( Box::new ( CubeTree::new( mid_x, mid_y, mid_z, self.x2, self.y2, self.z2, dep + 1, n) ));
     }
 
     pub fn insert_payload(&mut self, payload: Box<T>, x: f32, y: f32, z: f32, d: &mut i32) {
@@ -169,57 +169,57 @@ impl<T> CubeTree<T> where T: Clone {
         match pos {
 
             // Top Left Front
-            CubePosition::TopLeftFront => {
-                match self.topLeftFront {
+            CubePosition::LeftTopFront => {
+                match self.left_top_front {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Left Back
-            CubePosition::TopLeftBack => {
-                match self.topLeftBack {
+            CubePosition::LeftTopBack => {
+                match self.left_top_back {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Right Front
-            CubePosition::TopRightFront => {
-                match self.topRightFront {
+            CubePosition::RightTopFront => {
+                match self.right_top_front {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Right Back
-            CubePosition::TopRightBack => {
-                match self.topRightBack {
+            CubePosition::RightTopBack => {
+                match self.right_top_back {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             //  Bottom Left Front
-            CubePosition::BotLeftFront => {
-                match self.botLeftFront {
+            CubePosition::LeftBotFront => {
+                match self.left_bot_front {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Left Back
-            CubePosition::BotLeftBack => {
-                match self.botLeftBack {
+            CubePosition::LeftBotBack => {
+                match self.left_bot_back {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Right Front
-            CubePosition::BotRightFront => {
-                match self.botRightFront {
+            CubePosition::RightBotFront => {
+                match self.right_bot_front {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Right Back
-            CubePosition::BotRightBack => {
-                match self.botRightBack {
+            CubePosition::RightBotBack => {
+                match self.right_bot_back {
                     Some(ref mut tree) => tree.insert_payload(payload, x, y, z, d),
                     None => {}
                 }
@@ -245,57 +245,57 @@ impl<T> CubeTree<T> where T: Clone {
         match pos {
 
             // Top Left Front
-            CubePosition::TopLeftFront => {
-                match self.topLeftFront {
+            CubePosition::LeftTopFront => {
+                match self.left_top_front {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Left Back
-            CubePosition::TopLeftBack => {
-                match self.topLeftBack {
+            CubePosition::LeftTopBack => {
+                match self.left_top_back {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Right Front
-            CubePosition::TopRightFront => {
-                match self.topRightFront {
+            CubePosition::RightTopFront => {
+                match self.right_top_front {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Top Right Back
-            CubePosition::TopRightBack => {
-                match self.topRightBack {
+            CubePosition::RightTopBack => {
+                match self.right_top_back {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             //  Bottom Left Front
-            CubePosition::BotLeftFront => {
-                match self.botLeftFront {
+            CubePosition::LeftBotFront => {
+                match self.left_bot_front {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Left Back
-            CubePosition::BotLeftBack => {
-                match self.botLeftBack {
+            CubePosition::LeftBotBack => {
+                match self.left_bot_back {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Right Front
-            CubePosition::BotRightFront => {
-                match self.botRightFront {
+            CubePosition::RightBotFront => {
+                match self.right_bot_front {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
             },
             // Bottom Right Back
-            CubePosition::BotRightBack => {
-                match self.botRightBack {
+            CubePosition::RightBotBack => {
+                match self.right_bot_back {
                     Some(ref mut tree) => tree.insert_payload2(payload, x, y, z, d),
                     None => {}
                 }
@@ -352,43 +352,43 @@ impl<T> CubeTree<T> where T: Clone {
     pub fn recurse_by_pos( &mut self, payload_vec: &mut Vec<Box<T>>, pos: CubePosition, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32 ) {
         //if ( self.x1 >= x1 && self.x2 <= x2 ) || (self.y1 >= y1 && self.y2 <= y2) || (self.z1 >= z1 && self.z2 <= z2) {
             match pos {
-                CubePosition::TopLeftFront =>  
-                    match self.topLeftFront { 
+                CubePosition::LeftTopFront =>  
+                    match self.left_top_front { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::TopLeftBack => 
-                    match self.topLeftBack { 
+                CubePosition::LeftTopBack => 
+                    match self.left_top_back { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::TopRightFront => 
-                    match self.topRightFront { 
+                CubePosition::RightTopFront => 
+                    match self.right_top_front { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::TopRightBack => 
-                    match self.topRightBack { 
+                CubePosition::RightTopBack => 
+                    match self.right_top_back { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::BotLeftFront => 
-                    match self.botLeftFront { 
+                CubePosition::LeftBotFront => 
+                    match self.left_bot_front { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::BotLeftBack => 
-                    match self.botLeftBack { 
+                CubePosition::LeftBotBack => 
+                    match self.left_bot_back { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::BotRightFront => 
-                    match self.botRightFront { 
+                CubePosition::RightBotFront => 
+                    match self.right_bot_front { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
-                CubePosition::BotRightBack => 
-                    match self.botRightBack { 
+                CubePosition::RightBotBack => 
+                    match self.right_bot_back { 
                         Some(ref mut tree) => tree.get_range(payload_vec, x1, y1, z1, x2, y2, z2),
                         None => panic!("tree node not found")
                     }
@@ -399,7 +399,7 @@ impl<T> CubeTree<T> where T: Clone {
 
     pub fn is_leaf(&mut self) -> bool {
         // Only need to test one branch
-        match self.botRightBack {
+        match self.right_bot_back {
             Some(ref mut tree) => return false,
             None => return true
         }
@@ -407,19 +407,19 @@ impl<T> CubeTree<T> where T: Clone {
 
     pub fn get_pos_from_point(&mut self, x: f32, y: f32, z: f32) -> CubePosition {
         let cube_set = CubeSet::new(self);
-        let mut is_top = y < cube_set.mid_y;
-        let mut is_left = x < cube_set.mid_x;
-        let mut is_front = z < cube_set.mid_z;
+        let is_top = y < cube_set.mid_y;
+        let is_left = x < cube_set.mid_x;
+        let is_front = z < cube_set.mid_z;
 
 
-        if is_top && is_left && is_front { return CubePosition::TopLeftFront; }
-        else if is_top && is_left && !is_front { return CubePosition::TopLeftBack; }
-        else if is_top && !is_left && is_front  { return CubePosition::TopRightFront; }
-        else if is_top && !is_left && !is_front { return CubePosition::TopRightBack; }
-        else if !is_top && is_left  && is_front { return CubePosition::BotLeftFront; }
-        else if !is_top && is_left && !is_front { return CubePosition::BotLeftBack; }
-        else if !is_top && !is_left && is_front { return CubePosition::BotRightFront; }
-        else if !is_top && !is_left && !is_front { return CubePosition::BotRightBack; }
+        if is_top && is_left && is_front { return CubePosition::LeftTopFront; }
+        else if is_top && is_left && !is_front { return CubePosition::LeftTopBack; }
+        else if is_top && !is_left && is_front  { return CubePosition::RightTopFront; }
+        else if is_top && !is_left && !is_front { return CubePosition::RightTopBack; }
+        else if !is_top && is_left  && is_front { return CubePosition::LeftBotFront; }
+        else if !is_top && is_left && !is_front { return CubePosition::LeftBotBack; }
+        else if !is_top && !is_left && is_front { return CubePosition::RightBotFront; }
+        else if !is_top && !is_left && !is_front { return CubePosition::RightBotBack; }
 
         panic!("{}", "Error init tree");
     }

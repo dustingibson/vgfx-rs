@@ -1,17 +1,12 @@
 use crate::Model;
 use crate::AreaInstance;
-use crate::ModelInstance;
 use crate::TextureInfo;
 use crate::Face;
 use std::collections::HashMap;
 use std::io::prelude::*;
-use std::fs::{self, File, DirEntry};
+use std::fs::{self, File};
 use std::io;
-use std::path;
-use std::str::Bytes;
-use serde_json::{Result, Value};
 use std::str::Split;
-
 use super::model::FacePartition;
 
 
@@ -84,7 +79,7 @@ impl World {
                 match fs::read_to_string(path) {
                     Ok(res) => {
                         let area: AreaInstance = match serde_json::from_str(&res) {
-                            Ok(areaInstance) => areaInstance,
+                            Ok(area_instance) => area_instance,
                             Err(err) => {
                                 panic!("{}", err.to_string());
                             }
@@ -154,12 +149,12 @@ impl World {
     pub fn process_texture_info(&mut self, dir_name: String, fname: String) -> io::Result<Vec<TextureInfo>> {
         match fs::read_to_string([dir_name.to_string(), "/".to_string(), fname].join("")) {
             Ok(res) => { 
-                let mut new_res = res.replace("\t", "");
-                let mut lines = new_res.split('\n');
+                let new_res = res.replace("\t", "");
+                let lines = new_res.split('\n');
                 let mut texture_infos = vec![];
                 let mut texture_info = self.init_texture_info();
                 for line in lines {
-                    let mut rep_val = line.trim();
+                    let rep_val = line.trim();
                     let mut vals = rep_val.split(' ');
                     let first_val = vals.next().unwrap();
                     if first_val  == "newmtl" {
@@ -229,9 +224,9 @@ impl World {
     }
 
     pub fn process_model(&mut self, content: String, dir_name: String) -> Model {
-        let mut lines = content.split("\n");
+        let lines = content.split("\n");
         let mut model = self.init_model();
-        let mut cur_texture_index = 0;
+        let mut cur_texture_index;
         let mut cur_face_partition = FacePartition { faces: vec![], texture_info_index: 0 };
         for line in lines {
             let mut comp = line.trim().split(" ");
@@ -309,8 +304,8 @@ impl World {
             match fs::read_to_string(path) {
                 Ok(res) => { 
                     if path.contains(".obj") {
-                        let mut mtl_name = self.to_fname(path.to_string());
-                        let mut dir_name = self.to_dir(path.to_string());
+                        let mtl_name = self.to_fname(path.to_string());
+                        let dir_name = self.to_dir(path.to_string());
                         let model = self.process_model(res, dir_name);
                         self.model_map.insert(mtl_name, model);
                     }
@@ -406,7 +401,7 @@ impl World {
                 // 28. Count of faces in face partitions
                 pos += write_add(&mut buffer, &face_partitions.faces.len().to_be_bytes())?;
                 // 29. Texture Info Index of Partition
-                pos + write_add(&mut buffer, &face_partitions.texture_info_index.to_be_bytes())?;
+                pos += write_add(&mut buffer, &face_partitions.texture_info_index.to_be_bytes())?;
                 for face in face_partitions.faces.iter_mut() {
                     for i in 0..3 {
                         // 30. Face Mode
@@ -433,8 +428,8 @@ impl World {
 
 
 fn write_add(buffer: &mut File, data: &[u8])  -> io::Result<usize> {
-    let bytesWritten = buffer.write(data)?;
-    Ok(bytesWritten)
+    let bytes_written = buffer.write(data)?;
+    Ok(bytes_written)
 }
 
 fn write_vec(buffer: &mut File, data: &Vec<f32>) -> io::Result<usize> {
@@ -454,8 +449,8 @@ fn write_vec2(buffer: &mut File, data: &Vec<f32>) -> io::Result<usize> {
 }
 
 fn write_str(buffer: &mut File, data: &str)  -> io::Result<usize> {
-    let bytesWrittenSize = write_add(buffer, &data.len().to_be_bytes())?;
-    let bytesWrittenStr = write_add(buffer, data.as_bytes())?;
+    let bytes_written_size = write_add(buffer, &data.len().to_be_bytes())?;
+    let bytes_written_str = write_add(buffer, data.as_bytes())?;
     //let bytesWritten = buffer.write(data)?;
-    Ok(bytesWrittenSize + bytesWrittenStr)
+    Ok(bytes_written_size + bytes_written_str)
 }

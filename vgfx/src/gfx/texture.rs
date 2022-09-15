@@ -1,10 +1,7 @@
 use gl;
 use gl::types::*;
 use libc::c_void;
-use sdl2::gfx::rotozoom::RotozoomSurface;
-use sdl2::sys::SDL_RendererFlip;
 use std::collections::HashMap;
-use std::convert::TryInto;
 use sdl2::surface::Surface;
 
 use crate::BFile;
@@ -96,7 +93,7 @@ impl Texture {
             Err(val) => panic!("cannot create surface!")
         };
 
-        while(!package_file.isEnd())
+        while !package_file.is_end()
         {
             let n: u32 = package_file.readu32();
             let width: u32 = package_file.readu32();
@@ -149,20 +146,20 @@ impl Texture {
         }
     }
 
-    pub fn flipSurface(&mut self, surface: &Surface) {
+    pub fn flip_surface(&mut self, surface: &Surface) {
         unsafe {
             let pitch = surface.pitch();
             let height = surface.height();
             let mut buffer = vec![0; pitch as usize];
             let img_data = surface.raw();
-            let mut pixels = (*img_data).pixels as *mut c_void;
+            let pixels = (*img_data).pixels as *mut c_void;
             for i in 0..surface.height()/2 {
-                let mut botPos = ( ( (height- i - 1)*pitch ) as isize) as isize;
-                let mut topRow = pixels.add((i * pitch) as usize);
-                let mut botRow = pixels.add(botPos as usize);
-                std::ptr::copy_nonoverlapping(topRow, buffer.as_mut_ptr() as *mut c_void, pitch as usize);
-                std::ptr::copy_nonoverlapping(botRow, topRow, pitch as usize);
-                std::ptr::copy_nonoverlapping(buffer.as_mut_ptr() as *mut c_void, botRow, pitch as usize);
+                let bot_pos = ( ( (height- i - 1)*pitch ) as isize) as isize;
+                let top_row = pixels.add((i * pitch) as usize);
+                let bot_row = pixels.add(bot_pos as usize);
+                std::ptr::copy_nonoverlapping(top_row, buffer.as_mut_ptr() as *mut c_void, pitch as usize);
+                std::ptr::copy_nonoverlapping(bot_row, top_row, pitch as usize);
+                std::ptr::copy_nonoverlapping(buffer.as_mut_ptr() as *mut c_void, bot_row, pitch as usize);
             }
         }
     }
@@ -172,11 +169,11 @@ impl Texture {
             Ok(val) => val,
             Err(val) => panic!("unable to load rwop")
         };
-        let mut surface = match sdl2::image::ImageRWops::load_png(&mut rwops) {
+        let surface = match sdl2::image::ImageRWops::load_png(&mut rwops) {
             Ok(val) => val,
             Err(val) => panic!("unable to load surface")
         };
-        self.flipSurface(&surface);
+        self.flip_surface(&surface);
         let img_data = surface.raw();
         unsafe {
             gl::GenTextures(1, &mut self.texture_id);
@@ -191,7 +188,7 @@ impl Texture {
         self.has_img = true;
     }
 
-    pub fn fromSurface(surface: Surface) -> Self {
+    pub fn from_surface(surface: Surface) -> Self {
         let mut texture_buffer: GLuint = 0;
         let img_data = surface.raw();
         unsafe {
@@ -217,7 +214,7 @@ impl Texture {
         unsafe { gl::DeleteTextures(1, &self.texture_id); }
     }
 
-    fn testVector() -> Vec<GLfloat> {
+    fn test_vector() -> Vec<GLfloat> {
         let mut test_texture = vec![];
 
         for w in 0..64 {

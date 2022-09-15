@@ -9,7 +9,7 @@ pub struct Camera {
     pub model: glm::Mat4,
     pub view: glm::Mat4,
     pub front: glm::Vec3,
-    pub MVP: glm::Mat4,
+    pub mvp: glm::Mat4,
     width: f32,
     height: f32
 }
@@ -24,14 +24,14 @@ impl Camera {
             &glm::vec3(0.0 ,1.0, 0.0)
         );
         let model: glm::Mat4 = glm::Mat4::identity();
-        let MVP: glm::Mat4 = projection * view * model;
+        let mvp: glm::Mat4 = projection * view * model;
         return Camera {
             position: position,
             model: model,
             view: view,
             front: glm::vec3(0.0, 0.0, -1.0),
             projection: projection,
-            MVP: MVP,
+            mvp: mvp,
             width: width,
             height: height
         }
@@ -92,11 +92,11 @@ impl Camera {
         );
     }
 
-    pub fn ortho(&mut self, left: f32, right: f32, bottom: f32, top: f32, zNear: f32, zFar: f32) -> glm::Mat4 {
+    pub fn ortho(&mut self, left: f32, right: f32, bottom: f32, top: f32, z_near: f32, z_far: f32) -> glm::Mat4 {
         return glm::mat4(
             2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),
             0.0, 2.0 / (top - bottom), 0.0, -(top + bottom) / (top - bottom),
-            0.0, 0.0, -2.0 / (zFar - zNear), -(zFar + zNear) / (zFar - zNear),
+            0.0, 0.0, -2.0 / (z_far - z_near), -(z_far + z_near) / (z_far - z_near),
             0.0, 0.0, 0.0, 1.0
         );
     }

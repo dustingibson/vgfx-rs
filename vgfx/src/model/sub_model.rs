@@ -1,9 +1,9 @@
 use gl;
 use gl::types::*;
 extern crate nalgebra_glm as glm;
-
 use crate::TexturePolygon;
 use crate::Shader;
+
 #[derive(Clone)]
 
 pub struct SubModel {

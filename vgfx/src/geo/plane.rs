@@ -1,6 +1,5 @@
 use gl;
 use gl::types::*;
-use std::mem;
 use crate::Shader;
 extern crate nalgebra_glm as glm;
 extern crate libc;
@@ -108,22 +107,22 @@ impl Plane {
     }
 
     fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
-        let lowX: GLfloat = width / -2.0; 
-        let highX: GLfloat = width / 2.0;
-        let lowY: GLfloat = height / -2.0;
-        let highY: GLfloat = height / 2.0;
-        let lowZ: GLfloat = depth / -2.0;
-        let highZ: GLfloat = depth / 2.0;
+        let low_x: GLfloat = width / -2.0; 
+        let high_x: GLfloat = width / 2.0;
+        let low_y: GLfloat = height / -2.0;
+        let high_y: GLfloat = height / 2.0;
+        let low_z: GLfloat = depth / -2.0;
+        let high_z: GLfloat = depth / 2.0;
         return vec![
 
         //1
-        highX, lowY, highZ,
-        lowX, lowY, lowZ,
-        highX,lowY,lowZ,
+        high_x, low_y, high_z,
+        low_x, low_y, low_z,
+        high_x,low_y,low_z,
         //2
-        highX,lowY, highZ,
-        lowX, lowY, highZ,
-        lowX, lowY,lowZ,
+        high_x,low_y, high_z,
+        low_x, low_y, high_z,
+        low_x, low_y,low_z,
         ];
     }
 

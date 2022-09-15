@@ -4,7 +4,6 @@ mod data;
 //use data::model::Model;
 use data::world::World;
 use data::model::Model;
-use data::model::ModelInstance;
 use data::model::AreaInstance;
 use data::model::Face;
 use data::model::TextureInfo;

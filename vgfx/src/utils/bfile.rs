@@ -1,15 +1,6 @@
-use gl;
-use gl::types::*;
 use std::fs;
-use std::ffi::CString;
-use std::os::raw::c_char;
-use std::ptr::null;
-use std::ptr::null_mut;
-use std::mem;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-use encoding_rs::Decoder;
 use encoding_rs::UTF_8;
 use std::borrow::Cow;
 use byteorder::{ByteOrder, BigEndian, LittleEndian};
@@ -38,7 +29,7 @@ impl BFile {
         let metadata = fs::metadata(&fname).expect("unable to read metadata");
         let mut buffer = vec![0; metadata.len() as usize];
         f.read(&mut buffer).expect("buffer overflow");
-        let mut bfile = BFile {
+        let bfile = BFile {
             fname: fname,
             buffer: buffer,
             curpos: 0,
@@ -98,7 +89,7 @@ impl BFile {
         return glm::vec3(ele1 ,ele2, ele3);
     }
 
-    pub fn isEnd(&mut self) -> bool {
+    pub fn is_end(&mut self) -> bool {
         return self.curpos >= self.buffer.len();
     }
 }

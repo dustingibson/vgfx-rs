@@ -1,6 +1,6 @@
 use gl;
 use gl::types::*;
-use std::mem;
+
 use crate::Shader;
 use crate::Text;
 use crate::SDLContext;
@@ -28,7 +28,7 @@ impl Label2D {
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
         let new_position = pos;
-        let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, width, height, 0.0);
+        let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, width, height);
         // let texture_array = vec![
         //     0.0, 1.0, 
         //     1.0, 1.0, 
@@ -92,8 +92,7 @@ impl Label2D {
         self.text_texture.change_text(sdl_payload, text);
     }
 
-    pub fn draw(&mut self, camera: &mut Camera, shader: &mut Shader) {
-        self.change_vertex(camera);
+    pub fn draw(&mut self, shader: &mut Shader) {
         unsafe {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
@@ -139,46 +138,29 @@ impl Label2D {
         }
     }
 
-    fn change_vertex(&mut self, camera: &mut Camera) {
-        // //let new_position = glm::vec3(camera.position.x, camera.position.y, camera.position.z);
-        // //println!("{}", self.vertex_array[0]);
-        // let new_position = glm::vec3(camera.position.z, camera.position.y, camera.position.x);
-        // //let new_position = glm::vec3(camera.position.x, camera.position.z, camera.position.y);
-        // self.vertex_array = Self::init_vertex_array(new_position, 0.0, 1.0, 1.0);
-        // unsafe {
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);
-        //     gl::BufferData(
-        //         gl::ARRAY_BUFFER, 
-        //         (self.vertex_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
-        //         self.vertex_array.as_ptr() as *const gl::types::GLvoid, 
-        //         gl::STATIC_DRAW);
-        //     gl::BindBuffer(gl::ARRAY_BUFFER, 0);
-        // }
-    }
-
-    fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat, depth: GLfloat) -> Vec<GLfloat> {
-        let lowX: GLfloat = point.x; 
-        let highX: GLfloat = point.x + width;
-        let lowY: GLfloat = point.y;
-        let highY: GLfloat = point.y + height;
+    fn init_vertex_array(point: glm::Vec3, width: GLfloat, height: GLfloat) -> Vec<GLfloat> {
+        let low_x: GLfloat = point.x; 
+        let high_x: GLfloat = point.x + width;
+        let low_y: GLfloat = point.y;
+        let high_y: GLfloat = point.y + height;
 
 
-        return vec![lowX, highY, 0.0, 
-            highX, lowY, 0.0, 
-            lowX, lowY, 0.0, 
-            lowX, highY, 0.0, 
-            highX, highY, 0.0, 
-            highX, lowY, 0.0];
+        return vec![low_x, high_y, 0.0, 
+            high_x, low_y, 0.0, 
+            low_x, low_y, 0.0, 
+            low_x, high_y, 0.0, 
+            high_x, high_y, 0.0, 
+            high_x, low_y, 0.0];
         // return vec![
 
         // //1
-        //     lowX, lowY,lowZ,
-        //     lowX, lowY, highZ,
-        //     lowX, highY, highZ,
+        //     low_x, low_y,low_z,
+        //     low_x, low_y, high_z,
+        //     low_x, high_y, high_z,
         // //5
-        //     lowX, lowY,lowZ,
-        //     lowX, highY, highZ,
-        //     lowX, highY,lowZ,
+        //     low_x, low_y,low_z,
+        //     low_x, high_y, high_z,
+        //     low_x, high_y,low_z,
         // ];
     }
 
