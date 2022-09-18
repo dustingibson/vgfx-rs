@@ -210,6 +210,19 @@ impl Texture {
         }
     }
 
+    pub fn update_from_surface(&mut self, surface: Surface) {
+        let img_data = surface.raw();
+        unsafe {
+            gl::BindTexture(gl::TEXTURE_2D, self.texture_id);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+            gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::BGRA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
+            gl::GenerateMipmap(gl::TEXTURE_2D);
+        }
+    }
+
     pub fn removeTexture(&mut self) {
         unsafe { gl::DeleteTextures(1, &self.texture_id); }
     }
