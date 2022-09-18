@@ -23,7 +23,7 @@ pub struct Label2D {
 
 impl Label2D {
 
-    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, width: GLfloat, height: GLfloat) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, width: GLfloat, height: GLfloat, font_size: u16) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
@@ -73,7 +73,7 @@ impl Label2D {
                 gl::STATIC_DRAW);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
-        let text_texture = Text::new(sdl_payload, text, new_position);
+        let text_texture = Text::new(sdl_payload, text, new_position, font_size);
         return Label2D {
             text_texture: text_texture,
             width: width,

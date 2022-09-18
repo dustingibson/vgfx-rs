@@ -37,6 +37,10 @@ impl Camera {
         }
     }
 
+    pub fn coord_str(&self) -> String {
+        return format!("{:.4} {:.4} {:.4}", self.position.x, self.position.y, self.position.z);
+    }
+
     pub fn translate(& mut self, translate_vector: glm::Vec3, product: f32) {
         self.position += translate_vector * product;
         self.update();

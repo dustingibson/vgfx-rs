@@ -22,7 +22,7 @@ pub struct Label {
 
 impl Label {
 
-    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, width: GLfloat, height: GLfloat) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, width: GLfloat, height: GLfloat, font_size: u16) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
@@ -63,7 +63,7 @@ impl Label {
                 gl::STATIC_DRAW);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
-        let text_texture = Text::new(sdl_payload, text, new_position);
+        let text_texture = Text::new(sdl_payload, text, new_position, font_size);
         return Label {
             text_texture: text_texture,
             width: width,

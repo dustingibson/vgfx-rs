@@ -20,7 +20,7 @@ use std::time::Instant;
 
 pub struct World {
     base_folder: String,
-    model_map: HashMap<String, Model>,
+    pub model_map: HashMap<String, Model>,
     model_instances: Vec<ModelInstance>,
     oct_tree: OctTree<ModelInstance>,
     texture_group: HashMap<String, TextureGroupRenderer>

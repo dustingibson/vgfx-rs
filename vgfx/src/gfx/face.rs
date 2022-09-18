@@ -96,11 +96,7 @@ impl FacePartitionRender {
         }
     }
 
-    pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3, texture: &mut Texture) {
-        
-        
-        
-        
+    pub fn draw(&self, shader: &mut Shader, position: &mut glm::Vec3, texture: &Texture) {
         unsafe {
             
             gl::BindVertexArray(self.vao);
@@ -130,7 +126,7 @@ impl FacePartitionRender {
         }
     }
 
-    pub fn get_model(&mut self, position: &mut glm::Vec3) -> glm::Mat4 { 
+    pub fn get_model(&self, position: &mut glm::Vec3) -> glm::Mat4 { 
         let c_model: glm::Mat4 = glm::Mat4::identity();
         return glm::translate(&c_model, position);
     }

@@ -1,6 +1,8 @@
 
 
 extern crate nalgebra_glm as glm;
+use std::collections::HashMap;
+
 use crate::Shader;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::texture::Texture;
@@ -33,9 +35,9 @@ impl Model {
         };
     }
 
-    pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3) {
-        for face_partition in self.face_partitions.iter_mut() {
-            face_partition.draw(shader, position, &mut self.textures[face_partition.texture_index]);
+    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3) {
+        for face_partition in self.face_partitions.iter() {
+            face_partition.draw(shader, position, &self.textures[face_partition.texture_index]);
         }
     }
 
@@ -53,5 +55,9 @@ impl ModelInstance {
             position: position,
             scale: scale
         };
+    }
+
+    pub fn draw(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>) {
+        model_map.get(&self.model_name).unwrap().draw(shader, &mut self.position);
     }
 }

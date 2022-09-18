@@ -10,27 +10,23 @@ mod mode;
 mod dep;
 mod utils;
 mod world;
-
+mod editor;
 
 use gfx::shader::Shader;
 use gfx::shader::ShaderContainer;
 use geo::texture_polygon::TexturePolygon;
-
 use geo::label_2d::Label2D;
-
 use gfx::camera::Camera;
 use gfx::texture::Texture;
 use gfx::text::Text;
 use model::model::Model;
-
 use model::model::ModelInstance;
-
 use mode::demo::Demo;
 use world::world::World;
 use dep::events::SDLContext;
 use utils::bfile::BFile;
 use utils::state::SwitchState;
-
+use editor::editor::Editor;
 
 use std::env;
 

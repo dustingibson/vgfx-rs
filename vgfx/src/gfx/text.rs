@@ -13,13 +13,14 @@ extern crate nalgebra_glm as glm;
 pub struct Text {
     pub text: String,
     pub point: glm::Vec3,
-    pub texture: Texture
+    pub texture: Texture,
+    pub font_size: u16
 }
 
 impl Text {
-    pub fn new(sdl_payload: &mut SDLContext, text: String, point: glm::Vec3) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, text: String, point: glm::Vec3, font_size: u16) -> Self {
         let texture_id: GLuint = 0;
-        let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", 128) {
+        let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", font_size) {
             Ok(x) => x,
             Err(e) => panic!("Cannot load font")
         };
@@ -29,26 +30,28 @@ impl Text {
             Err(e) => panic!("Cannot render font")
         };
         return Text {
-            //texture: unsafe { Texture::fromSurface(surface, (*img_data).pixels as *const gl::types::GLvoid) },
             texture: Texture::from_surface(surface),
             text: text,
-            point: point
+            point: point,
+            font_size: font_size
         }
     }
 
     pub fn change_text(&mut self, sdl_payload: &mut SDLContext, text: String) {
-        self.texture.removeTexture();
-        let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", 128) {
-            Ok(x) => x,
-            Err(e) => panic!("Cannot load font")
-        };
-        let renderer: PartialRendering = font.render(&text);
-        let surface: Surface = match renderer.blended(sdl2::pixels::Color::RGBA(255 as u8, 0  as u8, 0  as u8, 255  as u8)) {
-            Ok(x) => x,
-            Err(e) => panic!("Cannot render font")
-        };
-        self.text = text;
-        self.texture = Texture::from_surface(surface);
+        if !self.text.eq(&text) {
+            self.texture.removeTexture();
+            let font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", self.font_size) {
+                Ok(x) => x,
+                Err(e) => panic!("Cannot load font")
+            };
+            let renderer: PartialRendering = font.render(&text);
+            let surface: Surface = match renderer.blended(sdl2::pixels::Color::RGBA(255 as u8, 0  as u8, 0  as u8, 255  as u8)) {
+                Ok(x) => x,
+                Err(e) => panic!("Cannot render font")
+            };
+            self.text = text;
+            self.texture = Texture::from_surface(surface);
+        }
     }
 
     // pub fn draw(&mut self, shader: &mut Shader) {

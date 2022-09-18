@@ -5,41 +5,35 @@ use crate::Camera;
 use crate::Label2D;
 use crate::SDLContext;
 use crate::World;
+use crate::editor::editor::Editor;
 
 pub struct Demo {
-    //pub plane: Plane,
-    pub label: Label2D,
-    pub world: World
+    pub world: World,
+    pub editor: Editor
 }
 
 impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5);
+        let world: World = World::new_load(sdl_payload);
         return Demo {
-            world: World::new_load(sdl_payload),
-            label: label
+            editor: Editor::new(sdl_payload, camera, &world.model_map),
+            world: world
         };
     }
 
     pub fn draw(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         self.world.draw(&mut shader_container.get_shader("fragment".to_string()), camera);
-        self.draw_hud(camera, shader_container);
+        //self.editor.draw(camera, shader_container, &self.world.model_map);
     }
 
     pub fn clean_up(&mut self) {
-        self.label.clean_up();
         self.world.clean_up();
     }
 
-    pub fn run(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
-        self.draw(camera, shader);
-    }
-
-    pub fn draw_hud(&mut self, camera: &mut Camera, shader: &mut ShaderContainer) {
-        camera.set_projection_ortho(shader);
-        self.label.draw(&mut shader.get_shader("fragment".to_string()));
-        camera.set_projection(shader);
+    pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        self.editor.run(sdl_context, camera, shader_container, &self.world.model_map);
+        self.draw(camera, shader_container);
     }
 
     pub fn draw_debug(&mut self, sdl_payload: &mut SDLContext) {
