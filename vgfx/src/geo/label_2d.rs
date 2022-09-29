@@ -18,29 +18,25 @@ pub struct Label2D {
     pub text_texture: Text,
     vertex_buffer: GLuint,
     normal_buffer: GLuint,
-    texture_buffer: GLuint
+    texture_buffer: GLuint,
+    stretch: bool
 }
 
 impl Label2D {
 
-    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, width: GLfloat, height: GLfloat, font_size: u16) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, width: GLfloat, height: GLfloat, font_size: u16, stretch: bool) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
         let new_position = pos;
-        let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, width, height);
-        // let texture_array = vec![
-        //     0.0, 1.0, 
-        //     1.0, 1.0, 
-        //     1.0, 0.0, 
 
-        //     0.0, 1.0, 
-        //     1.0, 0.0, 
-        //     0.0, 0.0
-        // ];
-        //let texture_array = [0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0];
+        let mut text_texture = Text::new(sdl_payload, text, new_position, font_size);
+
+        let new_width = if !stretch { text_texture.surface_size.0 as f32 / sdl_payload.res_width as f32 } else { width };
+        let new_height = if !stretch { text_texture.surface_size.1 as f32 / sdl_payload.res_height as f32 } else { height };
+
+        let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, new_width, new_height);
         let normal_array = Self::init_normal_array();
-        //let texture_array = vec![0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0];
         let texture_array = Self::init_texture_array();
 
         unsafe {
@@ -73,23 +69,42 @@ impl Label2D {
                 gl::STATIC_DRAW);
             gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
-        let text_texture = Text::new(sdl_payload, text, new_position, font_size);
         return Label2D {
             text_texture: text_texture,
-            width: width,
-            height: height,
+            width: new_width,
+            height: new_height,
             position: new_position,
             vertex_array: vertex_array,
             normal_array: normal_array,
             vertex_buffer: vertex_buffer,
             normal_buffer: normal_buffer,
-            texture_buffer: texture_buffer
+            texture_buffer: texture_buffer,
+            stretch: stretch
+        }
+    }
+
+    fn rebind_vertex_buffers(&mut self) {
+        unsafe {
+            //gl::GenBuffers(1, &mut self.vertex_buffer);
+            gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer);
+            gl::BufferData(
+                gl::ARRAY_BUFFER, 
+                (self.vertex_array.len() * std::mem::size_of::<GLfloat>()) as gl::types::GLsizeiptr,
+                self.vertex_array.as_ptr() as *const gl::types::GLvoid, 
+                gl::STATIC_DRAW);
+            gl::BindBuffer(gl::ARRAY_BUFFER, 0);
         }
     }
 
     pub fn change_text(&mut self, sdl_payload: &mut SDLContext, text: String) {
         //self.text_texture = Text::new(sdl_payload, text, self.position);   
-        self.text_texture.change_text(sdl_payload, text);
+        let text_changed = self.text_texture.change_text(sdl_payload, text);
+        if (text_changed) {
+            self.width = if !self.stretch { self.text_texture.surface_size.0 as f32 / sdl_payload.res_width as f32 } else { self.width };
+            self.height = if !self.stretch { self.text_texture.surface_size.1 as f32 / sdl_payload.res_height as f32 } else { self.height };
+            self.vertex_array = Self::init_vertex_array(self.position, self.width, self.height);
+            self.rebind_vertex_buffers();
+        }
     }
 
     pub fn draw(&mut self, shader: &mut Shader) {

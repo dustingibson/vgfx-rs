@@ -19,7 +19,8 @@ pub struct Text {
     pub point: glm::Vec3,
     pub texture: Texture,
     pub font_size: u16,
-    pub font_bytes: Vec<u8>
+    pub font_bytes: Vec<u8>,
+    pub surface_size: (u32, u32)
 }
 
 impl Text {
@@ -39,31 +40,28 @@ impl Text {
 
         let mut font = match sdl_payload.ttf_context.load_font_from_rwops(rwops, font_size) {
             Ok(x) => x,
-            Err(e) => panic!("Cannot load font")
+            Err(e) => panic!("Cannot load font {}", e.as_str())
         };
-
-        // let mut font = match sdl_payload.ttf_context.load_font("res/font/arial.ttf", font_size) {
-        //     Ok(x) => x,
-        //     Err(e) => panic!("Cannot load font")
-        // };
         let renderer: PartialRendering = font.render(&text);
         let surface: Surface = match renderer.blended(sdl2::pixels::Color::RGBA(255 as u8, 0  as u8, 0  as u8, 255  as u8)) {
             Ok(x) => x,
-            Err(e) => panic!("Cannot render font")
+            Err(e) => panic!("Cannot render font {}", e.to_string())
         };
+        let surface_size = surface.size();
         let mut text = Text {
             texture: Texture::from_surface(surface),
             text: text,
             point: point,
             font_size: font_size,
-            font_bytes: vec![]
+            font_bytes: vec![],
+            surface_size: surface_size
         };
         text.font_bytes = buffer.clone();
         return text;
 
     }
 
-    pub fn change_text(&mut self, sdl_payload: &mut SDLContext, text: String) {
+    pub fn change_text(&mut self, sdl_payload: &mut SDLContext, text: String) -> bool {
         if !self.text.eq(&text) {
             self.texture.removeTexture();
             let rwops: sdl2::rwops::RWops = match sdl2::rwops::RWops::from_bytes(&self.font_bytes) {
@@ -79,9 +77,11 @@ impl Text {
                 Ok(x) => x,
                 Err(e) => panic!("Cannot render font")
             };
+            self.surface_size = surface.size();
             self.text = text;
             self.texture.update_from_surface(surface);
+            return true;
         }
+        return false;
     }
-
 }

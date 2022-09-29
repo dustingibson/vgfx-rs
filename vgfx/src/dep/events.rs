@@ -12,11 +12,13 @@ pub struct SDLContext {
     pub left_mouse_state: SwitchState,
     pub left_click: bool,
     pub terrain_texture: Texture,
-    pub ms: u32
+    pub ms: u32,
+    pub res_width: u32,
+    pub res_height: u32
 }
 
 impl SDLContext {
-    pub fn new(sdl_context: sdl2::Sdl, ttf_context: Sdl2TtfContext ) -> Self {
+    pub fn new(sdl_context: sdl2::Sdl, ttf_context: Sdl2TtfContext, res_width: u32, res_height: u32 ) -> Self {
         let left_mouse_state: SwitchState = SwitchState::new();
         return match sdl_context.event_pump() {
             Ok(val) => { 
@@ -26,7 +28,9 @@ impl SDLContext {
                     ttf_context: ttf_context,
                     left_click: false,
                     terrain_texture: Texture::from_package("test".to_string()),
-                    ms: 0
+                    ms: 0,
+                    res_width: res_width, 
+                    res_height: res_height
                 };
              },
             Err(val) => { panic!("{}", val); }

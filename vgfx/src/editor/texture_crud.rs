@@ -19,7 +19,7 @@ pub struct TextureCrud {
 
 impl TextureCrud {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Self {
-        let label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5, 128);
+        let label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.5, 0.5, 128, true);
 
         let mut texture_crud = TextureCrud {
             main_label: label,
@@ -63,7 +63,7 @@ impl TextureCrud {
     }
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
-        self.texture_cursor.as_mut().unwrap().position = glm::vec3(camera.position.x, camera.position.y , camera.position.z);
+        self.texture_cursor.as_mut().unwrap().position = camera.abs_camera_position(100.0);
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader("fragment".to_string()), model_map);
     }

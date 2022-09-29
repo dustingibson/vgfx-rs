@@ -13,31 +13,64 @@ use super::texture_crud::TextureCrud;
 
 pub struct Editor {
     camera_coord_label: Label2D,
+    editor_mode_label: Label2D,
     texture_crud: TextureCrud,
-    mode_index: u32,
-    max_mode_index: u32,
+    mode_index: i32,
+    max_mode_index: i32,
 }
 
 pub enum EditorModes {
+    TerrainCrud,
     TextureCrud
 }
 
 impl Editor {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Self {
-        let label: Label2D = Label2D::new( sdl_payload, camera, camera.coord_str(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.2, 0.05, 64);
+        let camera_coord_label: Label2D = Label2D::new( sdl_payload, camera, camera.coord_front_str(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.2, 0.05, 32, false);
+        let editor_mode_label: Label2D = Label2D::new( sdl_payload, camera, " ".to_string(), glm::vec4(1.0,0.0,0.0,1.0),glm::vec3(0.0, 0.1, 0.0), 0.2, 0.05, 32, false );
         return Editor {
-            camera_coord_label: label,
+            camera_coord_label: camera_coord_label,
+            editor_mode_label: editor_mode_label,
             mode_index: 0,
-            max_mode_index: 0,
-            texture_crud: TextureCrud::new(sdl_payload, camera, model_map)
+            max_mode_index: 1,
+            texture_crud: TextureCrud::new(sdl_payload, camera, model_map),
         };
     }
 
+    fn prev_mode(&mut self) {
+        self.mode_index -= 1;
+        if (self.mode_index < 0) {
+            self.mode_index = self.max_mode_index;
+        }
+    }
+
+    fn next_mode(&mut self) {
+        self.mode_index += 1;
+        if (self.mode_index > self.max_mode_index) {
+            self.mode_index = 0;
+        }
+    }
+
+    fn to_editor_mode_str(&self) -> String {
+        return match self.mode_index {
+            0 => "Terrain".to_string(),
+            1 => "Texture".to_string(),
+            _ => "None".to_string()
+        }
+    }
+
+    fn update_labels(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera) {
+        self.camera_coord_label.change_text(sdl_context, camera.coord_front_str());
+        self.editor_mode_label.change_text(sdl_context, self.to_editor_mode_str());
+    }
+
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
-        self.camera_coord_label.change_text(sdl_context, camera.coord_str());
+        self.update_labels(sdl_context, camera);
         if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::Left)) {
+            self.prev_mode();
         }
         if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::Right)) {
+            self.next_mode();
         }
         if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
         }
@@ -54,8 +87,7 @@ impl Editor {
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         camera.set_projection_ortho(shader_container);
         self.camera_coord_label.draw(&mut shader_container.get_shader("fragment".to_string()));
+        self.editor_mode_label.draw(&mut shader_container.get_shader("fragment".to_string()));
         camera.set_projection(shader_container);
     }
-
-
 }

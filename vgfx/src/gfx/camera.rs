@@ -41,6 +41,15 @@ impl Camera {
         return format!("{:.4} {:.4} {:.4}", self.position.x, self.position.y, self.position.z);
     }
 
+    pub fn coord_front_str(&self) -> String {
+        let cam_pos = self.abs_camera_position(50.0);
+        return format!("{:.4} {:.4} {:.4}", cam_pos.x, cam_pos.y, cam_pos.z);
+    }
+
+    pub fn abs_camera_position(&self, m: f32) -> glm::Vec3 {
+        return glm::vec3(self.position.x + self.front.x*m, self.position.y + self.front.y*m, self.position.z + self.front.z*m);
+    }
+
     pub fn translate(& mut self, translate_vector: glm::Vec3, product: f32) {
         self.position += translate_vector * product;
         self.update();

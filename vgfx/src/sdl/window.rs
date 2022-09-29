@@ -72,7 +72,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     //sdl_context.mouse().show_cursor(true);
     sdl_context.mouse().set_relative_mouse_mode(true);
     
-    let mut sdl_payload: SDLContext = SDLContext::new(sdl_context, ttf_context);
+    let mut sdl_payload: SDLContext = SDLContext::new(sdl_context, ttf_context, WIDTH, HEIGHT);
     let mut camera: Camera = Camera::new( glm::vec3(0.0, 0.0, 0.0), WIDTH as f32, HEIGHT as f32);
 
     let mut demo: Demo = Demo::new(&mut sdl_payload, &mut camera);
