@@ -71,12 +71,15 @@ impl StateMachine {
     }
 }
 
+pub struct KeyState {
+    pressed: StateMachine
+}
+
 pub struct SwitchState {
     switch: StateMachine
 }
 
 impl SwitchState {
-
     pub fn new() -> Self {
         let mut state_machine: StateMachine = StateMachine::new("off".to_string());
         state_machine.add_state(&"on".to_string());
@@ -94,5 +97,35 @@ impl SwitchState {
 
     pub fn is_on(&mut self) -> bool {
         return self.switch.state_name == "on".to_string();
+    }
+}
+
+impl KeyState {
+    pub fn new() -> Self {
+        let mut state_machine: StateMachine = StateMachine::new("not pressed".to_string());
+        state_machine.add_state(&"not pressed".to_string());
+        state_machine.add_state(&"press recorded".to_string());
+        state_machine.add_state(&"press ignored".to_string());
+        state_machine.add_transition("not pressed".to_string(), "press".to_string(), "press recorded".to_string());
+        state_machine.add_transition("not pressed".to_string(), "release".to_string(), "not pressed".to_string());
+        state_machine.add_transition("press recorded".to_string(), "press".to_string(), "press ignored".to_string());
+        state_machine.add_transition("press recorded".to_string(), "release".to_string(), "not pressed".to_string());
+        state_machine.add_transition("press ignored".to_string(), "press".to_string(), "press ignored".to_string());
+        state_machine.add_transition("press ignored".to_string(), "release".to_string(), "not pressed".to_string());
+        return KeyState {
+            pressed: state_machine
+        }
+    }
+
+    pub fn press(&mut self) {
+        self.pressed.transition_state("press".to_string());
+    }
+
+    pub fn release(&mut self) {
+        self.pressed.transition_state("release".to_string());
+    }
+
+    pub fn is_pressed(&mut self) -> bool {
+        return self.pressed.state_name == "press recorded".to_string();
     }
 }

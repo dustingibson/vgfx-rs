@@ -18,13 +18,12 @@ pub struct Label2D {
     pub text_texture: Text,
     vertex_buffer: GLuint,
     normal_buffer: GLuint,
-    texture_buffer: GLuint,
-    stretch: bool
+    texture_buffer: GLuint
 }
 
 impl Label2D {
 
-    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, width: GLfloat, height: GLfloat, font_size: u16, stretch: bool) -> Self {
+    pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, text: String, color: glm::Vec4, pos: glm::Vec3, font_size: u16) -> Self {
         let mut vertex_buffer: GLuint = 0;
         let mut normal_buffer: GLuint = 0;
         let mut texture_buffer: GLuint = 0;
@@ -32,8 +31,8 @@ impl Label2D {
 
         let mut text_texture = Text::new(sdl_payload, text, new_position, font_size);
 
-        let new_width = if !stretch { text_texture.surface_size.0 as f32 / sdl_payload.res_width as f32 } else { width };
-        let new_height = if !stretch { text_texture.surface_size.1 as f32 / sdl_payload.res_height as f32 } else { height };
+        let new_width = text_texture.surface_size.0 as f32 / sdl_payload.res_width as f32;
+        let new_height = text_texture.surface_size.1 as f32 / sdl_payload.res_height as f32;
 
         let vertex_array:  Vec<GLfloat> = Self::init_vertex_array(new_position, new_width, new_height);
         let normal_array = Self::init_normal_array();
@@ -78,8 +77,7 @@ impl Label2D {
             normal_array: normal_array,
             vertex_buffer: vertex_buffer,
             normal_buffer: normal_buffer,
-            texture_buffer: texture_buffer,
-            stretch: stretch
+            texture_buffer: texture_buffer
         }
     }
 
@@ -100,8 +98,8 @@ impl Label2D {
         //self.text_texture = Text::new(sdl_payload, text, self.position);   
         let text_changed = self.text_texture.change_text(sdl_payload, text);
         if (text_changed) {
-            self.width = if !self.stretch { self.text_texture.surface_size.0 as f32 / sdl_payload.res_width as f32 } else { self.width };
-            self.height = if !self.stretch { self.text_texture.surface_size.1 as f32 / sdl_payload.res_height as f32 } else { self.height };
+            self.width = self.text_texture.surface_size.0 as f32 / sdl_payload.res_width as f32;
+            self.height = self.text_texture.surface_size.1 as f32 / sdl_payload.res_height as f32;
             self.vertex_array = Self::init_vertex_array(self.position, self.width, self.height);
             self.rebind_vertex_buffers();
         }

@@ -26,8 +26,8 @@ pub enum EditorModes {
 
 impl Editor {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Self {
-        let camera_coord_label: Label2D = Label2D::new( sdl_payload, camera, camera.coord_front_str(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 0.2, 0.05, 32, false);
-        let editor_mode_label: Label2D = Label2D::new( sdl_payload, camera, " ".to_string(), glm::vec4(1.0,0.0,0.0,1.0),glm::vec3(0.0, 0.1, 0.0), 0.2, 0.05, 32, false );
+        let camera_coord_label: Label2D = Label2D::new( sdl_payload, camera, camera.coord_front_str(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 32 );
+        let editor_mode_label: Label2D = Label2D::new( sdl_payload, camera, " ".to_string(), glm::vec4(1.0,0.0,0.0,1.0),glm::vec3(0.0, 0.1, 0.0), 32 );
         return Editor {
             camera_coord_label: camera_coord_label,
             editor_mode_label: editor_mode_label,
@@ -66,15 +66,15 @@ impl Editor {
 
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
         self.update_labels(sdl_context, camera);
-        if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::Left)) {
+        if (sdl_context.check_pressed("Left".to_string())) {
             self.prev_mode();
         }
-        if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::Right)) {
+        if (sdl_context.check_pressed("Right".to_string())) {
             self.next_mode();
         }
-        if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
+        if (sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
         }
-        if(sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
+        if (sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
         }
         match self.mode_index {
             0 => self.texture_crud.run(sdl_context, camera, shader_container, model_map),
