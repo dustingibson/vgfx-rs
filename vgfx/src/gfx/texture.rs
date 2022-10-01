@@ -169,10 +169,11 @@ impl Texture {
             Ok(val) => val,
             Err(val) => panic!("unable to load rwop")
         };
-        let surface = match sdl2::image::ImageRWops::load_png(&mut rwops) {
+        let mut surface = match sdl2::image::ImageRWops::load_png(&mut rwops) {
             Ok(val) => val,
             Err(val) => panic!("unable to load surface")
         };
+        surface = surface.convert_format(sdl2::pixels::PixelFormatEnum::RGBA32).unwrap();
         self.flip_surface(&surface);
         let img_data = surface.raw();
         unsafe {
@@ -182,6 +183,7 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+            gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
