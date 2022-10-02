@@ -8,16 +8,16 @@ use crate::Camera;
 use crate::model::model::Model;
 use crate::model::model::ModelInstance;
 
-pub struct TextureCrud {
+pub struct TerrainCrud {
     pub main_label: Label2D,
     pub texture_cursor: Option<ModelInstance>,
     pub model_index: i32
 }
 
-impl TextureCrud {
+impl TerrainCrud {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Self {
         let label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 128);
-        let mut texture_crud = TextureCrud {
+        let mut texture_crud = TerrainCrud {
             main_label: label,
             texture_cursor: None,
             model_index: 0
@@ -74,6 +74,4 @@ impl TextureCrud {
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader("fragment".to_string()), model_map);
     }
-
-
 }
