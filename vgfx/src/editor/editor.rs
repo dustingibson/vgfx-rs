@@ -9,12 +9,14 @@ use crate::Label2D;
 use crate::Camera;
 use crate::model::model::Model;
 
+use super::terrain_crud::TerrainCrud;
 use super::texture_crud::TextureCrud;
 
 pub struct Editor {
     camera_coord_label: Label2D,
     editor_mode_label: Label2D,
     texture_crud: TextureCrud,
+    terrain_crud: TerrainCrud,
     mode_index: i32,
     max_mode_index: i32,
 }
@@ -34,6 +36,7 @@ impl Editor {
             mode_index: 0,
             max_mode_index: 1,
             texture_crud: TextureCrud::new(sdl_payload, camera, model_map),
+            terrain_crud: TerrainCrud::new(sdl_payload, camera, model_map)
         };
     }
 
@@ -78,6 +81,7 @@ impl Editor {
         }
         match self.mode_index {
             0 => self.texture_crud.run(sdl_context, camera, shader_container, model_map),
+            1 => self.terrain_crud.run(sdl_context, camera, shader_container, model_map),
             _ => {}
         }
         self.draw(camera, shader_container, model_map);
