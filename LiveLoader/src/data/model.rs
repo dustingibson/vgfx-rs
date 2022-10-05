@@ -8,8 +8,19 @@ pub struct ModelInstance {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct Skybox {
+    pub left: String,
+    pub right: String,
+    pub top: String,
+    pub bottom: String,
+    pub front: String,
+    pub back: String
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct AreaInstance {
-    pub model_instances: Vec<ModelInstance>
+    pub model_instances: Vec<ModelInstance>,
+    pub skybox: Skybox
 }
 
 pub struct TextureInfo {

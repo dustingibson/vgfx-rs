@@ -164,7 +164,7 @@ impl Texture {
         }
     }
 
-    pub fn createTextureBufferFromByteData(&mut self, image_bytes: &[u8]) {
+    pub fn create_texture_buffer_from_byte_data(&mut self, image_bytes: &[u8]) {
         let mut rwops: sdl2::rwops::RWops = match sdl2::rwops::RWops::from_bytes(&image_bytes) {
             Ok(val) => val,
             Err(val) => panic!("unable to load rwop")

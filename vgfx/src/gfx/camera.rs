@@ -42,8 +42,7 @@ impl Camera {
     }
 
     pub fn coord_front_str(&self) -> String {
-        let cam_pos = self.abs_camera_position(50.0);
-        return format!("{:.4} {:.4} {:.4}", cam_pos.x, cam_pos.y, cam_pos.z);
+        return format!("{:.4} {:.4} {:.4}", self.front.x, self.front.y, self.front.z);
     }
 
     pub fn abs_camera_position(&self, m: f32) -> glm::Vec3 {

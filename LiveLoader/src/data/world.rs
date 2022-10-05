@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{self, File};
 use std::io;
+use std::ptr::write_bytes;
 use std::str::Split;
 use super::model::FacePartition;
 
@@ -137,7 +138,7 @@ impl World {
         };
     }
 
-    pub fn get_byte_from_file(&mut self, fname: String) -> io::Result<Vec<u8>> {
+    pub fn get_byte_from_file(& self, fname: String) -> io::Result<Vec<u8>> {
         match fs::read(fname) {
             Ok(res) => { 
                 Ok(res)
@@ -325,92 +326,123 @@ impl World {
          }
     }
 
-    pub fn save(&mut self, base_folder: String) -> io::Result<()> {
-        let world_file = [base_folder,"/world.pak".to_string()].join("");
+    pub fn save(&mut self, out_folder: String) -> io::Result<()> {
+        let world_file = [out_folder,"/world.pak".to_string()].join("");
         let mut pos: usize = 0;
         let mut buffer = File::create(world_file)?;
 
         // 1. Count of Areas
         pos += write_add(&mut buffer, &self.areas.len().to_be_bytes())?;
-        for area in self.areas.iter_mut() {
-            // 2. Count of Area Model Instances
+        for area in self.areas.iter() {
+            // Skybox Left Image Size
+            let left_img = self.get_byte_from_file([self.base_folder.to_string(), "/areas/".to_string(), area.skybox.left.to_string() ].join("")).unwrap();
+            let right_img = self.get_byte_from_file([self.base_folder.to_string(), "/areas/".to_string(), area.skybox.right.to_string() ].join("")).unwrap();
+            let top_img = self.get_byte_from_file([self.base_folder.to_string(), "/areas/".to_string(), area.skybox.top.to_string() ].join("")).unwrap();
+            let bottom_img = self.get_byte_from_file([self.base_folder.to_string(), "/areas/".to_string(), area.skybox.bottom.to_string() ].join("")).unwrap();
+            let front_img = self.get_byte_from_file([self.base_folder.to_string(), "/areas/".to_string(), area.skybox.front.to_string() ].join("")).unwrap();
+            let back_img = self.get_byte_from_file([self.base_folder.to_string(), "/areas/".to_string(), area.skybox.back.to_string() ].join("")).unwrap();
+            // 2. Skybox Left Image Size
+            pos += write_add(&mut buffer, &left_img.len().to_be_bytes())?;
+            // 3. Skybox Left Image Bytes
+            pos += write_add(&mut buffer, &left_img)?;
+            // 4. Skybox Right Image Size
+            pos += write_add(&mut buffer, &right_img.len().to_be_bytes())?;
+            // 5. Skybox Right Image Bytes
+            pos += write_add(&mut buffer, &right_img)?;
+            // 6. Skybox Top Image Size
+            pos += write_add(&mut buffer, &top_img.len().to_be_bytes())?;
+            // 7. Skybox Top Image Bytes
+            pos += write_add(&mut buffer, &top_img)?;
+            // 8. Skybox Bottom Image Size
+            pos += write_add(&mut buffer, &bottom_img.len().to_be_bytes())?;
+            // 9. Skybox Bottom Bytes
+            pos += write_add(&mut buffer, &bottom_img)?;
+            // 10. Skybox Front Image Size
+            pos += write_add(&mut buffer, &front_img.len().to_be_bytes())?;
+            // 11. Skybox Front Image Bytes
+            pos += write_add(&mut buffer, &front_img)?;
+            // 12. Skybox Back Image Size
+            pos += write_add(&mut buffer, &back_img.len().to_be_bytes())?;
+            // 13. Skybox Back Image Bytes
+            pos += write_add(&mut buffer, &back_img)?;
+            // 14. Count of Area Model Instances
             pos += write_add(&mut buffer, &area.model_instances.len().to_be_bytes())?;
-            for model_instance in area.model_instances.iter_mut() {
-                // 3. Area's Model Instance Name
+            for model_instance in area.model_instances.iter() {
+                // 15. Area's Model Instance Name
                 pos += write_str(&mut buffer, &model_instance.model_name.to_string())?;
-                // 4. Area's Model Instance Position
+                // 16. Area's Model Instance Position
                 pos += write_vec3(&mut buffer, &model_instance.position)?;
-                // 5. Area's Model Instance Scale
+                // 17. Area's Model Instance Scale
                 pos += write_add(&mut buffer, &model_instance.scale.to_be_bytes())?;
             }
         }
-        // 6. Count of Model Hash Map
+        // 18. Count of Model Hash Map
         pos += write_add(&mut buffer, &self.model_map.len().to_be_bytes())?;
         for (key, value) in self.model_map.iter_mut() {
-            // 7. Model Hash Map Name
+            // 19. Model Hash Map Name
             pos += write_str(&mut buffer, &key.to_string())?;
-            // 8. Count of Texture Info
+            // 20. Count of Texture Info
             pos += write_add(&mut buffer, &value.texture_info.len().to_be_bytes())?;
             for texture_info in value.texture_info.iter_mut() {
-                // 9. Texture Info Name
+                // 21. Texture Info Name
                 pos += write_str(&mut buffer, &texture_info.name)?;
-                // 10. Texture Info Ambient Color
+                // 22. Texture Info Ambient Color
                 pos += write_vec3(&mut buffer, &texture_info.ambient_color)?;
-                // 11. Texture Info Diffuse Color
+                // 23. Texture Info Diffuse Color
                 pos += write_vec3(&mut buffer, &texture_info.diffuse_color)?;
-                // 12. Texture Info Specular Color
+                // 24. Texture Info Specular Color
                 pos += write_vec3(&mut buffer, &texture_info.specular_color)?;
-                // 13. Texture Info Emissive Coeficient
+                // 25. Texture Info Emissive Coeficient
                 pos += write_vec3(&mut buffer, &texture_info.emissive_coeficient)?;
-                // 14. Texture Info Transmission Filter
+                // 26. Texture Info Transmission Filter
                 pos += write_vec3(&mut buffer, &texture_info.transmission_filter)?;
-                // 15. Texture Info Optical Density
+                // 27. Texture Info Optical Density
                 pos += write_add(&mut buffer, &texture_info.optical_density.to_be_bytes())?;
-                // 16. Texture Info Dissolve
+                // 28. Texture Info Dissolve
                 pos += write_add(&mut buffer, &texture_info.dissolve.to_be_bytes())?;
-                // 17. Texture Info Specular Highlights
+                // 29. Texture Info Specular Highlights
                 pos += write_add(&mut buffer, &texture_info.specular_highlights.to_be_bytes())?;
-                // 18. Texture Info Illum
+                // 30. Texture Info Illum
                 pos += write_add(&mut buffer, &texture_info.illum.to_be_bytes())?;
-                // 19. Texture Info Image Size
+                // 31. Texture Info Image Size
                 pos += write_add(&mut buffer, &texture_info.img.len().to_be_bytes())?;
-                // 20. Texture Info Image Byte Data
+                // 32. Texture Info Image Byte Data
                 pos += write_add(&mut buffer, &texture_info.img)?;
             }
-            // 21. Count of Vertices
+            // 33. Count of Vertices
             pos += write_add(&mut buffer, &value.vertices.len().to_be_bytes())?;
             for vertices in value.vertices.iter_mut() {
-                // 22. Vertices
+                // 34. Vertices
                 pos += write_vec3(&mut buffer, &vertices)?;
             }
-            // 23. Count of Texture Mappings
+            // 35. Count of Texture Mappings
             pos += write_add(&mut buffer, &value.texture_mappings.len().to_be_bytes())?;
             for texture_mappings in value.texture_mappings.iter_mut() {
-                // 24. Texture Mappings
+                // 36. Texture Mappings
                 pos += write_vec2(&mut buffer, &texture_mappings)?;
             }
-            // 25. Count of Normals
+            // 37. Count of Normals
             pos += write_add(&mut buffer, &value.normals.len().to_be_bytes())?;
             for normals in value.normals.iter_mut() {
-                // 26. Normals
+                // 38. Normals
                 pos += write_vec3(&mut buffer, &normals)?;
             }
-            // 27. Count of face partitions
+            // 39. Count of face partitions
             pos += write_add(&mut buffer, &value.faces.len().to_be_bytes())?;
             for face_partitions in value.faces.iter_mut() {
-                // 28. Count of faces in face partitions
+                // 40. Count of faces in face partitions
                 pos += write_add(&mut buffer, &face_partitions.faces.len().to_be_bytes())?;
-                // 29. Texture Info Index of Partition
+                // 41. Texture Info Index of Partition
                 pos += write_add(&mut buffer, &face_partitions.texture_info_index.to_be_bytes())?;
                 for face in face_partitions.faces.iter_mut() {
                     for i in 0..3 {
-                        // 30. Face Mode
+                        // 42. Face Mode
                         pos += write_add(&mut buffer, &[face[i].mode])?;
-                        // 31. Face Texture Vertex Index
+                        // 43. Face Texture Vertex Index
                         pos += write_add(&mut buffer, &face[i].vertex_index.to_be_bytes())?;
-                        // 32. Face Texture Map Index
+                        // 44. Face Texture Map Index
                         pos += write_add(&mut buffer, &face[i].texture_map_index.to_be_bytes())?;
-                        // 33. Face Texture Normals Index (If Applicable)
+                        // 45. Face Texture Normals Index (If Applicable)
                         if face[i].mode == 3 {
                             pos += write_add(&mut buffer, &face[i].normals_index.to_be_bytes())?;
                         }
@@ -422,10 +454,6 @@ impl World {
         Ok(())
     }
 }
-
-
-
-
 
 fn write_add(buffer: &mut File, data: &[u8])  -> io::Result<usize> {
     let bytes_written = buffer.write(data)?;

@@ -39,15 +39,10 @@ impl Mesh {
     }
 
     pub fn new_triangle() -> Mesh {
-        let mut size: f32 = 10.0;
+        let mut size: f32 = 3.0;
         let mut new_mesh = Self::new();
         
-
-        new_mesh.vertices.push( MeshVertex { 
-            id: 2,
-            position: glm::vec3(0.0, 0.0, 0.0)
-        });
-
+        
         new_mesh.vertices.push( MeshVertex { 
             id: 0,
             position: glm::vec3(size, 0.0, 0.0)
@@ -55,8 +50,15 @@ impl Mesh {
 
         new_mesh.vertices.push( MeshVertex { 
             id: 1,
-            position: glm::vec3(-size/2.0, size, 0.0)
+            position: glm::vec3(size*0.5, size*0.86603, 0.0)
         });
+
+                
+        new_mesh.vertices.push( MeshVertex { 
+            id: 2,
+            position: glm::vec3(0.0, 0.0, 0.0)
+        });
+
 
         new_mesh.edges.push( MeshEdge { 
             vertex_a_id: 0,

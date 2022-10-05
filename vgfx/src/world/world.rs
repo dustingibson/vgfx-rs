@@ -6,7 +6,9 @@ use crate::dep::events::SDLContext;
 use crate::Texture;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::shader::Shader;
+use crate::gfx::skybox::Skybox;
 use crate::gfx::texture_group::TextureGroupRenderer;
+use crate::model::model::AreaInstance;
 use crate::utils::octo::OctTree;
 use std::collections::HashMap;
 use std::io::prelude::*;
@@ -23,7 +25,8 @@ pub struct World {
     pub model_map: HashMap<String, Model>,
     model_instances: Vec<ModelInstance>,
     oct_tree: OctTree<ModelInstance>,
-    texture_group: HashMap<String, TextureGroupRenderer>
+    texture_group: HashMap<String, TextureGroupRenderer>,
+    skyboxes: Vec<Skybox>
 }
 
 impl World {
@@ -34,7 +37,8 @@ impl World {
             model_map: HashMap::new(),
             model_instances: vec![],
             oct_tree: OctTree::new(),
-            texture_group: HashMap::new()
+            texture_group: HashMap::new(),
+            skyboxes: vec![]
         };
         return world;
     }
@@ -45,7 +49,8 @@ impl World {
             model_map: HashMap::new(),
             model_instances: vec![],
             oct_tree: OctTree::new(),
-            texture_group: HashMap::new()
+            texture_group: HashMap::new(),
+            skyboxes: vec![]
         };
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
@@ -125,6 +130,14 @@ impl World {
         let num_areas = read_usize(&buffer, &mut pos);
         for i in 0..num_areas {
             let cur_model_instance: Vec<ModelInstance> = vec![];
+            let mut skybox: Skybox = Skybox::new();
+            skybox.left = load_image(&buffer, &mut pos, "left".to_string()).unwrap();
+            skybox.right = load_image(&buffer, &mut pos, "right".to_string()).unwrap();
+            skybox.top = load_image(&buffer, &mut pos, "top".to_string()).unwrap();
+            skybox.bottom = load_image(&buffer, &mut pos, "bottom".to_string()).unwrap();
+            skybox.front = load_image(&buffer, &mut pos, "front".to_string()).unwrap();
+            skybox.back = load_image(&buffer, &mut pos, "back".to_string()).unwrap();
+            world.skyboxes.push(skybox);
             // 2. Count of Area Model Instances
             let num_model_instances = read_usize(&buffer, &mut pos);
             for j in 0..num_model_instances {
@@ -142,7 +155,6 @@ impl World {
                 //world.model_instances.push(new_model_instance);
                 world.oct_tree.insert_item(Box::new(new_model_instance), model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]);
             }
-            //world.areas.push(AreaInstance { model_instances: cur_model_instance });
         }
         // 6. Count of Model Hash Map
         let hash_map_cnt = read_usize(&buffer, &mut pos);
@@ -186,7 +198,7 @@ impl World {
                 if img_size > 0 {
                     let img_bytes = read_to_array(&buffer, pos, img_size);
                     pos += img_size;
-                    cur_texture.createTextureBufferFromByteData(&img_bytes);
+                    cur_texture.create_texture_buffer_from_byte_data(&img_bytes);
                 }
                 let mode = if img_size > 0  { 3 } else { 2 };
                 cur_model.textures.push(cur_texture.clone());
@@ -324,4 +336,20 @@ fn read_vec2(data: &Vec<u8>, pos: &mut usize) -> Vec<f32> {
 
 fn read_vec3(data: &Vec<u8>, pos: &mut usize) -> Vec<f32> {
     return read_vec(data, 3, pos);
+}
+
+fn load_image(data: &Vec<u8>, pos: &mut usize, texture_name: String) -> Option<Texture> {
+    let img_size = read_usize(data, pos);
+    return match img_size > 0 {
+        true => {
+            let mut new_texture = Texture::new(texture_name);
+            let img_bytes = read_to_array(data, pos.clone(), img_size);
+            *pos = *pos + img_size;
+            new_texture.create_texture_buffer_from_byte_data(&img_bytes);
+            return Some(new_texture);
+        },
+        false => {
+            None
+        }
+    }
 }
