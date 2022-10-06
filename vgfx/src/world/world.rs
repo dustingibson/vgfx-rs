@@ -130,14 +130,14 @@ impl World {
         let num_areas = read_usize(&buffer, &mut pos);
         for i in 0..num_areas {
             let cur_model_instance: Vec<ModelInstance> = vec![];
-            let mut skybox: Skybox = Skybox::new();
-            skybox.left = load_image(&buffer, &mut pos, "left".to_string()).unwrap();
-            skybox.right = load_image(&buffer, &mut pos, "right".to_string()).unwrap();
-            skybox.top = load_image(&buffer, &mut pos, "top".to_string()).unwrap();
-            skybox.bottom = load_image(&buffer, &mut pos, "bottom".to_string()).unwrap();
-            skybox.front = load_image(&buffer, &mut pos, "front".to_string()).unwrap();
-            skybox.back = load_image(&buffer, &mut pos, "back".to_string()).unwrap();
-            world.skyboxes.push(skybox);
+            let skybox_left = load_image(&buffer, &mut pos, "left".to_string()).unwrap();
+            let skybox_right = load_image(&buffer, &mut pos, "right".to_string()).unwrap();
+            let skybox_top = load_image(&buffer, &mut pos, "top".to_string()).unwrap();
+            let skybox_bottom = load_image(&buffer, &mut pos, "bottom".to_string()).unwrap();
+            let skybox_front = load_image(&buffer, &mut pos, "front".to_string()).unwrap();
+            let skybox_back = load_image(&buffer, &mut pos, "back".to_string()).unwrap();
+            //let mut skybox: Skybox = Skybox::new(skybox_left, skybox_right, skybox_top, skybox_bottom, skybox_front, skybox_back);
+            //world.skyboxes.push(skybox);
             // 2. Count of Area Model Instances
             let num_model_instances = read_usize(&buffer, &mut pos);
             for j in 0..num_model_instances {
@@ -338,15 +338,14 @@ fn read_vec3(data: &Vec<u8>, pos: &mut usize) -> Vec<f32> {
     return read_vec(data, 3, pos);
 }
 
-fn load_image(data: &Vec<u8>, pos: &mut usize, texture_name: String) -> Option<Texture> {
+fn load_image(data: &Vec<u8>, pos: &mut usize, texture_name: String) -> Option<Vec<u8>> {
     let img_size = read_usize(data, pos);
     return match img_size > 0 {
         true => {
             let mut new_texture = Texture::new(texture_name);
             let img_bytes = read_to_array(data, pos.clone(), img_size);
             *pos = *pos + img_size;
-            new_texture.create_texture_buffer_from_byte_data(&img_bytes);
-            return Some(new_texture);
+            return Some(img_bytes.to_vec());
         },
         false => {
             None

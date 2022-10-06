@@ -1,10 +1,12 @@
 use gl;
 use gl::types::*;
+use std::ascii::AsciiExt;
 use std::fs;
 use std::ffi::CString;
 use std::ptr::null;
 use std::ptr::null_mut;
 use std::collections::HashMap;
+use std::str;
 extern crate nalgebra_glm as glm;
 
 #[derive(Clone)]
@@ -20,11 +22,13 @@ impl ShaderContainer {
         let mut all_shaders = HashMap::new();
 
         let mut fragment_shader = Shader::new("fragment".to_string());
+        let mut skybox_shader = Shader::new("skybox".to_string());
         //let mut color_shader = Shader::new("color".to_string());
         fragment_shader.add_uniform("lightPos".to_string());
         fragment_shader.add_uniform("textureSample".to_string());
         fragment_shader.add_uniform("textured".to_string());
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
+        all_shaders.insert("skybox".to_string(), skybox_shader.clone());
         //all_shaders.insert("color".to_string(), color_shader.clone());
         //all_shaders.insert("textureSample".to_string(), Shader::new("textureSample".to_string()));
         return ShaderContainer {
@@ -128,6 +132,7 @@ impl Shader {
                 gl::GetShaderInfoLog(shader_id, len, null_mut(), buffer.as_mut_ptr() as *mut gl::types::GLchar);
                 buffer.set_len(len as usize);
             }
+            println!("{}", str::from_utf8(&buffer).unwrap());
             panic!("Compile shader {} {}", shader_name, shader_types);
         }
     }

@@ -1,6 +1,7 @@
 use gl;
 use gl::types::*;
 use libc::c_void;
+use sdl2::sys::SDL_Surface;
 use std::collections::HashMap;
 use sdl2::surface::Surface;
 
@@ -146,7 +147,7 @@ impl Texture {
         }
     }
 
-    pub fn flip_surface(&mut self, surface: &Surface) {
+    fn flip_surface(surface: &Surface) {
         unsafe {
             let pitch = surface.pitch();
             let height = surface.height();
@@ -164,7 +165,7 @@ impl Texture {
         }
     }
 
-    pub fn create_texture_buffer_from_byte_data(&mut self, image_bytes: &[u8]) {
+    fn surface_from_byte_data(image_bytes: &[u8]) -> Surface {
         let mut rwops: sdl2::rwops::RWops = match sdl2::rwops::RWops::from_bytes(&image_bytes) {
             Ok(val) => val,
             Err(val) => panic!("unable to load rwop")
@@ -174,7 +175,12 @@ impl Texture {
             Err(val) => panic!("unable to load surface")
         };
         surface = surface.convert_format(sdl2::pixels::PixelFormatEnum::RGBA32).unwrap();
-        self.flip_surface(&surface);
+        Self::flip_surface(&surface);
+        return surface;
+    }
+
+    pub fn create_texture_buffer_from_byte_data(&mut self, image_bytes: &[u8]) {
+        let surface = Self::surface_from_byte_data(image_bytes);
         let img_data = surface.raw();
         unsafe {
             gl::GenTextures(1, &mut self.texture_id);
@@ -186,6 +192,27 @@ impl Texture {
             gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
             gl::GenerateMipmap(gl::TEXTURE_2D);
+        }
+        self.has_img = true;
+    }
+
+    pub fn create_cube_map_texture_buffer_from_byte_data(&mut self, all_bytes: Vec<Vec<u8>> ) {
+
+        unsafe {
+            gl::GenTextures(1, &mut self.texture_id);
+            gl::BindTexture(gl::TEXTURE_2D, self.texture_id);
+            let mut index = 0;
+            for image_bytes in all_bytes {
+                let surface = Self::surface_from_byte_data(&image_bytes);
+                let img_data = surface.raw();
+                gl::TexImage2D(gl::TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
+                index = index + 1;
+            }
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_R, gl::REPEAT as i32);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         }
         self.has_img = true;
     }
