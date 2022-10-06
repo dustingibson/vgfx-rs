@@ -17,7 +17,7 @@ pub struct Camera {
 impl Camera {
     pub fn new(position: glm::Vec3, width: f32, height: f32) -> Camera {
             // Rad(45) = 0.785398
-        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.1, 1000.0);
+        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.1, 10000.0);
         let view: glm::Mat4 = glm::look_at::<GLfloat>(
             &position,
             &glm::vec3(0.0, 0.0, 1.0),
@@ -59,7 +59,7 @@ impl Camera {
     }
 
     pub fn set_projection_ortho(&mut self, shader_container: &mut ShaderContainer) {
-        let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 1.0);
+        let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 1000.0);
         let view: glm::Mat4 = glm::Mat4::identity();
         //let view: glm::Mat4 = self.get_view();
         shader_container.set_projection(view, new_projection);

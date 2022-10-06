@@ -110,7 +110,7 @@ impl Label2D {
             gl::Disable(gl::DEPTH_TEST);
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, self.text_texture.texture.texture_id);
-            shader.set_texture(1);
+            shader.set_texture_id(0);
 
             gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model()[(0,0)]);
             gl::Uniform1i(shader.get_uniform_location("textured".to_string()), 1);

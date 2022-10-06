@@ -23,14 +23,15 @@ impl ShaderContainer {
 
         let mut fragment_shader = Shader::new("fragment".to_string());
         let mut skybox_shader = Shader::new("skybox".to_string());
-        //let mut color_shader = Shader::new("color".to_string());
+
         fragment_shader.add_uniform("lightPos".to_string());
         fragment_shader.add_uniform("textureSample".to_string());
         fragment_shader.add_uniform("textured".to_string());
+        skybox_shader.add_uniform("textureSample".to_string());
+
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
         all_shaders.insert("skybox".to_string(), skybox_shader.clone());
-        //all_shaders.insert("color".to_string(), color_shader.clone());
-        //all_shaders.insert("textureSample".to_string(), Shader::new("textureSample".to_string()));
+
         return ShaderContainer {
             shaders: all_shaders,
             default_shader: fragment_shader
@@ -40,7 +41,13 @@ impl ShaderContainer {
     pub fn set_projection(&self, view: glm::Mat4, projections: glm::Mat4) {
         for (key, shader) in &self.shaders {
             unsafe {
-                gl::UniformMatrix4fv(shader.get_uniform_location("view".to_string()), 1, gl::FALSE, &view[(0,0)]);
+                if key.eq( &"skybox".to_string() ) {
+                    let view_copy = view.clone();
+                    let skybox_view = glm::mat3_to_mat4( &glm::mat4_to_mat3( &view_copy ));
+                    gl::UniformMatrix4fv(shader.get_uniform_location("view".to_string()), 1, gl::FALSE, &skybox_view[(0,0)]);
+                } else {
+                    gl::UniformMatrix4fv(shader.get_uniform_location("view".to_string()), 1, gl::FALSE, &view[(0,0)]);
+                }
                 gl::UniformMatrix4fv(shader.get_uniform_location("projection".to_string()), 1, gl::FALSE, &projections[(0,0)]);
             }
         }
@@ -109,6 +116,13 @@ impl Shader {
     {
         unsafe  {
             gl::Uniform1i(self.get_uniform_location("textureSample".to_string()), 0);
+        }
+    }
+
+    pub fn set_texture_id(&self, texture_id: GLuint)
+    {
+        unsafe  {
+            gl::Uniform1i(self.get_uniform_location("textureSample".to_string()), texture_id as i32);
         }
     }
 

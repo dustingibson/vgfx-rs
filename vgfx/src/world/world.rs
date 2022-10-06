@@ -55,6 +55,10 @@ impl World {
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
+    pub fn draw_skybox(&mut self, shader: &mut Shader) {
+        self.skyboxes[0].draw(shader);
+    }
+
     pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {
         let range: f32 = 5000.0;
         let mut cur_instances: Vec<Box<ModelInstance>> = vec![];
@@ -136,8 +140,8 @@ impl World {
             let skybox_bottom = load_image(&buffer, &mut pos, "bottom".to_string()).unwrap();
             let skybox_front = load_image(&buffer, &mut pos, "front".to_string()).unwrap();
             let skybox_back = load_image(&buffer, &mut pos, "back".to_string()).unwrap();
-            //let mut skybox: Skybox = Skybox::new(skybox_left, skybox_right, skybox_top, skybox_bottom, skybox_front, skybox_back);
-            //world.skyboxes.push(skybox);
+            let mut skybox: Skybox = Skybox::new(skybox_left, skybox_right, skybox_top, skybox_bottom, skybox_front, skybox_back);
+            world.skyboxes.push(skybox);
             // 2. Count of Area Model Instances
             let num_model_instances = read_usize(&buffer, &mut pos);
             for j in 0..num_model_instances {

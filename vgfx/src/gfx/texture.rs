@@ -189,7 +189,6 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
-            gl::PixelStorei(gl::UNPACK_ALIGNMENT, 1);
             gl::TexImage2D(gl::TEXTURE_2D, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
             gl::GenerateMipmap(gl::TEXTURE_2D);
         }
@@ -200,7 +199,12 @@ impl Texture {
 
         unsafe {
             gl::GenTextures(1, &mut self.texture_id);
-            gl::BindTexture(gl::TEXTURE_2D, self.texture_id);
+            gl::BindTexture(gl::TEXTURE_CUBE_MAP, self.texture_id);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_S, gl::CLAMP_TO_EDGE as i32);	
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_T, gl::CLAMP_TO_EDGE as i32);
+            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_R, gl::CLAMP_TO_EDGE as i32);
             let mut index = 0;
             for image_bytes in all_bytes {
                 let surface = Self::surface_from_byte_data(&image_bytes);
@@ -208,11 +212,6 @@ impl Texture {
                 gl::TexImage2D(gl::TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
                 index = index + 1;
             }
-            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);	
-            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
-            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_R, gl::REPEAT as i32);
-            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
-            gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_MIN_FILTER, gl::LINEAR as i32);
         }
         self.has_img = true;
     }

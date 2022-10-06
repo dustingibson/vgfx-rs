@@ -73,6 +73,7 @@ impl TextureCrud {
         self.texture_cursor.as_mut().unwrap().position = camera.abs_camera_position(500.0);
         unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader("fragment".to_string()), model_map);
+        unsafe { gl::UseProgram(0); }
     }
 
 

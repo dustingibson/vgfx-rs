@@ -93,5 +93,6 @@ impl Editor {
         self.camera_coord_label.draw(&mut shader_container.get_shader("fragment".to_string()));
         self.editor_mode_label.draw(&mut shader_container.get_shader("fragment".to_string()));
         camera.set_projection(shader_container);
+        unsafe { gl::UseProgram(0); }
     }
 }
