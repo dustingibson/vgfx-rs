@@ -1,6 +1,8 @@
 use gl;
 use gl::types::*;
 use crate::ShaderContainer;
+
+use super::shader::Shader;
 extern crate nalgebra_glm as glm;
 
 pub struct Camera {
@@ -54,15 +56,19 @@ impl Camera {
         self.update();
     }
 
-    pub fn set_projection(&mut self, shader_container: &mut ShaderContainer) {
-        shader_container.set_projection(self.get_view(), self.projection);
+
+    pub fn set_projection_skybox(&mut self, shader_container: &mut ShaderContainer, name: &String) {
+        shader_container.set_projection_skybox(name, self.get_view(), self.projection);
     }
 
-    pub fn set_projection_ortho(&mut self, shader_container: &mut ShaderContainer) {
+    pub fn set_projection(&mut self, shader_container: &mut ShaderContainer, name: &String) {
+        shader_container.set_projection(name, self.get_view(), self.projection);
+    }
+
+    pub fn set_projection_ortho(&mut self, shader_container: &mut ShaderContainer, name: &String) {
         let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 1000.0);
         let view: glm::Mat4 = glm::Mat4::identity();
-        //let view: glm::Mat4 = self.get_view();
-        shader_container.set_projection(view, new_projection);
+        shader_container.set_projection(name, view, new_projection);
     }
 
     pub fn get_view(&self) -> glm::Mat4 {

@@ -57,7 +57,7 @@ impl TerrainCrud {
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
         self.mesh_cursor.as_mut().unwrap().position = camera.abs_camera_position(1.0);
-        unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
-        self.mesh_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader("fragment".to_string()));
+        unsafe { gl::UseProgram(shader_container.get_shader(&"fragment".to_string()).program_id); }
+        self.mesh_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()));
     }
 }

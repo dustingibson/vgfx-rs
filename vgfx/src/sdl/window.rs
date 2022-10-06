@@ -122,10 +122,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
-            camera.set_projection( &mut shader_container);
-            //if(command.eq("demo")) {
-                demo.run(&mut sdl_payload, &mut camera, &mut shader_container);
-            //}
+            demo.run(&mut sdl_payload, &mut camera, &mut shader_container);
         }
         canvas.present();
         delta_time = sdl_timer.ticks() - start_ticks;

@@ -88,11 +88,12 @@ impl Editor {
     }
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
-        unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
-        camera.set_projection_ortho(shader_container);
-        self.camera_coord_label.draw(&mut shader_container.get_shader("fragment".to_string()));
-        self.editor_mode_label.draw(&mut shader_container.get_shader("fragment".to_string()));
-        camera.set_projection(shader_container);
-        unsafe { gl::UseProgram(0); }
+        //unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
+        shader_container.use_shader(&"fragment".to_string());
+        camera.set_projection_ortho(shader_container, &"fragment".to_string());
+        self.camera_coord_label.draw(&mut shader_container.get_shader(&"fragment".to_string()));
+        self.editor_mode_label.draw(&mut shader_container.get_shader(&"fragment".to_string()));
+        camera.set_projection(shader_container, &"fragment".to_string());
+        shader_container.unuse_shader();
     }
 }

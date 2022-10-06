@@ -23,20 +23,20 @@ impl Demo {
 
     pub fn draw(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
         unsafe { 
-            gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id);
-            self.world.draw(&mut shader_container.get_shader("fragment".to_string()), camera);
-            camera.set_projection(shader_container);
-            gl::UseProgram(0);
+            shader_container.use_shader(&"fragment".to_string());
+            self.world.draw(&mut shader_container.get_shader(&"fragment".to_string()), camera);
+            camera.set_projection(shader_container, &"fragment".to_string());
+            shader_container.unuse_shader();
 
         }
     }
 
     pub fn draw_skybox(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         unsafe {
-            gl::UseProgram(shader_container.get_shader("skybox".to_string()).program_id);
-            self.world.draw_skybox(&mut shader_container.get_shader("skybox".to_string()));
-            camera.set_projection(shader_container);
-            gl::UseProgram(0);
+            shader_container.use_shader(&"skybox".to_string());
+            self.world.draw_skybox(&mut shader_container.get_shader(&"skybox".to_string()));
+            camera.set_projection(shader_container, &"skybox".to_string());
+            shader_container.unuse_shader();
         }
     }
 

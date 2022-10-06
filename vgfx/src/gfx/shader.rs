@@ -38,7 +38,7 @@ impl ShaderContainer {
         }
     }
 
-    pub fn set_projection(&self, view: glm::Mat4, projections: glm::Mat4) {
+    pub fn set_projection_old(&self, view: glm::Mat4, projections: glm::Mat4) {
         for (key, shader) in &self.shaders {
             unsafe {
                 if key.eq( &"skybox".to_string() ) {
@@ -53,11 +53,40 @@ impl ShaderContainer {
         }
     }
 
-    pub fn get_shader(&mut self, name: String) -> Shader {
+    pub fn set_projection(&self, name: &String, view: glm::Mat4, projections: glm::Mat4) {
+        unsafe {
+            gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("view".to_string()), 1, gl::FALSE, &view[(0,0)]);
+            gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("projection".to_string()), 1, gl::FALSE, &projections[(0,0)]);
+        }
+    }
 
-        match self.shaders.get(&name) {
+    pub fn set_projection_skybox(&self, name: &String, view: glm::Mat4, projections: glm::Mat4) {
+        unsafe {
+            let view_copy = view.clone();
+            let skybox_view = glm::mat3_to_mat4( &glm::mat4_to_mat3( &view_copy ));
+            gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("view".to_string()), 1, gl::FALSE, &skybox_view[(0,0)]);
+            gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("view".to_string()), 1, gl::FALSE, &view[(0,0)]);
+            gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("projection".to_string()), 1, gl::FALSE, &projections[(0,0)]);
+        }
+    }
+
+    pub fn get_shader(&self, name: &String) -> Shader {
+
+        match self.shaders.get(name) {
             Some(v) => v.clone(),
             None => self.default_shader.clone()
+        }
+    }
+
+    pub fn use_shader(&mut self, name: &String) {
+        unsafe {
+            gl::UseProgram(self.get_shader(name).program_id);
+        }
+    }
+
+    pub fn unuse_shader(&mut self) {
+        unsafe {
+            gl::UseProgram(0);
         }
     }
 

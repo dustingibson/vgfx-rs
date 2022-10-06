@@ -52,7 +52,6 @@ impl TextureImage {
             rect: rect
         }
     }
-
 }
 
 #[derive(Clone)]
