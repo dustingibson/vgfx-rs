@@ -84,10 +84,9 @@ impl Editor {
             1 => self.terrain_crud.run(sdl_context, camera, shader_container, model_map),
             _ => {}
         }
-        self.draw(camera, shader_container, model_map);
     }
 
-    pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
+    pub fn draw_labels(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         //unsafe { gl::UseProgram(shader_container.get_shader("fragment".to_string()).program_id); }
         shader_container.use_shader(&"fragment".to_string());
         camera.set_projection_ortho(shader_container, &"fragment".to_string());

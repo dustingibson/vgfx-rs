@@ -21,7 +21,7 @@ impl Demo {
         };
     }
 
-    pub fn draw(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
+    pub fn draw_world(&mut self, camera: &mut Camera,  shader_container: &mut ShaderContainer) {
         unsafe { 
             shader_container.use_shader(&"fragment".to_string());
             self.world.draw(&mut shader_container.get_shader(&"fragment".to_string()), camera);
@@ -40,14 +40,19 @@ impl Demo {
         }
     }
 
+    pub fn draw_ui(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        self.editor.draw_labels(camera, shader_container);
+    }
+
     pub fn clean_up(&mut self) {
         self.world.clean_up();
     }
 
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
-        self.draw(camera, shader_container);
+        self.draw_world(camera, shader_container);
         self.editor.run(sdl_context, camera, shader_container, &self.world.model_map);
-        self.draw_skybox(camera, shader_container)
+        self.draw_skybox(camera, shader_container);
+        self.draw_ui(camera, shader_container);
     }
 
     pub fn draw_debug(&mut self, sdl_payload: &mut SDLContext) {

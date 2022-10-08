@@ -164,7 +164,7 @@ impl Texture {
         }
     }
 
-    fn surface_from_byte_data(image_bytes: &[u8]) -> Surface {
+    fn surface_from_byte_data(image_bytes: &[u8], flip_surface: bool) -> Surface {
         let mut rwops: sdl2::rwops::RWops = match sdl2::rwops::RWops::from_bytes(&image_bytes) {
             Ok(val) => val,
             Err(val) => panic!("unable to load rwop")
@@ -174,12 +174,14 @@ impl Texture {
             Err(val) => panic!("unable to load surface")
         };
         surface = surface.convert_format(sdl2::pixels::PixelFormatEnum::RGBA32).unwrap();
-        Self::flip_surface(&surface);
+        if flip_surface {
+            Self::flip_surface(&surface);
+        }
         return surface;
     }
 
     pub fn create_texture_buffer_from_byte_data(&mut self, image_bytes: &[u8]) {
-        let surface = Self::surface_from_byte_data(image_bytes);
+        let surface = Self::surface_from_byte_data(image_bytes, true);
         let img_data = surface.raw();
         unsafe {
             gl::GenTextures(1, &mut self.texture_id);
@@ -206,7 +208,7 @@ impl Texture {
             gl::TexParameteri(gl::TEXTURE_CUBE_MAP, gl::TEXTURE_WRAP_R, gl::CLAMP_TO_EDGE as i32);
             let mut index = 0;
             for image_bytes in all_bytes {
-                let surface = Self::surface_from_byte_data(&image_bytes);
+                let surface = Self::surface_from_byte_data(&image_bytes, false);
                 let img_data = surface.raw();
                 gl::TexImage2D(gl::TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, gl::RGBA as i32, surface.width() as i32, surface.height() as i32, 0, gl::RGBA, gl::UNSIGNED_BYTE, (*img_data).pixels as *const gl::types::GLvoid);
                 index = index + 1;

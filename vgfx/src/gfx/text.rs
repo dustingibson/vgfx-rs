@@ -1,11 +1,9 @@
 use gl;
 use gl::types::*;
-use sdl2::ttf::Font;
 use sdl2::ttf::PartialRendering;
 use sdl2::surface::Surface;
 use crate::SDLContext;
 use crate::Texture;
-use crate::BFile;
 use std::fs;
 use std::fs::File;
 use std::io::Read;
