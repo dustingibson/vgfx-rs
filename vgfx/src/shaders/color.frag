@@ -1,9 +1,11 @@
 #version 330 core
 
-in vec4 fragmentColor;
 out vec4 color;
 
+uniform vec4 ambientColor;
+uniform sampler2D textureSample;
+uniform int textured;
+
 void main() {
-    color = fragmentColor.rgba;
-    color.a = fragmentColor.a;
+	color = vec4(0.0, 1.0, 0.0, 1.0);
 }

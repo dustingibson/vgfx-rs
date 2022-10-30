@@ -33,10 +33,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let sdl_context: sdl2::Sdl = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
-
-    
-    
-
+    video_subsystem.gl_attr().set_stencil_size(1);
     let window = video_subsystem.window("rust-gl demo", WIDTH, HEIGHT)
         .position_centered()
         .opengl()
@@ -59,6 +56,9 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
         gl::Enable(gl::DEPTH_TEST);
         gl::DepthFunc(gl::LESS);
+        gl::Enable(gl::STENCIL_TEST);
+        gl::StencilFunc(gl::NOTEQUAL, 1, 0xFF);
+        gl::StencilOp(gl::KEEP, gl::KEEP, gl::REPLACE);
     }
 
     let sdl_timer = sdl_context.timer()?;
@@ -114,14 +114,15 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
             camera.update();
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
-            camera.translate(camera.front, 0.1);
+            camera.translate(camera.front, 1.0);
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
             camera.translate(camera.front, -0.1);
         }
 
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
+            gl::StencilMask(0x00);
             demo.run(&mut sdl_payload, &mut camera, &mut shader_container);
         }
         canvas.present();

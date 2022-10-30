@@ -71,9 +71,16 @@ impl TextureCrud {
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
         self.texture_cursor.as_mut().unwrap().position = camera.abs_camera_position(500.0);
-        unsafe { gl::UseProgram(shader_container.get_shader(&"fragment".to_string()).program_id); }
-        self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()), model_map);
-        unsafe { gl::UseProgram(0); }
+
+        shader_container.use_shader(&"fragment".to_string());
+        self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()), model_map, true);
+        shader_container.unuse_shader();
+
+        shader_container.use_shader(&"color".to_string());
+        camera.set_projection(shader_container, &"color".to_string());
+        self.texture_cursor.as_mut().unwrap().draw_stencil(&mut shader_container.get_shader(&"color".to_string()), model_map);
+        shader_container.unuse_shader();
+
     }
 
 

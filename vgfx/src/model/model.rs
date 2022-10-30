@@ -35,9 +35,35 @@ impl Model {
         };
     }
 
-    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3) {
+    pub fn draw_stencil(&self, shader: &mut Shader, position: &mut glm::Vec3) {
+        unsafe {
+            gl::StencilFunc(gl::NOTEQUAL, 1, 0xFF);
+            gl::StencilMask(0x00);
+            gl::Disable(gl::DEPTH_TEST);
+        }
+        let mut new_position = position.clone() + glm::vec3(10.0, 10.0, 10.0);
+        self.draw(shader, &mut new_position, false);
+        unsafe {
+            gl::StencilMask(0xFF);
+            gl::StencilFunc(gl::ALWAYS, 0, 0xFF);
+            gl::Enable(gl::DEPTH_TEST);
+        }
+    }
+
+    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3, stencil: bool) {
+        if stencil {
+            unsafe {
+                gl::StencilFunc(gl::ALWAYS, 1, 0xFF);
+                gl::StencilMask(0xFF);
+            }
+        }
         for face_partition in self.face_partitions.iter() {
             face_partition.draw(shader, position, &self.textures[face_partition.texture_index]);
+        }
+        if stencil {
+            unsafe {
+
+            }
         }
     }
 
@@ -57,7 +83,11 @@ impl ModelInstance {
         };
     }
 
-    pub fn draw(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>) {
-        model_map.get(&self.model_name).unwrap().draw(shader, &mut self.position);
+    pub fn draw(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>, stencil: bool) {
+        model_map.get(&self.model_name).unwrap().draw(shader, &mut self.position, stencil);
+    }
+
+    pub fn draw_stencil(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>) {
+        model_map.get(&self.model_name).unwrap().draw_stencil(shader, &mut self.position);
     }
 }

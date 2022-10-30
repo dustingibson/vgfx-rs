@@ -23,6 +23,7 @@ impl ShaderContainer {
 
         let mut fragment_shader = Shader::new("fragment".to_string());
         let mut skybox_shader = Shader::new("skybox".to_string());
+        let mut color_shader = Shader::new("color".to_string());
 
         fragment_shader.add_uniform("lightPos".to_string());
         fragment_shader.add_uniform("textureSample".to_string());
@@ -31,6 +32,7 @@ impl ShaderContainer {
 
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
         all_shaders.insert("skybox".to_string(), skybox_shader.clone());
+        all_shaders.insert("color".to_string(), color_shader.clone());
 
         return ShaderContainer {
             shaders: all_shaders,
@@ -65,7 +67,6 @@ impl ShaderContainer {
             let view_copy = view.clone();
             let skybox_view = glm::mat3_to_mat4( &glm::mat4_to_mat3( &view_copy ));
             gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("view".to_string()), 1, gl::FALSE, &skybox_view[(0,0)]);
-            gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("view".to_string()), 1, gl::FALSE, &view[(0,0)]);
             gl::UniformMatrix4fv(self.get_shader(&name).get_uniform_location("projection".to_string()), 1, gl::FALSE, &projections[(0,0)]);
         }
     }

@@ -1,3 +1,6 @@
+use gl::COLOR_BUFFER_BIT;
+use glm::sqrt;
+
 use crate::gfx::{face::FacePartitionRender, texture::Texture, shader::Shader};
 extern crate nalgebra_glm as glm;
 
@@ -35,28 +38,33 @@ impl Mesh {
     }
 
     fn create_mesh_texture(&mut self) { 
-        self.mesh_texture.texture_properties.ambient_color = vec![1.0, 0.0, 0.0];
+        self.mesh_texture.texture_properties.ambient_color = vec![1.0, 1.0, 1.0];
     }
 
-    pub fn new_triangle() -> Mesh {
-        let mut size: f32 = 3.0;
+    fn half_distance(s: f32) -> f32 {
+        return f32::sqrt(s*s - ((s/2.0)*(s/2.0)));
+    }
+
+    pub fn new_triangle(front: glm::Vec3) -> Mesh {
+        let mut size: f32 = 8.0;
+        let mut dist = Self::half_distance(size);
         let mut new_mesh = Self::new();
         
         
         new_mesh.vertices.push( MeshVertex { 
             id: 0,
-            position: glm::vec3(size, 0.0, 0.0)
+            position: glm::vec3(front.x - dist, front.y - dist, 0.0)
         });
 
         new_mesh.vertices.push( MeshVertex { 
             id: 1,
-            position: glm::vec3(size*0.5, size*0.86603, 0.0)
+            position: glm::vec3(front.x + dist, front.y - dist , 0.0)
         });
 
                 
         new_mesh.vertices.push( MeshVertex { 
             id: 2,
-            position: glm::vec3(0.0, 0.0, 0.0)
+            position: glm::vec3(front.x, front.y + dist, 0.0)
         });
 
 
@@ -115,9 +123,31 @@ impl Mesh {
         self.face_partitions.push(FacePartitionRender::new(vertex_buffer, normal_buffer, texture_buffer, 0, 1, 2, true));
     }
 
-    pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3) {
+    pub fn draw_stencil_mesh(&mut self, shader: &mut Shader, position: &mut glm::Vec3) {
+        unsafe {
+            gl::Disable(gl::DEPTH_TEST);
+            self.draw(shader, position, false);
+            gl::StencilMask(0xFF);
+            gl::StencilFunc(gl::ALWAYS, 0, 0xFF);
+            gl::Enable(gl::DEPTH_TEST);
+        }
+    }
+
+    pub fn draw(&mut self, shader: &mut Shader, position: &mut glm::Vec3, stencil: bool) {
+        if stencil {
+            unsafe {
+                gl::StencilFunc(gl::ALWAYS, 1, 0xFF);
+                gl::StencilMask(0xFF);
+            }
+        }
         for face_partition in self.face_partitions.as_slice() {
             face_partition.draw(shader, position, &self.mesh_texture);
+        }
+        if stencil {
+            unsafe {
+                gl::StencilFunc(gl::NOTEQUAL, 1, 0xFF);
+                gl::StencilMask(0x00);
+            }
         }
     }
 }
@@ -125,6 +155,10 @@ impl Mesh {
 impl MeshInstance {
 
     pub fn draw(&mut self, shader: &mut Shader) {
-        self.mesh.draw(shader, &mut self.position);
+        self.mesh.draw(shader, &mut self.position, true);
+    }
+
+    pub fn draw_stencil(&mut self, shader: &mut Shader) {
+        self.mesh.draw_stencil_mesh(shader, &mut self.position);
     }
 }

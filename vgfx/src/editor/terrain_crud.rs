@@ -30,7 +30,7 @@ impl TerrainCrud {
     fn new_mesh_instance(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, index: u32) -> MeshInstance {
         return MeshInstance {
             position: glm::vec3(0.0, 0.0, 0.0),
-            mesh: Mesh::new_triangle()
+            mesh: Mesh::new_triangle(camera.front)
         }
     }
 
@@ -56,8 +56,15 @@ impl TerrainCrud {
     }
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
-        self.mesh_cursor.as_mut().unwrap().position = camera.abs_camera_position(1.0);
-        unsafe { gl::UseProgram(shader_container.get_shader(&"fragment".to_string()).program_id); }
+        self.mesh_cursor.as_mut().unwrap().position = camera.abs_camera_position(100.0);
+
+        shader_container.use_shader(&"fragment".to_string());
         self.mesh_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()));
+        shader_container.unuse_shader();
+
+        shader_container.use_shader(&"color".to_string());
+        camera.set_projection(shader_container, &"color".to_string());
+        self.mesh_cursor.as_mut().unwrap().draw_stencil(&mut shader_container.get_shader(&"color".to_string()));
+        shader_container.unuse_shader();
     }
 }

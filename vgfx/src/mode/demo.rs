@@ -34,8 +34,8 @@ impl Demo {
     pub fn draw_skybox(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         unsafe {
             shader_container.use_shader(&"skybox".to_string());
+            camera.set_projection_skybox(shader_container, &"skybox".to_string());
             self.world.draw_skybox(&mut shader_container.get_shader(&"skybox".to_string()));
-            camera.set_projection(shader_container, &"skybox".to_string());
             shader_container.unuse_shader();
         }
     }
@@ -49,9 +49,9 @@ impl Demo {
     }
 
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        self.draw_skybox(camera, shader_container);
         self.draw_world(camera, shader_container);
         self.editor.run(sdl_context, camera, shader_container, &self.world.model_map);
-        self.draw_skybox(camera, shader_container);
         self.draw_ui(camera, shader_container);
     }
 
