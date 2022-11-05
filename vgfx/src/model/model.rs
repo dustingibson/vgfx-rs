@@ -23,7 +23,8 @@ pub struct AreaInstance {
 pub struct Model {
     pub name: String,
     pub textures: Vec<Texture>,
-    pub face_partitions: Vec<FacePartitionRender>
+    pub face_partitions: Vec<FacePartitionRender>,
+    pub boundary_points: Vec<glm::Vec3>
 }
 
 impl Model {
@@ -31,7 +32,8 @@ impl Model {
         return Model {
             name: name.to_string(),
             textures: vec![],
-            face_partitions: vec![]
+            face_partitions: vec![],
+            boundary_points: vec![]
         };
     }
 

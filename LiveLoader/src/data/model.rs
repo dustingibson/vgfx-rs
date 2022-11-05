@@ -43,7 +43,8 @@ pub struct Model {
     pub vertices: Vec<Vec<f32>>,
     pub texture_mappings: Vec<Vec<f32>>,
     pub normals: Vec<Vec<f32>>,
-    pub texture_info: Vec<TextureInfo>
+    pub texture_info: Vec<TextureInfo>,
+    pub boundary_points: Vec<Vec<f32>>
 }
 
 pub struct FacePartition {

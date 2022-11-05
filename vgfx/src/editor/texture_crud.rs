@@ -7,6 +7,7 @@ use crate::Label2D;
 use crate::Camera;
 use crate::model::model::Model;
 use crate::model::model::ModelInstance;
+use crate::World;
 
 pub struct TextureCrud {
     pub main_label: Label2D,
@@ -59,14 +60,20 @@ impl TextureCrud {
         self.set_new_texture(camera, model_map);
     }
 
-    pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
+    pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, world: &mut World) {
         if (sdl_context.check_pressed("Up".to_string())) {
-            self.next_texture(camera, model_map);
+            self.next_texture(camera, &world.model_map);
         }
         if (sdl_context.check_pressed("Down".to_string())) {
-            self.prev_texture(camera, model_map);
+            self.prev_texture(camera, &world.model_map);
         }
-        self.draw(camera, shader_container, model_map);
+        if (sdl_context.left_click) {
+            let x = self.texture_cursor.as_ref().unwrap().position.x;
+            let y = self.texture_cursor.as_ref().unwrap().position.y;
+            let z = self.texture_cursor.as_ref().unwrap().position.z;
+            world.oct_tree.insert_item(Box::new(self.texture_cursor.clone().unwrap()), x, y, z);
+        }
+        self.draw(camera, shader_container, &world.model_map);
     }
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {

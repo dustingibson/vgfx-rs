@@ -134,7 +134,8 @@ impl World {
             vertices: vec![],
             texture_mappings: vec![],
             normals: vec![],
-            texture_info: vec![]
+            texture_info: vec![],
+            boundary_points: vec![]
         };
     }
 
@@ -224,11 +225,25 @@ impl World {
         }
     }
 
+    pub fn points_to_vec(&mut self, x: f32, y: f32, z: f32) -> Vec<f32> {
+        let mut out = vec![];
+        out.push(x);
+        out.push(y);
+        out.push(z);
+        return out;
+    }
+
     pub fn process_model(&mut self, content: String, dir_name: String) -> Model {
         let lines = content.split("\n");
         let mut model = self.init_model();
         let mut cur_texture_index;
         let mut cur_face_partition = FacePartition { faces: vec![], texture_info_index: 0 };
+        let mut min_x: Option<f32> = None;
+        let mut min_y: Option<f32> = None;
+        let mut min_z: Option<f32> = None;
+        let mut max_x: Option<f32> = None;
+        let mut max_y: Option<f32> = None;
+        let mut max_z: Option<f32> = None;
         for line in lines {
             let mut comp = line.trim().split(" ");
             let first_val = comp.next().unwrap();
@@ -238,6 +253,23 @@ impl World {
                 vertices.push(comp.next().unwrap().parse().unwrap());
                 vertices.push(comp.next().unwrap().parse().unwrap());
                 vertices.push(comp.next().unwrap().parse().unwrap());
+                    min_x = Some(vertices[0]);
+                }
+                if max_x == None || vertices[0] >= max_x.unwrap() {
+                    max_x = Some(vertices[0]);
+                }
+                if min_y == None || vertices[1] <= min_y.unwrap() {
+                    min_y = Some(vertices[1]);
+                }
+                if max_y == None || vertices[1] >= max_y.unwrap() {
+                    max_y = Some(vertices[1]);
+                }
+                if min_z == None || vertices[2] <= min_z.unwrap() {
+                    min_z = Some(vertices[2]);
+                }
+                if max_z == None || vertices[2] >= max_z.unwrap() {
+                    max_z = Some(vertices[2]);
+                }
                 model.vertices.push(vertices);
             }
             else if first_val == "vn" {
@@ -283,6 +315,14 @@ impl World {
                 //let fname = comp.next().unwrap();
             }
         }
+        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), min_y.unwrap(), min_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), min_y.unwrap(), max_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), max_y.unwrap(), max_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), max_y.unwrap(), min_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), max_y.unwrap(), max_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), max_y.unwrap(), min_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), min_y.unwrap(), max_z.unwrap()));
+        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), min_y.unwrap(), min_z.unwrap()));
         if cur_face_partition.faces.len() > 0 {
             model.faces.push(cur_face_partition);
         }
@@ -448,8 +488,23 @@ impl World {
                         }
                     }
                 }
-
             }
+            // 46. Boundary 1
+            pos += write_vec3(&mut buffer, &value.boundary_points[0])?;
+            // 47. Boundary 2
+            pos += write_vec3(&mut buffer, &value.boundary_points[1])?;
+            // 48. Boundary 3
+            pos += write_vec3(&mut buffer, &value.boundary_points[2])?;
+            // 49. Boundary 4
+            pos += write_vec3(&mut buffer, &value.boundary_points[3])?;
+            // 50. Boundary 5
+            pos += write_vec3(&mut buffer, &value.boundary_points[4])?;
+            // 51. Boundary 6
+            pos += write_vec3(&mut buffer, &value.boundary_points[5])?;
+            // 52. Boundary 7
+            pos += write_vec3(&mut buffer, &value.boundary_points[6])?;
+            // 53. Boundary 8
+            pos += write_vec3(&mut buffer, &value.boundary_points[7])?;
         }
         Ok(())
     }

@@ -8,6 +8,7 @@ use crate::SDLContext;
 use crate::Label2D;
 use crate::Camera;
 use crate::model::model::Model;
+use crate::World;
 
 use super::terrain_crud::TerrainCrud;
 use super::texture_crud::TextureCrud;
@@ -67,7 +68,7 @@ impl Editor {
         self.editor_mode_label.change_text(sdl_context, self.to_editor_mode_str());
     }
 
-    pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
+    pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, world: &mut World) {
         self.update_labels(sdl_context, camera);
         if (sdl_context.check_pressed("Left".to_string())) {
             self.prev_mode();
@@ -80,8 +81,8 @@ impl Editor {
         if (sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
         }
         match self.mode_index {
-            0 => self.texture_crud.run(sdl_context, camera, shader_container, model_map),
-            1 => self.terrain_crud.run(sdl_context, camera, shader_container, model_map),
+            0 => self.texture_crud.run(sdl_context, camera, shader_container, world),
+            1 => self.terrain_crud.run(sdl_context, camera, shader_container, &world.model_map),
             _ => {}
         }
     }
