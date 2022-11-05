@@ -253,6 +253,7 @@ impl World {
                 vertices.push(comp.next().unwrap().parse().unwrap());
                 vertices.push(comp.next().unwrap().parse().unwrap());
                 vertices.push(comp.next().unwrap().parse().unwrap());
+                if min_x == None || vertices[0] <= min_x.unwrap() {
                     min_x = Some(vertices[0]);
                 }
                 if max_x == None || vertices[0] >= max_x.unwrap() {
