@@ -3,3 +3,4 @@ pub mod label;
 pub mod label_2d;
 pub mod quad;
 pub mod texture_polygon;
+pub mod line;

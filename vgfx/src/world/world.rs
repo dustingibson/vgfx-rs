@@ -71,7 +71,7 @@ impl World {
             
             //UNCOMMENT TO DRAW
             let model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), false);
+            //model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), false);
             
             // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
             self.oct_tree.insert_item(model_instance.clone(), model_instance.position[0], model_instance.position[1], model_instance.position[2]);
