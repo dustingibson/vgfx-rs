@@ -292,7 +292,7 @@ impl World {
             cur_model.boundary_points.push(self.vec_to_vec3(read_vec3(&buffer, &mut pos)));
             // 53. Boundary 8
             cur_model.boundary_points.push(self.vec_to_vec3(read_vec3(&buffer, &mut pos)));     
-            
+            cur_model.setup();
             //self.add_partition2( &mut world.model_instances, cur_model.name.to_string(), tmp_face_partitions);
             cur_model.face_partitions = tmp_face_partitions;
             world.model_map.insert(cur_model.name.to_string(), cur_model);

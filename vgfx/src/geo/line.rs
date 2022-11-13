@@ -69,9 +69,9 @@ impl Line {
         }
     }
 
-    pub fn draw(&mut self, shader: &mut Shader) {
+    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3) {
         unsafe {
-            gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model()[(0,0)]);
+            gl::UniformMatrix4fv(shader.get_uniform_location("model".to_string()), 1, gl::FALSE, &self.get_model(position)[(0,0)]);
             gl::Uniform1i(shader.get_uniform_location("textured".to_string()), 0);
 
             gl::EnableVertexAttribArray(0);
@@ -93,9 +93,9 @@ impl Line {
         }
     }
 
-    pub fn get_model(&mut self) -> glm::Mat4 { 
+    pub fn get_model(&self, position: &mut glm::Vec3) -> glm::Mat4 { 
         let c_model: glm::Mat4 = glm::Mat4::identity();
-        return glm::translate(&c_model, &self.position_from);
+        return glm::translate(&c_model, &position);
     }
 
     pub fn clean_up(&mut self) {
@@ -112,16 +112,19 @@ impl Line {
         let norm_to: glm::Vec3 = position_to - position_from;
         let step = width * 0.7071;
 
-        let high_x: GLfloat = norm_to.x;
-        let high_y: GLfloat = norm_to.y;
-        let high_z: GLfloat = norm_to.z;
+        let low_x: GLfloat = position_from.x;
+        let low_y: GLfloat = position_from.y;
+        let low_z: GLfloat = position_from.z;
+        let high_x: GLfloat = position_to.x;
+        let high_y: GLfloat = position_to.y;
+        let high_z: GLfloat = position_to.z;
 
         return vec![
-            0.0, 0.0, 0.0,
-            step, step*-1.0, 0.0,
+            low_x, low_y, low_z,
+            low_x + step, low_y + (step*-1.0), low_z,
             high_x, high_y, high_z,
 
-            0.0, 0.0, 0.0,
+            low_x, low_y, low_z,
             high_x + step*-1.0, high_y + step, high_z,
             high_x, high_y, high_z,
         ];

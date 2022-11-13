@@ -4,6 +4,7 @@ extern crate nalgebra_glm as glm;
 use std::collections::HashMap;
 
 use crate::Shader;
+use crate::geo::line::Line;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::texture::Texture;
 
@@ -24,7 +25,8 @@ pub struct Model {
     pub name: String,
     pub textures: Vec<Texture>,
     pub face_partitions: Vec<FacePartitionRender>,
-    pub boundary_points: Vec<glm::Vec3>
+    pub boundary_points: Vec<glm::Vec3>,
+    pub boundary_lines: Vec<Line>
 }
 
 impl Model {
@@ -33,8 +35,41 @@ impl Model {
             name: name.to_string(),
             textures: vec![],
             face_partitions: vec![],
-            boundary_points: vec![]
+            boundary_points: vec![],
+            boundary_lines: vec![]
         };
+    }
+
+    pub fn setup(&mut self) {
+        let left_up_front = self.boundary_points[0];
+        let left_up_back = self.boundary_points[1];
+        let right_down_back = self.boundary_points[2];
+        let right_down_front = self.boundary_points[3];
+        let left_down_back = self.boundary_points[4];
+        let left_down_front = self.boundary_points[5];
+        let right_up_back = self.boundary_points[6];
+        let right_up_front = self.boundary_points[7];
+
+        let color = glm::vec4(1.0, 0.0, 0.0, 1.0);
+        let width = 5.0;
+
+        // left_up_front connects to left_down_front (first square top)
+        self.boundary_lines.push(Line::new(left_up_front, left_down_front, color, width));
+        self.boundary_lines.push(Line::new(left_down_front, right_down_front, color, width));
+        self.boundary_lines.push(Line::new(right_down_front, right_up_front, color, width));
+        self.boundary_lines.push(Line::new(right_up_front, left_up_front, color, width));
+
+
+        self.boundary_lines.push(Line::new(left_up_front, left_up_back, color, width));
+        self.boundary_lines.push(Line::new(left_down_front, left_down_back, color, width));
+        self.boundary_lines.push(Line::new(right_down_front, right_down_back, color, width));
+        self.boundary_lines.push(Line::new(right_up_front, right_up_back, color, width));
+
+
+        self.boundary_lines.push(Line::new(left_up_back, left_down_back, color, width));
+        self.boundary_lines.push(Line::new(left_down_back, right_down_back, color, width));
+        self.boundary_lines.push(Line::new(right_down_back, right_up_back, color, width));
+        self.boundary_lines.push(Line::new(right_up_back, left_up_back, color, width));
     }
 
     pub fn draw_stencil(&self, shader: &mut Shader, position: &mut glm::Vec3) {
@@ -61,6 +96,9 @@ impl Model {
         }
         for face_partition in self.face_partitions.iter() {
             face_partition.draw(shader, position, &self.textures[face_partition.texture_index]);
+        }
+        for line in self.boundary_lines.iter() {
+            line.draw(shader, position);
         }
         if stencil {
             unsafe {
@@ -90,6 +128,6 @@ impl ModelInstance {
     }
 
     pub fn draw_stencil(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>) {
-        model_map.get(&self.model_name).unwrap().draw_stencil(shader, &mut self.position);
+        //model_map.get(&self.model_name).unwrap().draw_stencil(shader, &mut self.position);
     }
 }

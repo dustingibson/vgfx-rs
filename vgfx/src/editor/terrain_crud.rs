@@ -6,11 +6,9 @@ use crate::SDLContext;
 use crate::Label2D;
 use crate::Camera;
 use crate::geo::line::Line;
-use crate::geo::plane::Plane;
 use crate::model::mesh::Mesh;
 use crate::model::mesh::MeshInstance;
 use crate::model::model::Model;
-use crate::geo::line;
 
 pub struct TerrainCrud {
     pub main_label: Label2D,
@@ -65,7 +63,6 @@ impl TerrainCrud {
 
         shader_container.use_shader(&"fragment".to_string());
         self.mesh_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()));
-        self.line.draw(&mut shader_container.get_shader(&"fragment".to_string()));
         //self.plane.draw(&mut shader_container.get_shader(&"fragment".to_string()));
         shader_container.unuse_shader();
 
