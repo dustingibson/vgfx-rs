@@ -385,3 +385,5 @@ LiveLoader/target
 *.pak
 LiveLoader/target/rls/.rustc_info.json
 LiveLoader/target/rls/.rustc_info.json
+
+BlueprintGen/output.png
