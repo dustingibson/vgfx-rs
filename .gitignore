@@ -386,4 +386,5 @@ LiveLoader/target
 LiveLoader/target/rls/.rustc_info.json
 LiveLoader/target/rls/.rustc_info.json
 
-BlueprintGen/output.png
+BlueprintGen/*.png
+BlueprintGen/*.bin
