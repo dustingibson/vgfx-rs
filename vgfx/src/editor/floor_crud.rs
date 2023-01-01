@@ -32,7 +32,7 @@ impl FloorCrud {
     fn new_model_instance(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, index: u32) -> ModelInstance {
         return ModelInstance {
             model_name: self.model_map_to_index(model_map, index), 
-            position: glm::vec3(0.0, 0.0, 0.0),
+            position: glm::vec3(0.0, -50.0, 0.0),
             scale: glm::Vec3::new(1.0, 1.0, 1.0),
             name: Uuid::new_v4().to_string()
         }

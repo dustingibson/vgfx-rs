@@ -1,5 +1,3 @@
-
-
 use crate::Model;
 use crate::ModelInstance;
 use crate::dep::events::SDLContext;
@@ -15,6 +13,7 @@ use std::io::prelude::*;
 use std::fs::{File};
 use std::io;
 use crate::Camera;
+use super::map::Map;
 extern crate nalgebra_glm as glm;
 use std::convert::TryInto;
 use std::time::Instant;
@@ -26,7 +25,8 @@ pub struct World {
     model_instances: Vec<ModelInstance>,
     pub oct_tree: OctTree<ModelInstance>,
     texture_group: HashMap<String, TextureGroupRenderer>,
-    skyboxes: Vec<Skybox>
+    skyboxes: Vec<Skybox>,
+    map: Map
 }
 
 impl World {
@@ -38,7 +38,8 @@ impl World {
             model_instances: vec![],
             oct_tree: OctTree::new(),
             texture_group: HashMap::new(),
-            skyboxes: vec![]
+            skyboxes: vec![],
+            map: Map::new()
         };
         return world;
     }
@@ -50,7 +51,8 @@ impl World {
             model_instances: vec![],
             oct_tree: OctTree::new(),
             texture_group: HashMap::new(),
-            skyboxes: vec![]
+            skyboxes: vec![],
+            map: Map::new_load()
         };
         return world.load(sdl_context, "res".to_string()).unwrap();
     }

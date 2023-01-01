@@ -9,7 +9,7 @@ class RoomType:
         self.size = size
 
 class Room:
-    #Top, Right, Bottom, Right
+    #Top, Right, Bottom, Left
 
     def __init__(self, id, size, room_type):
         self.id = id
