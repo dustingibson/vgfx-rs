@@ -1,3 +1,5 @@
+use std::string;
+
 
 
 
@@ -9,6 +11,7 @@ pub struct OctTree<T> {
     root: CubeTree<T>,
     max_depth: u32,
     max_size: f32,
+    removal_queue: Vec<String>,
     cnt: u32
 }
 
@@ -61,6 +64,7 @@ impl<T> OctTree<T> where T: Clone {
             root: CubeTree::new(0.0, 0.0, 0.0, MAX_SIZE, MAX_SIZE, MAX_SIZE, 0, DEPTH_SIZE),
             max_depth: DEPTH_SIZE,
             max_size: MAX_SIZE,
+            removal_queue: vec![],
             cnt: 0
          }
     }
@@ -70,9 +74,17 @@ impl<T> OctTree<T> where T: Clone {
         //self.cnt += 1;
     }
 
+    pub fn remove_item_by_name(&mut self, name: String) {
+        self.removal_queue.push(name.to_string());
+    }
+
     pub fn insert_item2(&mut self, payload: Box<T>, x: f32, y: f32, z: f32) {
         self.root.insert_payload2(payload, x, y, z, &mut 0);
         //self.cnt += 1;
+    }
+
+    pub fn is_in_removal_queue(&mut self, name: &String) -> bool {
+        return self.removal_queue.iter().any(|n| n == name);
     }
 
     pub fn get_items_from_range(&mut self, out_payload: &mut Vec<Box<T>>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
@@ -82,6 +94,10 @@ impl<T> OctTree<T> where T: Clone {
     pub fn get_all_items(&mut self, out_payload: &mut Vec<Box<T>>) {
         // TODO: Can we do this by storing vector pointers somewhere instead of climbing tree?
         return self.root.get_range(out_payload, 0.0, 0.0, 0.0, self.max_size, self.max_size, self.max_size);
+    }
+
+    pub fn cleanup_iteration(&mut self) {
+        self.removal_queue.clear();
     }
 
 }

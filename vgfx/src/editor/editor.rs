@@ -12,12 +12,14 @@ use crate::World;
 
 use super::terrain_crud::TerrainCrud;
 use super::texture_crud::TextureCrud;
+use super::floor_crud::FloorCrud;
 
 pub struct Editor {
     camera_coord_label: Label2D,
     editor_mode_label: Label2D,
     texture_crud: TextureCrud,
     terrain_crud: TerrainCrud,
+    floor_crud: FloorCrud,
     mode_index: i32,
     max_mode_index: i32,
 }
@@ -29,7 +31,7 @@ pub enum EditorModes {
 
 impl Editor {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Self {
-        let camera_coord_label: Label2D = Label2D::new( sdl_payload, camera, camera.coord_front_str(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 32 );
+        let camera_coord_label: Label2D = Label2D::new( sdl_payload, camera, camera.coord_str(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 32 );
         let editor_mode_label: Label2D = Label2D::new( sdl_payload, camera, " ".to_string(), glm::vec4(1.0,0.0,0.0,1.0),glm::vec3(0.0, 0.1, 0.0), 32 );
         return Editor {
             camera_coord_label: camera_coord_label,
@@ -37,7 +39,8 @@ impl Editor {
             mode_index: 0,
             max_mode_index: 1,
             texture_crud: TextureCrud::new(sdl_payload, camera, model_map),
-            terrain_crud: TerrainCrud::new(sdl_payload, camera, model_map)
+            terrain_crud: TerrainCrud::new(sdl_payload, camera, model_map),
+            floor_crud: FloorCrud::new(sdl_payload, camera, model_map)
         };
     }
 
@@ -80,6 +83,7 @@ impl Editor {
         }
         if (sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
         }
+        self.floor_crud.run(sdl_context, camera, shader_container, world);
         match self.mode_index {
             0 => self.texture_crud.run(sdl_context, camera, shader_container, world),
             1 => self.terrain_crud.run(sdl_context, camera, shader_container, &world.model_map),

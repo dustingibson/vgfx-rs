@@ -71,18 +71,18 @@ impl World {
             
             //UNCOMMENT TO DRAW
             let model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), false);
+            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), &mut model_instance.scale, false);
             
             // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
-            self.oct_tree.insert_item(model_instance.clone(), model_instance.position[0], model_instance.position[1], model_instance.position[2]);
+
+            // Do insert back if the name is in the removal queue
+            if (!self.oct_tree.is_in_removal_queue(&model_instance.name)) {
+                self.oct_tree.insert_item(model_instance.clone(), model_instance.position[0], model_instance.position[1], model_instance.position[2]);
+            }
         }
-
-
-
         // for (key, value) in self.texture_group.iter_mut() {
         //     value.draw(shader, &mut glm::Vec3::new(1.0, 1.0, 1.0));
         // }
-
         let elapsed = now.elapsed();
         //println!("Elapsed 1: {:.2?}", elapsed);
     }
@@ -164,7 +164,8 @@ impl World {
                 let new_model_instance = ModelInstance{ 
                     model_name: model_instance_name.to_string(),
                     position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
-                    scale: model_instance_scale
+                    scale: glm::Vec3::new(model_instance_scale, model_instance_scale, model_instance_scale),
+                    name: "".to_string()
                 };
                 //world.model_instances.push(new_model_instance);
                 world.oct_tree.insert_item(Box::new(new_model_instance), model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]);
@@ -181,6 +182,7 @@ impl World {
 
             // 19. Model Hash Map Name
             let model_name = read_str(&buffer, &mut pos);
+            println!("Model {}", model_name);
             let mut cur_model = Model::new(model_name);
             // 20. Count of Texture Info
             let texture_cnt = read_usize(&buffer, &mut pos);

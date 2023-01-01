@@ -114,11 +114,11 @@ impl World {
     pub fn init_texture_info(&mut self) -> TextureInfo {
         return TextureInfo { 
             name: "".to_string(),
-            ambient_color: vec![],
-            diffuse_color: vec![],
-            specular_color: vec![],
-            emissive_coeficient: vec![],
-            transmission_filter: vec![],
+            ambient_color: vec![0.0, 0.0, 0.0],
+            diffuse_color: vec![0.0, 0.0, 0.0],
+            specular_color: vec![0.0, 0.0, 0.0],
+            emissive_coeficient: vec![0.0, 0.0, 0.0],
+            transmission_filter: vec![0.0, 0.0, 0.0],
             specular_highlights: 10.0,
             optical_density: 1.0,
             dissolve: 1.0,
@@ -174,7 +174,7 @@ impl World {
     
                     }
                     else if first_val == "d" {
-                        texture_info.optical_density = vals.next().unwrap().parse().unwrap();
+                        texture_info.dissolve = vals.next().unwrap().parse().unwrap();
     
                     }
                     else if first_val == "Tr" {
@@ -182,6 +182,7 @@ impl World {
     
                     }
                     else if first_val == "Tf" {
+                        texture_info.transmission_filter = vec![];
                         texture_info.transmission_filter.push(vals.next().unwrap().parse().unwrap());
                         texture_info.transmission_filter.push(vals.next().unwrap().parse().unwrap());
                         texture_info.transmission_filter.push(vals.next().unwrap().parse().unwrap());
@@ -191,29 +192,34 @@ impl World {
     
                     }
                     else if first_val == "Ka" {
+                        texture_info.ambient_color = vec![];
                         texture_info.ambient_color.push(vals.next().unwrap().parse().unwrap());
                         texture_info.ambient_color.push(vals.next().unwrap().parse().unwrap());
                         texture_info.ambient_color.push(vals.next().unwrap().parse().unwrap());
 
                     }
                     else if first_val == "Kd" {
+                        texture_info.diffuse_color = vec![];
                         texture_info.diffuse_color.push(vals.next().unwrap().parse().unwrap());
                         texture_info.diffuse_color.push(vals.next().unwrap().parse().unwrap());
                         texture_info.diffuse_color.push(vals.next().unwrap().parse().unwrap());
                     }
                     else if first_val == "Ks" {
+                        texture_info.specular_color = vec![];
                         texture_info.specular_color.push(vals.next().unwrap().parse().unwrap());
                         texture_info.specular_color.push(vals.next().unwrap().parse().unwrap());
                         texture_info.specular_color.push(vals.next().unwrap().parse().unwrap());
                     }
                     else if first_val == "Ke" {
+                        texture_info.emissive_coeficient = vec![];
                         texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
                         texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
                         texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
                     }
-                    else if first_val == "map_Ka" {
+                    else if first_val == "map_Ka"{
                         let texture_fname = vals.next().unwrap().to_string();
                         texture_info.img = self.get_byte_from_file([dir_name.to_string(), "/".to_string(), texture_fname].join("")).unwrap();
+                        println!("{}", texture_info.img.len());
                     }
                 }
                 texture_infos.push(texture_info);
@@ -248,7 +254,7 @@ impl World {
             let mut comp = line.trim().split(" ");
             let first_val = comp.next().unwrap();
             if first_val == "v" {
-                comp.next().unwrap();
+                //let mut holder = comp.next().unwrap();
                 let mut vertices: Vec<f32> = vec![];
                 vertices.push(comp.next().unwrap().parse().unwrap());
                 vertices.push(comp.next().unwrap().parse().unwrap());

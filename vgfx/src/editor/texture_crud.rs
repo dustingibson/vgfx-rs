@@ -31,7 +31,8 @@ impl TextureCrud {
         return ModelInstance {
             model_name: self.model_map_to_index(model_map, index), 
             position: glm::vec3(0.0, 0.0, 0.0),
-            scale: 1.0 
+            scale: glm::Vec3::new(1.0, 1.0, 1.0),
+            name: "texture_crud".to_string()
         }
     }
 
@@ -77,7 +78,7 @@ impl TextureCrud {
     }
 
     pub fn draw(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer, model_map: &HashMap<String, Model>) {
-        self.texture_cursor.as_mut().unwrap().position = camera.abs_camera_position(500.0);
+        self.texture_cursor.as_mut().unwrap().position = camera.abs_camera_position(50.0);
 
         shader_container.use_shader(&"fragment".to_string());
         self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()), model_map, true);
