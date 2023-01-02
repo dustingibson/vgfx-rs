@@ -73,7 +73,7 @@ impl World {
             
             //UNCOMMENT TO DRAW
             let model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), &mut model_instance.scale, false);
+            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), &mut model_instance.scale, &mut model_instance.rotate, false);
             
             // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
 
@@ -167,6 +167,7 @@ impl World {
                     model_name: model_instance_name.to_string(),
                     position: glm::Vec3::new(model_instance_pos[0], model_instance_pos[1], model_instance_pos[2]),
                     scale: glm::Vec3::new(model_instance_scale, model_instance_scale, model_instance_scale),
+                    rotate: glm::Vec3::new(0.0, 0.0, 0.0),
                     name: "".to_string()
                 };
                 //world.model_instances.push(new_model_instance);

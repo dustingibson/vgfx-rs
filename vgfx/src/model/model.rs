@@ -16,6 +16,7 @@ pub struct ModelInstance {
     pub model_name: String,
     pub position: glm::Vec3,
     pub scale: glm::Vec3,
+    pub rotate: glm::Vec3,
     pub name: String
 }
 
@@ -76,14 +77,14 @@ impl Model {
         self.boundary_lines.push(Line::new(right_up_back, left_up_back, color, width));
     }
 
-    pub fn draw_stencil(&self, shader: &mut Shader, position: &mut glm::Vec3, scale: &mut glm::Vec3) {
+    pub fn draw_stencil(&self, shader: &mut Shader, position: &mut glm::Vec3, scale: &mut glm::Vec3, rotate: &mut glm::Vec3) {
         unsafe {
             gl::StencilFunc(gl::NOTEQUAL, 1, 0xFF);
             gl::StencilMask(0x00);
             gl::Disable(gl::DEPTH_TEST);
         }
         let mut new_position = position.clone() + glm::vec3(10.0, 10.0, 10.0);
-        self.draw(shader, &mut new_position, scale, false);
+        self.draw(shader, &mut new_position, scale, rotate, false);
         unsafe {
             gl::StencilMask(0xFF);
             gl::StencilFunc(gl::ALWAYS, 0, 0xFF);
@@ -91,7 +92,7 @@ impl Model {
         }
     }
 
-    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3, scale: &mut glm::Vec3, stencil: bool) {
+    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3, scale: &mut glm::Vec3, rotate: &mut glm::Vec3, stencil: bool) {
         if stencil {
             unsafe {
                 gl::StencilFunc(gl::ALWAYS, 1, 0xFF);
@@ -99,7 +100,7 @@ impl Model {
             }
         }
         for face_partition in self.face_partitions.iter() {
-            face_partition.draw(shader, position, &self.textures[face_partition.texture_index], scale);
+            face_partition.draw(shader, position, &self.textures[face_partition.texture_index], scale, rotate);
         }
         // for line in self.boundary_lines.iter() {
         //     line.draw(shader, position);
@@ -119,17 +120,18 @@ impl Model {
 }
 
 impl ModelInstance {
-    pub fn new(name: String, position: glm::Vec3, scale: glm::Vec3) -> Self {
+    pub fn new(name: String, position: glm::Vec3, scale: glm::Vec3, rotate: glm::Vec3) -> Self {
         return ModelInstance {
             model_name: name.to_string(),
             position: position,
             scale: scale,
+            rotate: rotate,
             name: Uuid::new_v4().to_string()
         };
     }
 
     pub fn draw(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>, stencil: bool) {
-        model_map.get(&self.model_name).unwrap().draw(shader, &mut self.position, &mut self.scale, stencil);
+        model_map.get(&self.model_name).unwrap().draw(shader, &mut self.position, &mut self.scale, &mut self.rotate, stencil);
     }
 
     pub fn draw_stencil(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>) {

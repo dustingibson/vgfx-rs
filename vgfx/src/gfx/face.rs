@@ -96,7 +96,7 @@ impl FacePartitionRender {
         }
     }
 
-    pub fn draw(&self, shader: &mut Shader, position: &mut glm::Vec3, texture: &Texture, scale: &mut glm::Vec3) {
+    pub fn draw(&self, shader: &mut Shader, position: &mut glm::Vec3, texture: &Texture, scale: &mut glm::Vec3, rotate: &mut glm::Vec3) {
         unsafe {            
             gl::BindVertexArray(self.vao);
 
@@ -105,6 +105,7 @@ impl FacePartitionRender {
             gl::Uniform4f(shader.get_uniform_location("ambientColor".to_string()),  texture.texture_properties.ambient_color[0], texture.texture_properties.ambient_color[1], texture.texture_properties.ambient_color[2], 1.0);
             gl::Uniform1i(shader.get_uniform_location("textureSample".to_string()), 0);
             gl::Uniform3fv(shader.get_uniform_location("scale".to_string()), 1, &scale[(0,0)]);
+            gl::Uniform3fv(shader.get_uniform_location("rotate".to_string()), 1, &rotate[(0,0)]);
 
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, texture.texture_id);

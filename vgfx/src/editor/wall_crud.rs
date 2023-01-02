@@ -31,6 +31,7 @@ impl WallCrud {
             model_name: self.model_map_to_index(model_map, index), 
             position: glm::vec3(0.0, -50.0, 0.0),
             scale: glm::Vec3::new(1.0, 1.0, 1.0),
+            rotate: glm::Vec3::new(0.0, 0.0, 0.0),
             name: Uuid::new_v4().to_string()
         }
     }
@@ -49,14 +50,23 @@ impl WallCrud {
     pub fn set_new_texture(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, direction: u32) -> Option<ModelInstance> {
         let mut model_instance = self.new_model_instance(camera, model_map, self.model_index as u32);
         //Top
-        if (direction == 0 || direction == 2) {
-            println!("Top!");
+        if (direction == 0) {
             model_instance.position = glm::vec3(1000.0, -50.0, 0.0);
         }
+        // Right
+        if (direction == 1) {
+            model_instance.position = glm::vec3(0.0, -50.0, 1000.0);
+            model_instance.rotate = glm::vec3(0.0, 1.57, 0.0);
+        }
         // Bottom
-        else if (direction == 1 || direction == 3) {
-            println!("Bottom!");
+        else if (direction == 2) {
             model_instance.position = glm::vec3(-1000.0, -50.0, 0.0);
+            model_instance.rotate = glm::vec3(3.14, 0.0, 0.0);
+        }
+        // Left
+        else if (direction == 3) {
+            model_instance.position = glm::vec3(0.0, -50.0, -1000.0);
+            model_instance.rotate = glm::vec3(0.0, 1.57, 0.0);
         }
         model_instance.scale = glm::Vec3::new(10.0, 10.0, 10.0);
         return Some(model_instance);
@@ -97,7 +107,6 @@ impl WallCrud {
         if (sdl_context.check_pressed("O".to_string())) {
             self.next_or_prev_texture(camera, &world.model_map, 1);
             for i in 0..4 {
-                println!("Position {}", self.texture_cursors[i].as_ref().unwrap().position);
                 world.oct_tree.remove_item_by_name(self.prev_model_ids.get(i).unwrap().to_string());
                 world.oct_tree.insert_item(Box::new(self.texture_cursors.get(i).unwrap().clone().unwrap()), 0.0, 0.0, 0.0);
             }

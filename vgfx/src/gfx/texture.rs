@@ -181,7 +181,7 @@ impl Texture {
     }
 
     pub fn create_texture_buffer_from_byte_data(&mut self, image_bytes: &[u8]) {
-        let surface = Self::surface_from_byte_data(image_bytes, true);
+        let surface = Self::surface_from_byte_data(image_bytes, false);
         let img_data = surface.raw();
         unsafe {
             gl::GenTextures(1, &mut self.texture_id);

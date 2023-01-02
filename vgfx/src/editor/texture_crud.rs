@@ -32,7 +32,8 @@ impl TextureCrud {
             model_name: self.model_map_to_index(model_map, index), 
             position: glm::vec3(0.0, 0.0, 0.0),
             scale: glm::Vec3::new(1.0, 1.0, 1.0),
-            name: "texture_crud".to_string()
+            name: "texture_crud".to_string(),
+            rotate: glm::Vec3::new(0.0, 0.0, 0.0)
         }
     }
 
