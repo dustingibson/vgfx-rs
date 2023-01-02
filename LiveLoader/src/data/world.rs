@@ -216,7 +216,7 @@ impl World {
                         texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
                         texture_info.emissive_coeficient.push(vals.next().unwrap().parse().unwrap());
                     }
-                    else if first_val == "map_Ka"{
+                    else if first_val == "map_Ka" || first_val == "map_Kd" {
                         let texture_fname = vals.next().unwrap().to_string();
                         texture_info.img = self.get_byte_from_file([dir_name.to_string(), "/".to_string(), texture_fname].join("")).unwrap();
                         println!("{}", texture_info.img.len());

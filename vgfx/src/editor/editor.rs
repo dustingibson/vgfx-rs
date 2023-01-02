@@ -13,6 +13,7 @@ use crate::World;
 use super::terrain_crud::TerrainCrud;
 use super::texture_crud::TextureCrud;
 use super::floor_crud::FloorCrud;
+use super::wall_crud::WallCrud;
 
 pub struct Editor {
     camera_coord_label: Label2D,
@@ -20,6 +21,7 @@ pub struct Editor {
     texture_crud: TextureCrud,
     terrain_crud: TerrainCrud,
     floor_crud: FloorCrud,
+    wall_crud: WallCrud,
     mode_index: i32,
     max_mode_index: i32,
 }
@@ -40,7 +42,8 @@ impl Editor {
             max_mode_index: 1,
             texture_crud: TextureCrud::new(sdl_payload, camera, model_map),
             terrain_crud: TerrainCrud::new(sdl_payload, camera, model_map),
-            floor_crud: FloorCrud::new(sdl_payload, camera, model_map)
+            floor_crud: FloorCrud::new(sdl_payload, camera, model_map),
+            wall_crud: WallCrud::new(sdl_payload, camera, model_map)
         };
     }
 
@@ -84,6 +87,7 @@ impl Editor {
         if (sdl_context.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
         }
         self.floor_crud.run(sdl_context, camera, shader_container, world);
+        self.wall_crud.run(sdl_context, camera, shader_container, world);
         match self.mode_index {
             0 => self.texture_crud.run(sdl_context, camera, shader_container, world),
             1 => self.terrain_crud.run(sdl_context, camera, shader_container, &world.model_map),
