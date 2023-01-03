@@ -63,13 +63,25 @@ impl TextureCrud {
     }
 
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, world: &mut World) {
+        let half_rot = 0.39269908125;
+        let full_rot = half_rot*8.0;
+
         if (sdl_context.check_pressed("Up".to_string())) {
             self.next_texture(camera, &world.model_map);
         }
         if (sdl_context.check_pressed("Down".to_string())) {
             self.prev_texture(camera, &world.model_map);
         }
-        if (sdl_context.left_click) {
+        if (sdl_context.check_pressed("Z".to_string())) {
+            self.texture_cursor.as_mut().unwrap().rotate += glm::Vec3::new(half_rot, 0.0, 0.0);
+        }
+        if (sdl_context.check_pressed("X".to_string())) {
+            self.texture_cursor.as_mut().unwrap().rotate += glm::Vec3::new(0.0, half_rot, 0.0);
+        }
+        if (sdl_context.check_pressed("C".to_string())) {
+            self.texture_cursor.as_mut().unwrap().rotate += glm::Vec3::new(0.0, 0.0, half_rot);
+        }
+        if (sdl_context.check_pressed("Space".to_string())) {
             let x = self.texture_cursor.as_ref().unwrap().position.x;
             let y = self.texture_cursor.as_ref().unwrap().position.y;
             let z = self.texture_cursor.as_ref().unwrap().position.z;

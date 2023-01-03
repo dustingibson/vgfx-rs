@@ -56,19 +56,19 @@ impl WallCrud {
         // Right
         if (direction == 1) {
             model_instance.position = glm::vec3(0.0, -50.0, 1000.0);
-            model_instance.rotate = glm::vec3(0.0, 1.57, 0.0);
+            model_instance.rotate = glm::vec3(0.0, 1.570796, 0.0);
         }
         // Bottom
         else if (direction == 2) {
             model_instance.position = glm::vec3(-1000.0, -50.0, 0.0);
-            model_instance.rotate = glm::vec3(3.14, 0.0, 0.0);
+            model_instance.rotate = glm::vec3(3.141592, 0.0, 0.0);
         }
         // Left
         else if (direction == 3) {
             model_instance.position = glm::vec3(0.0, -50.0, -1000.0);
-            model_instance.rotate = glm::vec3(0.0, 1.57, 0.0);
+            model_instance.rotate = glm::vec3(0.0, 1.570796, 0.0);
         }
-        model_instance.scale = glm::Vec3::new(10.0, 10.0, 10.0);
+        model_instance.scale = glm::Vec3::new(1.0, 1.0, 1.0);
         return Some(model_instance);
     }
 

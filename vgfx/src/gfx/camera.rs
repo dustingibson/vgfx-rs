@@ -67,6 +67,7 @@ impl Camera {
 
     pub fn set_projection_ortho(&mut self, shader_container: &mut ShaderContainer, name: &String) {
         let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 1000.0);
+        //let new_projection: glm::Mat4 = glm::ortho(0.0, self.width, 0.0, self.height, 0.1, 1000.0);
         let view: glm::Mat4 = glm::Mat4::identity();
         shader_container.set_projection(name, view, new_projection);
     }

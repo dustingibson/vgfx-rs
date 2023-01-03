@@ -14,35 +14,8 @@ uniform mat4 projection;
 uniform vec3 scale;
 uniform vec3 rotate;
 
-mat3 xrotate(float angle) {
-	return mat3(
-		1.0f, 0.0f, 0.0f,
-		0.0f, cos(angle), -1.0f*sin(angle),
-		0.0f, sin(angle), cos(angle)
-	);
-}
-
-mat3 yrotate(float angle) {
-	return mat3(
-		cos(angle), 0.0f, sin(angle),
-		0.0f, 1.0f, 0.0f,
-		-1.0f*sin(angle), 0.0f, cos(angle)
-	);
-}
-
-mat3 zrotate(float angle) {
-	return mat3(
-		cos(angle), -1.0f*sin(angle), 0.0f,
-		sin(angle), cos(angle), 0.0f,
-		0.0f, 0.0f, 1.0f
-	);
-}
-
 void main() {
-	vec3 new_pos = vec3(scale.x * model_pos.x, scale.y * model_pos.y, scale.z * model_pos.z);
-	new_pos = new_pos*xrotate(rotate.x);
-	new_pos = new_pos*yrotate(rotate.y);
-	new_pos = new_pos*zrotate(rotate.z);
+	vec3 new_pos = model_pos;
 	gl_Position = projection * view * model * vec4(new_pos, 1.0f);
 	fragPos = vec3(model * vec4(new_pos,1.0f));
 	normal = normals;
