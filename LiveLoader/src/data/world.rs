@@ -218,7 +218,8 @@ impl World {
                     }
                     else if first_val == "map_Ka" || first_val == "map_Kd" {
                         let texture_fname = vals.next().unwrap().to_string();
-                        texture_info.img = self.get_byte_from_file([dir_name.to_string(), "/".to_string(), texture_fname].join("")).unwrap();
+                        texture_info.img = self.get_byte_from_file(texture_fname).unwrap();
+                        //texture_info.img = self.get_byte_from_file([dir_name.to_string(), "/".to_string(), texture_fname].join("")).unwrap();
                         println!("{}", texture_info.img.len());
                     }
                 }
@@ -322,14 +323,21 @@ impl World {
                 //let fname = comp.next().unwrap();
             }
         }
-        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), min_y.unwrap(), min_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), min_y.unwrap(), max_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), max_y.unwrap(), max_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), max_y.unwrap(), min_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), max_y.unwrap(), max_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(min_x.unwrap(), max_y.unwrap(), min_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), min_y.unwrap(), max_z.unwrap()));
-        model.boundary_points.push(self.points_to_vec(max_x.unwrap(), min_y.unwrap(), min_z.unwrap()));
+        let uw_min_x = min_x.unwrap_or(0.0);
+        let uw_min_y = min_y.unwrap_or(0.0);
+        let uw_min_z = min_z.unwrap_or(0.0);
+        let uw_max_x = max_x.unwrap_or(0.0);
+        let uw_max_y = max_y.unwrap_or(0.0);
+        let uw_max_z = max_z.unwrap_or(0.0);
+
+        model.boundary_points.push(self.points_to_vec(uw_min_x, uw_min_y, uw_min_z));
+        model.boundary_points.push(self.points_to_vec(uw_min_x, uw_min_y, uw_max_z));
+        model.boundary_points.push(self.points_to_vec(uw_max_x, uw_max_y, uw_max_z));
+        model.boundary_points.push(self.points_to_vec(uw_max_x, uw_max_y, uw_min_z));
+        model.boundary_points.push(self.points_to_vec(uw_min_x, uw_max_y, uw_max_z));
+        model.boundary_points.push(self.points_to_vec(uw_min_x, uw_max_y, uw_min_z));
+        model.boundary_points.push(self.points_to_vec(uw_max_x, uw_min_y, uw_max_z));
+        model.boundary_points.push(self.points_to_vec(uw_max_x, uw_min_y, uw_min_z));
         if cur_face_partition.faces.len() > 0 {
             model.faces.push(cur_face_partition);
         }

@@ -26,8 +26,8 @@ impl Skybox {
     }
 
     fn init_vertex_buffer() -> Vec<GLfloat> {
-        let high = 5000.0;
-        let low = -5000.0;
+        let high = 900.0;
+        let low = -900.0;
         return [
             low,  high, low,
             low, low, low,

@@ -32,7 +32,7 @@ impl FloorCrud {
     fn new_model_instance(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, index: u32) -> ModelInstance {
         return ModelInstance {
             model_name: self.model_map_to_index(model_map, index), 
-            position: glm::vec3(0.0, -50.0, 0.0),
+            position: glm::vec3(0.0, -8.0, 0.0),
             scale: glm::Vec3::new(1.0, 1.0, 1.0),
             rotate: glm::Vec3::new(0.0, 0.0, 0.0),
             name: Uuid::new_v4().to_string()
@@ -52,7 +52,6 @@ impl FloorCrud {
 
     pub fn set_new_texture(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Option<ModelInstance> {
         let mut model_instance = self.new_model_instance(camera, model_map, self.model_index as u32);
-        model_instance.scale = glm::Vec3::new(10.0, 10.0, 10.0);
         return Some(model_instance);
     }
 

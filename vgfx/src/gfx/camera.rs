@@ -1,8 +1,8 @@
 use gl;
 use gl::types::*;
 use crate::ShaderContainer;
-
-use super::shader::Shader;
+use crate::dep::events::SDLContext;
+use sdl2::keyboard::Scancode;
 extern crate nalgebra_glm as glm;
 
 pub struct Camera {
@@ -19,7 +19,7 @@ pub struct Camera {
 impl Camera {
     pub fn new(position: glm::Vec3, width: f32, height: f32) -> Camera {
             // Rad(45) = 0.785398
-        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.1, 10000.0);
+        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.01, 2000.0);
         let view: glm::Mat4 = glm::look_at::<GLfloat>(
             &position,
             &glm::vec3(0.0, 0.0, 1.0),
@@ -66,7 +66,7 @@ impl Camera {
     }
 
     pub fn set_projection_ortho(&mut self, shader_container: &mut ShaderContainer, name: &String) {
-        let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 1000.0);
+        let new_projection: glm::Mat4 = self.ortho(0.0, 1.0, 1.0, 0.0, -1.0, 10.0);
         //let new_projection: glm::Mat4 = glm::ortho(0.0, self.width, 0.0, self.height, 0.1, 1000.0);
         let view: glm::Mat4 = glm::Mat4::identity();
         shader_container.set_projection(name, view, new_projection);
@@ -109,6 +109,24 @@ impl Camera {
             &self.front,
             &glm::vec3(0.0 ,1.0, 0.0)
         );
+    }
+
+    pub fn move_camera(&mut self, sdl_payload: &SDLContext) {
+        let speed = 0.2;
+        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::D)) {
+            self.position += glm::cross(&self.front, &glm::vec3(0.0, speed, 0.0));
+            self.update();
+        }
+        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::A)) {
+            self.position -= glm::cross(&self.front,&glm::vec3(0.0, speed, 0.0));
+            self.update();
+        }
+        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
+            self.translate(self.front, speed);
+        }
+        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
+            self.translate(self.front, -1.0*speed);
+        }
     }
 
     pub fn ortho(&mut self, left: f32, right: f32, bottom: f32, top: f32, z_near: f32, z_far: f32) -> glm::Mat4 {

@@ -49,26 +49,28 @@ impl WallCrud {
 
     pub fn set_new_texture(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, direction: u32) -> Option<ModelInstance> {
         let mut model_instance = self.new_model_instance(camera, model_map, self.model_index as u32);
+        let mut wall_height_offset = 0.0;
+        let mut size = 90.0;
         //Top
         if (direction == 0) {
-            model_instance.position = glm::vec3(1000.0, -50.0, 0.0);
+            model_instance.position = glm::vec3(size, wall_height_offset, 0.0);
         }
         // Right
         if (direction == 1) {
-            model_instance.position = glm::vec3(0.0, -50.0, 1000.0);
+            model_instance.position = glm::vec3(0.0, wall_height_offset, size);
             model_instance.rotate = glm::vec3(0.0, 1.570796, 0.0);
         }
         // Bottom
         else if (direction == 2) {
-            model_instance.position = glm::vec3(-1000.0, -50.0, 0.0);
+            model_instance.position = glm::vec3(size*-1.0, wall_height_offset, 0.0);
             model_instance.rotate = glm::vec3(3.141592, 0.0, 0.0);
         }
         // Left
         else if (direction == 3) {
-            model_instance.position = glm::vec3(0.0, -50.0, -1000.0);
+            model_instance.position = glm::vec3(0.0, wall_height_offset, size*-1.0);
             model_instance.rotate = glm::vec3(0.0, 1.570796, 0.0);
         }
-        model_instance.scale = glm::Vec3::new(1.0, 1.0, 1.0);
+        // model_instance.scale = glm::Vec3::new(1.0, 1.0, 1.0);
         return Some(model_instance);
     }
 

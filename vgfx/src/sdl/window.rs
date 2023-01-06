@@ -105,20 +105,7 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         let mouse_delta_y = (offset_mouse_y) as f32 / HEIGHT as f32;
         camera.change_angle(mouse_delta_x, mouse_delta_y);
 
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::D)) {
-            camera.position += glm::normalize(&glm::cross(&camera.front, &glm::vec3(0.0, 0.1, 0.0)) );
-            camera.update();
-        }
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::A)) {
-            camera.position -= glm::normalize(  &glm::cross(&camera.front,&glm::vec3(0.0, 0.1, 0.0)) );
-            camera.update();
-        }
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
-            camera.translate(camera.front, 1.0);
-        }
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
-            camera.translate(camera.front, -0.1);
-        }
+        camera.move_camera(&sdl_payload);
 
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);

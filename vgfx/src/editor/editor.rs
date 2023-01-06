@@ -70,7 +70,7 @@ impl Editor {
     }
 
     fn update_labels(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera) {
-        self.camera_coord_label.change_text(sdl_context, camera.coord_front_str());
+        self.camera_coord_label.change_text(sdl_context, camera.coord_str());
         self.editor_mode_label.change_text(sdl_context, self.to_editor_mode_str());
     }
 
@@ -88,11 +88,11 @@ impl Editor {
         }
         self.floor_crud.run(sdl_context, camera, shader_container, world);
         self.wall_crud.run(sdl_context, camera, shader_container, world);
-        match self.mode_index {
-            0 => self.texture_crud.run(sdl_context, camera, shader_container, world),
-            1 => self.terrain_crud.run(sdl_context, camera, shader_container, &world.model_map),
-            _ => {}
-        }
+        // match self.mode_index {
+        //     0 => self.texture_crud.run(sdl_context, camera, shader_container, world),
+        //     1 => self.terrain_crud.run(sdl_context, camera, shader_container, &world.model_map),
+        //     _ => {}
+        // }
     }
 
     pub fn draw_labels(&mut self, camera: &mut Camera, shader_container: &mut ShaderContainer) {
