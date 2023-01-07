@@ -13,7 +13,8 @@ use uuid::Uuid;
 pub struct WallCrud {
     pub texture_cursors: Vec<Option<ModelInstance>>,
     pub model_index: i32,
-    pub prev_model_ids: Vec<String>
+    pub prev_model_ids: Vec<String>,
+    pub size: f32
 }
 
 impl WallCrud {
@@ -21,7 +22,8 @@ impl WallCrud {
         let mut texture_crud = WallCrud {
             texture_cursors: vec![None, None, None, None],
             model_index: 0,
-            prev_model_ids: vec!["".to_string(), "".to_string(), "".to_string(), "".to_string()]
+            prev_model_ids: vec!["".to_string(), "".to_string(), "".to_string(), "".to_string()],
+            size: 90.0
         };
         return texture_crud;
     }
@@ -50,25 +52,32 @@ impl WallCrud {
     pub fn set_new_texture(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, direction: u32) -> Option<ModelInstance> {
         let mut model_instance = self.new_model_instance(camera, model_map, self.model_index as u32);
         let mut wall_height_offset = 0.0;
-        let mut size = 90.0;
+
+        let degrees_0 = 0.0;
+        let degrees_90 = 1.570796;
+        let degrees_180 = 3.141592;
+        let degrees_270 = 4.71239;
+        let degrees_360 = 6.28319;
+
         //Top
         if (direction == 0) {
-            model_instance.position = glm::vec3(size, wall_height_offset, 0.0);
+            model_instance.position = glm::vec3(self.size, wall_height_offset, 0.0);
+            model_instance.rotate = glm::vec3(degrees_180, degrees_180, 0.0);
         }
         // Right
         if (direction == 1) {
-            model_instance.position = glm::vec3(0.0, wall_height_offset, size);
-            model_instance.rotate = glm::vec3(0.0, 1.570796, 0.0);
+            model_instance.position = glm::vec3(0.0, wall_height_offset, self.size);
+            model_instance.rotate = glm::vec3(degrees_360, degrees_270, degrees_180);
         }
         // Bottom
         else if (direction == 2) {
-            model_instance.position = glm::vec3(size*-1.0, wall_height_offset, 0.0);
-            model_instance.rotate = glm::vec3(3.141592, 0.0, 0.0);
+            model_instance.position = glm::vec3(self.size*-1.0, wall_height_offset, 0.0);
+            model_instance.rotate = glm::vec3(degrees_180, 0.0, 0.0);
         }
         // Left
         else if (direction == 3) {
-            model_instance.position = glm::vec3(0.0, wall_height_offset, size*-1.0);
-            model_instance.rotate = glm::vec3(0.0, 1.570796, 0.0);
+            model_instance.position = glm::vec3(0.0, wall_height_offset, self.size*-1.0);
+            model_instance.rotate = glm::vec3(degrees_360, degrees_90, degrees_180);
         }
         // model_instance.scale = glm::Vec3::new(1.0, 1.0, 1.0);
         return Some(model_instance);

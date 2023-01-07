@@ -16,7 +16,9 @@ pub struct Player {
     speed: f32,
     acceleration: f32,
     deaccerlation: f32,
-    max_speed: f32,
+    norm_acceleration: f32,
+    norm_deaccerlation: f32,
+    norm_speed: f32,
     // North, East, South, West
     cur_dir: Vec<bool>,
     movement_state: MovementState
@@ -27,9 +29,11 @@ impl Player {
         Player {
             position: glm::Vec3::new(0.0, 0.0, 0.0),
             speed: 0.0,
-            acceleration: 0.01,
+            acceleration: 0.02,
             deaccerlation: 0.05,
-            max_speed: 0.5,
+            norm_acceleration: 0.01,
+            norm_deaccerlation: 0.05,
+            norm_speed: 0.5,
             cur_dir: vec![false, false, false, false],
             movement_state: MovementState::NoMovement
         }
@@ -45,8 +49,8 @@ impl Player {
 
     pub fn adjust_speed(&mut self, modify_speed: &mut bool) {
         if (*modify_speed == true) {
-            if (self.speed + self.acceleration >= self.max_speed) {
-                self.speed = self.max_speed;
+            if (self.speed + self.acceleration >= self.norm_speed) {
+                self.speed = self.norm_speed;
             } else {
                 self.speed += self.acceleration;
             }
@@ -78,7 +82,14 @@ impl Player {
         self.translate(camera.front, -1.0*self.speed);
     }
 
+    pub fn normalize_accerlators(&mut self, ratio: f32) {
+        // Remove FPS (dis)advantage from movement
+        self.acceleration = self.norm_acceleration * ratio;
+        self.deaccerlation = self.norm_deaccerlation * ratio;
+    }
+
     pub fn change_movement(&mut self, sdl_payload: &SDLContext, camera: &mut Camera) {
+        self.normalize_accerlators(sdl_payload.ms_ratio());
         let mut modify_speed: bool = true;
         let mut prev_dir: Vec<bool> = vec![false, false, false, false];
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {

@@ -10,7 +10,7 @@ use crate::model::model::ModelInstance;
 use crate::World;
 use uuid::Uuid;
 
-pub struct FloorCrud {
+pub struct CeilingCrud {
     pub main_label: Label2D,
     pub texture_cursor: Option<ModelInstance>,
     pub model_index: i32,
@@ -18,14 +18,14 @@ pub struct FloorCrud {
     pub height: f32
 }
 
-impl FloorCrud {
+impl CeilingCrud {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera, model_map: &HashMap<String, Model>) -> Self {
         let label: Label2D = Label2D::new( sdl_payload, camera, "BLAH".to_string(), glm::vec4(1.0,0.0,0.0,1.0), glm::vec3(0.0, 0.0, 0.0), 128);
-        let mut texture_crud = FloorCrud {
+        let mut texture_crud = CeilingCrud {
             main_label: label,
             texture_cursor: None,
             model_index: 0,
-            prev_model_id: "no_selected_floor".to_string(),
+            prev_model_id: "no_selected_ceiling".to_string(),
             height: 16.0
         };
         return texture_crud;
@@ -34,7 +34,7 @@ impl FloorCrud {
     fn new_model_instance(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, index: u32) -> ModelInstance {
         return ModelInstance {
             model_name: self.model_map_to_index(model_map, index), 
-            position: glm::vec3(0.0, -1.0*self.height, 0.0),
+            position: glm::vec3(0.0, self.height, 0.0),
             scale: glm::Vec3::new(1.0, 1.0, 1.0),
             rotate: glm::Vec3::new(0.0, 0.0, 0.0),
             name: Uuid::new_v4().to_string()
@@ -57,25 +57,25 @@ impl FloorCrud {
         return Some(model_instance);
     }
 
-    pub fn contains_floor_texture(&mut self, model_map: &HashMap<String, Model>) -> bool {
-        let mut has_floor = false;
+    pub fn contains_ceiling_texture(&mut self, model_map: &HashMap<String, Model>) -> bool {
+        let mut has_ceiling = false;
         model_map.keys().for_each( |k| {
-            if k.contains("floor") {
-                has_floor = true;
+            if k.contains("ceiling") {
+                has_ceiling = true;
             }
         });
-        return has_floor;
+        return has_ceiling;
     }
 
     pub fn next_or_prev_texture(&mut self, camera: &mut Camera, model_map: &HashMap<String, Model>, direction: i32) {
-        while self.contains_floor_texture(model_map) {
+        while self.contains_ceiling_texture(model_map) {
             if direction > 0 {
                 if (self.model_index + 1 >= model_map.len() as i32) { self.model_index = 0; } else { self.model_index += direction; }
             } else {
                 if (self.model_index < 0) { self.model_index = model_map.len() as i32 - 1; } else { self.model_index += direction; }
             }
             let index_name = self.model_map_to_index(model_map, self.model_index as u32);
-            if index_name.contains("floor") {
+            if index_name.contains("ceiling") {
                 if !self.texture_cursor.as_ref().is_none() {
                     self.prev_model_id = self.texture_cursor.as_ref().unwrap().name.to_string();
                 }
@@ -92,12 +92,12 @@ impl FloorCrud {
     }
 
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer, world: &mut World) {
-        if (sdl_context.check_pressed("]".to_string())) {
+        if (sdl_context.check_pressed(";".to_string())) {
             self.next_or_prev_texture(camera, &world.model_map, 1);
             world.oct_tree.remove_item_by_name(self.prev_model_id.to_string());
             world.oct_tree.insert_item(Box::new(self.texture_cursor.clone().unwrap()), 0.0, 0.0, 0.0);
         }
-        if (sdl_context.check_pressed("[".to_string())) {
+        if (sdl_context.check_pressed("'".to_string())) {
             self.next_or_prev_texture(camera, &world.model_map, -1);
             world.oct_tree.remove_item_by_name(self.prev_model_id.to_string());
             world.oct_tree.insert_item(Box::new(self.texture_cursor.clone().unwrap()), 0.0, 0.0, 0.0);

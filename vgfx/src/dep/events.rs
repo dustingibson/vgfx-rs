@@ -91,6 +91,11 @@ impl SDLContext {
         self.ms = ms;
     }
 
+    pub fn ms_ratio(&self) -> f32 {
+        // Normalize to 60 FPS (i.e. 16.6667 ms)
+        return self.ms as f32 / 16.6667;
+    }
+
     pub fn run(&mut self) {
     }
 }
