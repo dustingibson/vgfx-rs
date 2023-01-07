@@ -17,6 +17,7 @@ use super::map::Map;
 extern crate nalgebra_glm as glm;
 use std::convert::TryInto;
 use std::time::Instant;
+use crate::world::player::Player;
 
 
 pub struct World {
@@ -26,7 +27,8 @@ pub struct World {
     pub oct_tree: OctTree<ModelInstance>,
     texture_group: HashMap<String, TextureGroupRenderer>,
     skyboxes: Vec<Skybox>,
-    map: Map
+    map: Map,
+    player: Player
 }
 
 impl World {
@@ -39,7 +41,8 @@ impl World {
             oct_tree: OctTree::new(),
             texture_group: HashMap::new(),
             skyboxes: vec![],
-            map: Map::new()
+            map: Map::new(),
+            player: Player::new()
         };
         return world;
     }
@@ -52,13 +55,18 @@ impl World {
             oct_tree: OctTree::new(),
             texture_group: HashMap::new(),
             skyboxes: vec![],
-            map: Map::new_load()
+            map: Map::new_load(),
+            player: Player::new()
         };
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
     pub fn draw_skybox(&mut self, shader: &mut Shader) {
         self.skyboxes[0].draw(shader);
+    }
+
+    pub fn run(&mut self, sdl_context: &SDLContext, camera: &mut Camera) {
+        self.player.run(sdl_context, camera);
     }
 
     pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {

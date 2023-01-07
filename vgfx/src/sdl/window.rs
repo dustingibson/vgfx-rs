@@ -104,9 +104,6 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         offset_mouse_y += mouse_state.y();
         let mouse_delta_y = (offset_mouse_y) as f32 / HEIGHT as f32;
         camera.change_angle(mouse_delta_x, mouse_delta_y);
-
-        camera.move_camera(&sdl_payload);
-
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
             gl::StencilMask(0x00);

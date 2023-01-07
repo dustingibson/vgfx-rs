@@ -111,24 +111,6 @@ impl Camera {
         );
     }
 
-    pub fn move_camera(&mut self, sdl_payload: &SDLContext) {
-        let speed = 0.2;
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::D)) {
-            self.position += glm::cross(&self.front, &glm::vec3(0.0, speed, 0.0));
-            self.update();
-        }
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::A)) {
-            self.position -= glm::cross(&self.front,&glm::vec3(0.0, speed, 0.0));
-            self.update();
-        }
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
-            self.translate(self.front, speed);
-        }
-        if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
-            self.translate(self.front, -1.0*speed);
-        }
-    }
-
     pub fn ortho(&mut self, left: f32, right: f32, bottom: f32, top: f32, z_near: f32, z_far: f32) -> glm::Mat4 {
         return glm::mat4(
             2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),

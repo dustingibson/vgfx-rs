@@ -51,7 +51,11 @@ impl Demo {
     pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         self.draw_skybox(camera, shader_container);
         self.draw_world(camera, shader_container);
-        self.editor.run(sdl_context, camera, shader_container, &mut self.world);
+        
+        // Run components
+        self.editor.run(sdl_context, camera, shader_container, &mut self.world);        
+        self.world.run(sdl_context, camera);
+
         self.draw_ui(camera, shader_container);
     }
 
