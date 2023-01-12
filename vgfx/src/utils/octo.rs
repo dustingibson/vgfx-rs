@@ -1,8 +1,5 @@
 use std::string;
-
-
-
-
+extern crate nalgebra_glm as glm;
 
 const DEPTH_SIZE: u32 = 5;
 const MAX_SIZE: f32 = 50000.0;
@@ -71,8 +68,12 @@ impl<T> OctTree<T> where T: Clone {
 
     pub fn insert_item(&mut self, payload: Box<T>, x: f32, y: f32, z: f32) {
         self.root.insert_payload(payload, x, y, z, &mut 0);
-        //self.cnt += 1;
     }
+
+    pub fn insert_item_vec3(&mut self, payload: Box<T>, pos: glm::Vec3) {
+        self.root.insert_payload(payload, pos.x, pos.y, pos.z, &mut 0);
+    }
+
 
     pub fn remove_item_by_name(&mut self, name: String) {
         self.removal_queue.push(name.to_string());
