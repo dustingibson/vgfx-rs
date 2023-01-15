@@ -1,7 +1,7 @@
 use crate::dep::events::SDLContext;
 use sdl2::{keyboard::Scancode, sys::True};
 use crate::Camera;
-use super::map::Map;
+use super::map_data::MapData;
 extern crate nalgebra_glm as glm;
 
 #[derive(PartialEq, Eq)]
@@ -29,14 +29,18 @@ impl Player {
         Player {
             position: glm::Vec3::new(0.0, 0.0, 0.0),
             speed: 0.0,
-            acceleration: 0.02,
-            deaccerlation: 0.05,
+            acceleration: 0.1,
+            deaccerlation: 0.5,
             norm_acceleration: 0.01,
             norm_deaccerlation: 0.05,
-            norm_speed: 0.5,
+            norm_speed: 2.0,
             cur_dir: vec![false, false, false, false],
             movement_state: MovementState::NoMovement
         }
+    }
+
+    pub fn reposition(&mut self, position: glm::Vec3) {
+        self.position = position;
     }
 
     pub fn run(&mut self, sdl_payload: &SDLContext, camera: &mut Camera) {
@@ -47,22 +51,22 @@ impl Player {
         self.position += translate_vector * product;
     }
 
-    pub fn adjust_speed(&mut self, modify_speed: &mut bool) {
+    pub fn adjust_speed(&mut self, modify_speed: &mut bool, r: f32) {
         if (*modify_speed == true) {
-            if (self.speed + self.acceleration >= self.norm_speed) {
-                self.speed = self.norm_speed;
+            if ( (self.speed + self.acceleration)*r >= self.norm_speed) {
+                self.speed = self.norm_speed*r;
             } else {
-                self.speed += self.acceleration;
+                self.speed += self.acceleration*r;
             }
             *modify_speed = false;
         }
     }
 
-    pub fn reduce_speed(&mut self) {
-        if (self.speed - self.deaccerlation <= 0.0) {
+    pub fn reduce_speed(&mut self, r: f32) {
+        if (self.speed*r - self.deaccerlation*r <= 0.0) {
             self.speed = 0.0;
         } else {
-            self.speed -= self.deaccerlation;
+            self.speed -= self.deaccerlation*r;
         }
     }
 
@@ -84,31 +88,31 @@ impl Player {
 
     pub fn normalize_accerlators(&mut self, ratio: f32) {
         // Remove FPS (dis)advantage from movement
-        self.acceleration = self.norm_acceleration * ratio;
-        self.deaccerlation = self.norm_deaccerlation * ratio;
+        self.acceleration = self.acceleration * ratio;
+        self.deaccerlation = self.deaccerlation * ratio;
     }
 
     pub fn change_movement(&mut self, sdl_payload: &SDLContext, camera: &mut Camera) {
-        self.normalize_accerlators(sdl_payload.ms_ratio());
+        //self.normalize_accerlators(sdl_payload.ms_ratio());
         let mut modify_speed: bool = true;
         let mut prev_dir: Vec<bool> = vec![false, false, false, false];
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::W)) {
-            self.adjust_speed(&mut modify_speed);
+            self.adjust_speed(&mut modify_speed, sdl_payload.ms_ratio());
             self.move_north(camera);
             prev_dir[0] = true;
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::D)) {
-            self.adjust_speed(&mut modify_speed);
+            self.adjust_speed(&mut modify_speed, sdl_payload.ms_ratio());
             self.move_east(camera);
             prev_dir[1] = true;
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::S)) {
-            self.adjust_speed(&mut modify_speed);
+            self.adjust_speed(&mut modify_speed, sdl_payload.ms_ratio());
             self.move_south(camera);
             prev_dir[2] = true;
         }
         if(sdl_payload.event_pump.keyboard_state().is_scancode_pressed(Scancode::A)) {
-            self.adjust_speed(&mut modify_speed);
+            self.adjust_speed(&mut modify_speed, sdl_payload.ms_ratio());
             self.move_west(camera);
             prev_dir[3] = true;
         }
@@ -126,7 +130,7 @@ impl Player {
             // TODO: Maybe a good idea to set a threshold here
             // For an example. Someone just wants to walk then there should be no momentum
             // Perhaps on apply when running. i.e. top speed changes
-            self.reduce_speed();
+            self.reduce_speed(sdl_payload.ms_ratio());
             if (self.cur_dir[0]) {
                 self.move_north(camera);
             }

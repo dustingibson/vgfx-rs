@@ -8,16 +8,20 @@ use crate::gfx::skybox::Skybox;
 use crate::gfx::texture_group::TextureGroupRenderer;
 use crate::model::model::AreaInstance;
 use crate::utils::octo::OctTree;
+use crate::utils::state::DemoState;
 use std::collections::HashMap;
 use std::io::prelude::*;
 use std::fs::{File};
 use std::io;
 use crate::Camera;
-use super::map::Map;
+use super::map_data::MapData;
 extern crate nalgebra_glm as glm;
 use std::convert::TryInto;
 use std::time::Instant;
 use crate::world::player::Player;
+use crate::model::floor::Floor;
+use crate::model::wall::Wall;
+use crate::model::ceiling::Ceiling;
 
 
 pub struct World {
@@ -27,13 +31,14 @@ pub struct World {
     pub oct_tree: OctTree<ModelInstance>,
     texture_group: HashMap<String, TextureGroupRenderer>,
     skyboxes: Vec<Skybox>,
-    map: Map,
+    map_data: MapData,
     player: Player
 }
 
 impl World {
 
     pub fn new() -> Self {
+
         let world = World {
             base_folder: "res".to_string(),
             model_map: HashMap::new(),
@@ -41,23 +46,14 @@ impl World {
             oct_tree: OctTree::new(),
             texture_group: HashMap::new(),
             skyboxes: vec![],
-            map: Map::new(),
+            map_data: MapData::new_load(),
             player: Player::new()
         };
         return world;
     }
 
     pub fn new_load(sdl_context: &mut SDLContext) -> Self {
-        let mut world = World {
-            base_folder: "res".to_string(),
-            model_map: HashMap::new(),
-            model_instances: vec![],
-            oct_tree: OctTree::new(),
-            texture_group: HashMap::new(),
-            skyboxes: vec![],
-            map: Map::new_load(),
-            player: Player::new()
-        };
+        let mut world = World::new();
         return world.load(sdl_context, "res".to_string()).unwrap();
     }
 
@@ -67,6 +63,14 @@ impl World {
 
     pub fn run(&mut self, sdl_context: &SDLContext, camera: &mut Camera) {
         self.player.run(sdl_context, camera);
+    }
+
+    pub fn load_map(&mut self, camera: &mut Camera) {
+        self.map_data.populate_world(&mut self.oct_tree, camera);
+    }
+
+    pub fn position_player(&mut self, position: glm::Vec3) {
+        self.player.reposition(position);
     }
 
     pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {

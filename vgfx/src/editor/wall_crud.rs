@@ -71,23 +71,12 @@ impl WallCrud {
         if (sdl_context.check_pressed("O".to_string())) {
             let model_name = self.next_or_prev_texture_name(&world.model_map, 1);
             self.wall.remove_textures(world);
-            println!("Name {}, Size {}", model_name, self.size);
-            self.wall.insert_textures(model_name.to_string(), self.size, camera, world);
-            // self.next_or_prev_texture(camera, &world.model_map, 1);
-            // for i in 0..4 {
-            //     world.oct_tree.remove_item_by_name(self.prev_model_ids.get(i).unwrap().to_string());
-            //     world.oct_tree.insert_item(Box::new(self.texture_cursors.get(i).unwrap().clone().unwrap()), 0.0, 0.0, 0.0);
-            // }
+            self.wall.insert_textures(glm::vec3(0.0, 0.0, 0.0), model_name.to_string(), self.size, camera, &mut world.oct_tree);
         }
         if (sdl_context.check_pressed("P".to_string())) {
             let model_name = self.next_or_prev_texture_name(&world.model_map, -1);
             self.wall.remove_textures(world);
-            self.wall.insert_textures(model_name.to_string(), self.size, camera, world);
-            // self.next_or_prev_texture(camera, &world.model_map, -1);
-            // for i in 0..4 {
-            //     world.oct_tree.remove_item_by_name(self.prev_model_ids.get(i).unwrap().to_string());
-            //     world.oct_tree.insert_item(Box::new(self.texture_cursors.get(i).unwrap().clone().unwrap()), 0.0, 0.0, 0.0);
-            // }
+            self.wall.insert_textures(glm::vec3(0.0, 0.0, 0.0), model_name.to_string(), self.size, camera, &mut world.oct_tree);
         }
     }
 }

@@ -18,6 +18,12 @@ fn find_sdl_gl_driver() -> Option<u32> {
     None
 }
 
+#[derive(PartialEq, Eq)]
+enum VgfxMode {
+    Demo,
+    Editor
+}
+
 pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     const WIDTH: u32 = 1920;
     const HEIGHT: u32 = 1080;
@@ -26,10 +32,15 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
 
     let mut start_ticks: u32;
     let end_ticks: u32;
-    // Aim for 60 fps
+    // Aim for 60 fps to normalize things
     let target_ms: f32 = (1.0/60.0)*1000.0;
     let mut delta_time: u32;
     let mut sleep_time: u64;
+
+    let mut mode = VgfxMode::Editor;
+    if params.len() > 0 && params[0] == "demo" {
+        mode = VgfxMode::Demo;
+    }
 
     let sdl_context: sdl2::Sdl = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
@@ -107,7 +118,12 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
             gl::StencilMask(0x00);
-            demo.run(&mut sdl_payload, &mut camera, &mut shader_container);
+            if mode == VgfxMode::Demo {
+                demo.run_demo(&mut sdl_payload, &mut camera, &mut shader_container);
+            }
+            else if mode == VgfxMode:: Editor {
+                demo.run_editor(&mut sdl_payload, &mut camera, &mut shader_container);
+            }
         }
         canvas.present();
         delta_time = sdl_timer.ticks() - start_ticks;

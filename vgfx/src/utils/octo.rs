@@ -1,7 +1,7 @@
 use std::string;
 extern crate nalgebra_glm as glm;
 
-const DEPTH_SIZE: u32 = 5;
+const DEPTH_SIZE: u32 = 4;
 const MAX_SIZE: f32 = 50000.0;
 
 pub struct OctTree<T> {
@@ -177,7 +177,7 @@ impl<T> CubeTree<T> where T: Clone {
             //println!("Insert at {} {} {} {} {} {}", self.x1, self.y1, self.z1, self.x2, self.y2, self.z2);
             match self.payload {
                 Some(ref mut payloadvec) => payloadvec.push(payload),
-                None => self.payload = Some(vec![])
+                None =>  self.payload = Some(vec![payload])
             }
             return;
         }
@@ -325,7 +325,7 @@ impl<T> CubeTree<T> where T: Clone {
     pub fn get_range( &mut self, payload_vec:  &mut Vec<Box<T>>, x1: f32, y1: f32, z1: f32, x2: f32, y2: f32, z2: f32) {
         if self.is_leaf() {
             match self.payload {
-                Some( ref mut cur_payload_vec) => {    
+                Some( ref mut cur_payload_vec) => {   
                     // TODO: append swaps references self.payload will be emptied
                     // Need to prevent this without borrow checker complaining                    
                     //payload_vec.extend(cur_payload_vec.clone());

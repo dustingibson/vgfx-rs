@@ -75,12 +75,12 @@ impl CeilingCrud {
         if (sdl_context.check_pressed("]".to_string())) {
             let model_name = self.next_or_prev_texture_name(&world.model_map, 1);
             self.ceiling.remove_textures(world);
-            self.ceiling.insert_texture(model_name, 1.0, self.height, camera, world);
+            self.ceiling.insert_texture(glm::vec3(0.0, 1.0*self.height, 0.0), model_name, 1.0, self.height, camera, &mut world.oct_tree);
         }
         if (sdl_context.check_pressed("[".to_string())) {
             let model_name = self.next_or_prev_texture_name(&world.model_map, -1);
             self.ceiling.remove_textures(world);
-            self.ceiling.insert_texture(model_name, 1.0, self.height, camera, world);
+            self.ceiling.insert_texture(glm::vec3(0.0, 1.0*self.height, 0.0), model_name, 1.0, self.height, camera, &mut world.oct_tree);
         }
     }
 

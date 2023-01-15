@@ -6,10 +6,12 @@ use crate::Label2D;
 use crate::SDLContext;
 use crate::World;
 use crate::editor::editor::Editor;
+use crate::utils::state::DemoState;
 
 pub struct Demo {
     pub world: World,
-    pub editor: Editor
+    pub editor: Editor,
+    pub demo_state: DemoState
 }
 
 impl Demo {
@@ -17,7 +19,8 @@ impl Demo {
         let world: World = World::new_load(sdl_payload);
         return Demo {
             editor: Editor::new(sdl_payload, camera, &world.model_map),
-            world: world
+            world: world,
+            demo_state: DemoState::new()
         };
     }
 
@@ -48,7 +51,7 @@ impl Demo {
         self.world.clean_up();
     }
 
-    pub fn run(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+    pub fn run_editor(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         self.draw_skybox(camera, shader_container);
         self.draw_world(camera, shader_container);
         
@@ -57,6 +60,19 @@ impl Demo {
         self.world.run(sdl_context, camera);
 
         self.draw_ui(camera, shader_container);
+    }
+
+    pub fn run_demo(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        if self.demo_state.is_initializing() {
+            self.world.position_player(glm::Vec3::new(10.0*180.0 , 0.0, 10.0*180.0));
+            self.world.load_map(camera);
+            self.demo_state.flip();
+        }
+        else if self.demo_state.is_initialized() {
+            self.draw_skybox(camera, shader_container);
+            self.draw_world(camera, shader_container);
+            self.world.run(sdl_context, camera);
+        }
     }
 
     pub fn draw_debug(&mut self, sdl_payload: &mut SDLContext) {

@@ -129,3 +129,31 @@ impl KeyState {
         return self.pressed.state_name == "press recorded".to_string();
     }
 }
+
+pub struct DemoState {
+    state: StateMachine
+}
+
+impl DemoState {
+    pub fn new() -> Self {
+        let mut state_machine: StateMachine = StateMachine::new("init".to_string());
+        state_machine.add_state(&"init".to_string());
+        state_machine.add_state(&"run".to_string());
+        state_machine.add_transition("init".to_string(), "complete init".to_string(), "run".to_string());
+        return DemoState {
+            state: state_machine
+        }
+    }
+
+    pub fn flip(&mut self) {
+        self.state.transition_state("complete init".to_string());
+    }
+
+    pub fn is_initializing(&mut self) -> bool {
+        return self.state.state_name == "init".to_string();
+    }
+
+    pub fn is_initialized(&mut self) -> bool {
+        return self.state.state_name == "run".to_string();
+    }
+}

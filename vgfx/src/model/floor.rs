@@ -3,6 +3,7 @@ extern crate nalgebra_glm as glm;
 use crate::Camera;
 use crate::model::model::ModelInstance;
 use crate::World;
+use crate::utils::octo::OctTree;
 use uuid::Uuid;
 
 pub struct Floor {
@@ -36,14 +37,15 @@ impl Floor {
         world.oct_tree.remove_item_by_name(self.model_id.to_string());
     }
 
-    pub fn insert_texture(&mut self, model_name: String, size: f32, height: f32, camera: &mut Camera, world: &mut World) {
+    pub fn insert_texture(&mut self, position: glm::Vec3, model_name: String, size: f32, height: f32, camera: &mut Camera, oct_tree: &mut OctTree<ModelInstance>) {
         self.model_name = model_name;
         self.size = size;
         self.height = height;
         let mut model_instance = self.new_model_instance();
-        model_instance.position = glm::vec3(0.0, -1.0*self.height, 0.0);
+        //model_instance.position = glm::vec3(0.0, -1.0*self.height, 0.0);
+        model_instance.position = position;
         self.model_id = model_instance.name.to_string();
-        world.oct_tree.insert_item_vec3(Box::new(model_instance.clone()), model_instance.position);
+        oct_tree.insert_item_vec3(Box::new(model_instance.clone()), model_instance.position);
     }
 
 }

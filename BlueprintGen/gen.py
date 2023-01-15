@@ -263,6 +263,12 @@ class Map:
             bin_file.write( room.id.to_bytes(1, end_mode) )
             # Room Type
             bin_file.write( room.room_type.id.to_bytes(1, end_mode))
+            # Room Size
+            bin_file.write( room.size.to_bytes(1, end_mode))
+            # Start X
+            bin_file.write( room.start_x.to_bytes(1, end_mode))
+            # Start Y
+            bin_file.write( room.start_y.to_bytes(1, end_mode))
             # Adj List
             for i in range(0, 4):
                 bin_file.write(room.adj_rooms[i].to_bytes(1, end_mode))

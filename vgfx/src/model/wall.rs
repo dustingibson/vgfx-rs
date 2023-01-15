@@ -9,6 +9,8 @@ use crate::model::model::Model;
 use crate::model::model::ModelInstance;
 use crate::World;
 use uuid::Uuid;
+use crate::utils::octo::OctTree;
+
 
 pub struct Wall {
     pub size: f32,
@@ -41,7 +43,7 @@ impl Wall {
         }
     }
 
-    pub fn insert_textures(&mut self, model_name: String, size: f32, camera: &mut Camera, world: &mut World) {
+    pub fn insert_textures(&mut self, position: glm::Vec3, model_name: String, size: f32, camera: &mut Camera, oct_tree: &mut OctTree<ModelInstance>) {
         self.model_name = model_name;
         self.size = size;
 
@@ -57,19 +59,19 @@ impl Wall {
         let degrees_360 = 6.28319;
 
         //Top
-        model_instance_top.position = glm::vec3(self.size, 0.0, 0.0);
+        model_instance_top.position = glm::vec3(self.size, 0.0, 0.0) + position;
         model_instance_top.rotate = glm::vec3(degrees_180, degrees_180, 0.0);
 
         // Right
-        model_instance_right.position = glm::vec3(0.0, 0.0, self.size);
+        model_instance_right.position = glm::vec3(0.0, 0.0, self.size)  + position;
         model_instance_right.rotate = glm::vec3(degrees_360, degrees_270, degrees_180);
 
         // Bottom
-        model_instance_bot.position = glm::vec3(self.size*-1.0, 0.0, 0.0);
+        model_instance_bot.position = glm::vec3(self.size*-1.0, 0.0, 0.0)  + position;
         model_instance_bot.rotate = glm::vec3(degrees_180, 0.0, 0.0);
 
         // Left
-        model_instance_left.position = glm::vec3(0.0, 0.0, self.size*-1.0);
+        model_instance_left.position = glm::vec3(0.0, 0.0, self.size*-1.0)  + position;
         model_instance_left.rotate = glm::vec3(degrees_360, degrees_90, degrees_180);
 
         self.model_ids[0] = model_instance_top.name.to_string();
@@ -77,9 +79,9 @@ impl Wall {
         self.model_ids[2] = model_instance_bot.name.to_string();
         self.model_ids[3] = model_instance_left.name.to_string();
 
-        world.oct_tree.insert_item_vec3(Box::new(model_instance_top.clone()), model_instance_top.position);
-        world.oct_tree.insert_item_vec3(Box::new(model_instance_right.clone()), model_instance_right.position);
-        world.oct_tree.insert_item_vec3(Box::new(model_instance_bot.clone()), model_instance_bot.position);
-        world.oct_tree.insert_item_vec3(Box::new(model_instance_left.clone()), model_instance_left.position);
+        oct_tree.insert_item_vec3(Box::new(model_instance_top.clone()), model_instance_top.position);
+        oct_tree.insert_item_vec3(Box::new(model_instance_right.clone()), model_instance_right.position);
+        oct_tree.insert_item_vec3(Box::new(model_instance_bot.clone()), model_instance_bot.position);
+        oct_tree.insert_item_vec3(Box::new(model_instance_left.clone()), model_instance_left.position);
     }
 }
