@@ -42,7 +42,7 @@ impl MapData {
         return MapData {
             floors: vec![],
             floor_height: height_pixel,
-            sizes: vec![floor_size, floor_size*2.0, floor_size*4.0]
+            sizes: vec![floor_size, floor_size*2.0, floor_size*3.0]
         }
     }
 
@@ -60,25 +60,31 @@ impl MapData {
             story += 1;
             cur_height = story as f32 * self.floor_height;
             for room in floor.rooms.iter() {
-                let position_floor = glm::Vec3::new(room.block_coord[0] as f32 * self.sizes[0], cur_height - self.floor_height, room.block_coord[1] as f32 * self.sizes[0] as f32 );
-                let position_ceiling = glm::Vec3::new(room.block_coord[0] as f32 * self.sizes[0], cur_height + self.floor_height, room.block_coord[1] as f32 * self.sizes[0] as f32 );
-                let position_wall = glm::Vec3::new(room.block_coord[0] as f32 * self.sizes[0], cur_height, room.block_coord[1] as f32 * self.sizes[0] as f32 );
+
+                let cur_size = self.sizes[room.size as usize];
+
+                let x_pos = (room.block_coord[0] as f32 * (self.sizes[1]) as f32) + cur_size;
+                let z_pos = (room.block_coord[1] as f32 * (self.sizes[1]) as f32) + cur_size;
+
+                let position_floor = glm::Vec3::new(x_pos, cur_height - self.floor_height, z_pos );
+                let position_ceiling = glm::Vec3::new(x_pos, cur_height + self.floor_height, z_pos );
+                let position_wall = glm::Vec3::new(x_pos, cur_height, z_pos);
 
                 let mut floor_model = Floor::new();
                 let mut ceiling_model = Ceiling::new();
                 let mut wall_model = Wall::new();
                 if (room.size == 0) {
-                    ceiling_model.insert_texture(position_ceiling, "ceiling_small".to_string(), self.sizes[0], self.floor_height, camera, oct_tree);
                     floor_model.insert_texture(position_floor, "floor_small".to_string(), self.sizes[0], self.floor_height, camera, oct_tree);
                     wall_model.insert_textures(position_wall, "wall_small".to_string(), self.sizes[0], camera, oct_tree);
+                    ceiling_model.insert_texture(position_ceiling, "ceiling_small".to_string(), self.sizes[0], self.floor_height, camera, oct_tree);
                 } else if (room.size == 1) {
                     floor_model.insert_texture(position_floor, "floor_medium".to_string(), self.sizes[1], self.floor_height, camera, oct_tree);
-                    ceiling_model.insert_texture(position_ceiling, "ceiling_medium".to_string(), self.sizes[1], self.floor_height, camera, oct_tree);
                     wall_model.insert_textures(position_wall, "wall_medium".to_string(), self.sizes[1], camera, oct_tree);
+                    ceiling_model.insert_texture(position_ceiling, "ceiling_medium".to_string(), self.sizes[1], self.floor_height, camera, oct_tree);
                 } else if (room.size == 2) {
                     floor_model.insert_texture(position_floor, "floor_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
-                    ceiling_model.insert_texture(position_ceiling, "ceiling_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
                     wall_model.insert_textures(position_wall, "wall_large".to_string(), self.sizes[2], camera, oct_tree);
+                    ceiling_model.insert_texture(position_ceiling, "ceiling_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
                 }
             }
             break;
@@ -123,7 +129,7 @@ impl MapData {
                 cur_room.id = read_u8(&buffer, &mut pos);
                 // Room Type
                 cur_room.room_type = read_u8(&buffer, &mut pos);
-                // Room SIze
+                // Room Size
                 cur_room.size = read_u8(&buffer, &mut pos);
                 // Start X
                 cur_room.block_coord[0] = read_u8(&buffer, &mut pos);

@@ -16,7 +16,7 @@ pub struct Demo {
 
 impl Demo {
     pub fn new(sdl_payload: &mut SDLContext, camera: &mut Camera) -> Self {
-        let world: World = World::new_load(sdl_payload);
+        let world: World = World::new_load(sdl_payload, camera);
         return Demo {
             editor: Editor::new(sdl_payload, camera, &world.model_map),
             world: world,
@@ -64,19 +64,21 @@ impl Demo {
 
     pub fn run_demo(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         if self.demo_state.is_initializing() {
-            self.world.position_player(glm::Vec3::new(10.0*180.0 , 0.0, 10.0*180.0));
+            //self.world.position_player(glm::Vec3::new(10.0*180.0 , 0.0, 10.0*180.0));
+            self.world.position_player(glm::Vec3::new(2160.0 , 0.0, 2880.0));
             self.world.load_map(camera);
             self.demo_state.flip();
         }
         else if self.demo_state.is_initialized() {
             self.draw_skybox(camera, shader_container);
             self.draw_world(camera, shader_container);
+            self.draw_debug(sdl_context, camera, shader_container);
             self.world.run(sdl_context, camera);
         }
     }
 
-    pub fn draw_debug(&mut self, sdl_payload: &mut SDLContext) {
-        
+    pub fn draw_debug(&mut self, sdl_payload: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        self.world.draw_debug(sdl_payload, camera, shader_container);
     }
 
 }

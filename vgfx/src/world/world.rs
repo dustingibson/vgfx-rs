@@ -2,8 +2,11 @@ use crate::Model;
 use crate::ModelInstance;
 use crate::dep::events::SDLContext;
 use crate::Texture;
+use crate::geo::label_2d::Label2D;
 use crate::gfx::face::FacePartitionRender;
+use crate::gfx::shader;
 use crate::gfx::shader::Shader;
+use crate::gfx::shader::ShaderContainer;
 use crate::gfx::skybox::Skybox;
 use crate::gfx::texture_group::TextureGroupRenderer;
 use crate::model::model::AreaInstance;
@@ -32,12 +35,14 @@ pub struct World {
     texture_group: HashMap<String, TextureGroupRenderer>,
     skyboxes: Vec<Skybox>,
     map_data: MapData,
-    player: Player
+    player: Player,
+    camera_label: Label2D,
+    fps_label: Label2D
 }
 
 impl World {
 
-    pub fn new() -> Self {
+    pub fn new(sdl_context: &mut SDLContext, camera: &mut Camera) -> Self {
 
         let world = World {
             base_folder: "res".to_string(),
@@ -47,19 +52,35 @@ impl World {
             texture_group: HashMap::new(),
             skyboxes: vec![],
             map_data: MapData::new_load(),
-            player: Player::new()
+            player: Player::new(),
+            camera_label: Label2D::new(sdl_context, camera, "camera".to_string(), glm::Vec4::new(1.0, 0.0, 0.0, 0.0), glm::Vec3::new(0.0, 0.0, 0.0), 16 ),
+            fps_label: Label2D::new(sdl_context, camera, "fps".to_string(), glm::Vec4::new(1.0, 0.0, 0.0, 0.0), glm::Vec3::new(0.0, 0.025, 0.0), 16 )
         };
         return world;
     }
 
-    pub fn new_load(sdl_context: &mut SDLContext) -> Self {
-        let mut world = World::new();
-        return world.load(sdl_context, "res".to_string()).unwrap();
+    pub fn new_load(sdl_context: &mut SDLContext, camera: &mut Camera) -> Self {
+        let mut world = World::new(sdl_context, camera);
+        return world.load(sdl_context, camera, "res".to_string()).unwrap();
     }
 
     pub fn draw_skybox(&mut self, shader: &mut Shader) {
         self.skyboxes[0].draw(shader);
     }
+
+    pub fn draw_debug(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        self.camera_label.change_text(sdl_context, camera.coord_str());
+        self.fps_label.change_text(sdl_context, sdl_context.get_fps().to_string());
+
+
+        shader_container.use_shader(&"fragment".to_string());
+        camera.set_projection_ortho(shader_container, &"fragment".to_string());
+        self.camera_label.draw(&mut shader_container.get_shader(&"fragment".to_string()));
+        self.fps_label.draw(&mut shader_container.get_shader(&"fragment".to_string()));
+        camera.set_projection(shader_container, &"fragment".to_string());
+        shader_container.unuse_shader();
+    }
+
 
     pub fn run(&mut self, sdl_context: &SDLContext, camera: &mut Camera) {
         self.player.run(sdl_context, camera);
@@ -138,10 +159,10 @@ impl World {
         return glm::vec3(f32_vec[0], f32_vec[1], f32_vec[2]);
     }
 
-    pub fn load(&mut self, sdl_context: &mut SDLContext, base_folder: String) -> io::Result<World> {
+    pub fn load(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, base_folder: String) -> io::Result<World> {
         println!("Start Loading!");
 
-        let mut world = World::new();
+        let mut world = World::new(sdl_context, camera);
         let world_file = [base_folder.to_string(),"/world.pak".to_string()].join("");
         let mut file = File::open(world_file)?;
         let mut buffer = vec![];
