@@ -47,6 +47,8 @@ pub fn run(command: &str, params: Vec<String>) -> Result<(), String> {
     video_subsystem.gl_attr().set_stencil_size(1);
     let window = video_subsystem.window("rust-gl demo", WIDTH, HEIGHT)
         .position_centered()
+        //.fullscreen()
+        .borderless()
         .opengl()
         .build()
         .unwrap();

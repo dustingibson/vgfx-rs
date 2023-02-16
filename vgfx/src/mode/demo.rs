@@ -65,7 +65,7 @@ impl Demo {
     pub fn run_demo(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
         if self.demo_state.is_initializing() {
             //self.world.position_player(glm::Vec3::new(10.0*180.0 , 0.0, 10.0*180.0));
-            self.world.position_player(glm::Vec3::new(2160.0 , 0.0, 2880.0));
+            self.world.position_player(glm::Vec3::new(9675.0 , 30.0, 8429.0));
             self.world.load_map(camera);
             self.demo_state.flip();
         }

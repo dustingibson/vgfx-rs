@@ -19,7 +19,7 @@ pub struct Camera {
 impl Camera {
     pub fn new(position: glm::Vec3, width: f32, height: f32) -> Camera {
             // Rad(45) = 0.785398
-        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.5, 2000.0);
+        let projection: glm::Mat4 = glm::perspective( width / height, 0.785398, 0.1, 8000.0);
         let view: glm::Mat4 = glm::look_at::<GLfloat>(
             &position,
             &glm::vec3(0.0, 0.0, 1.0),

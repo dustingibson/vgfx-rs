@@ -98,8 +98,8 @@ impl World {
         let range: f32 = 5000.0;
         let mut cur_instances: Vec<Box<ModelInstance>> = vec![];
         //TODO: Make values relative to camera
-        self.oct_tree.get_items_from_range(&mut cur_instances, camera.position.x - range, camera.position.y - range, camera.position.z - range, camera.position.x + range, camera.position.y + range, camera.position.z + range);
-        //self.oct_tree.get_all_items(& mut cur_instances);
+        //self.oct_tree.get_items_from_range(&mut cur_instances, camera.position.x - range, camera.position.y - range, camera.position.z - range, camera.position.x + range, camera.position.y + range, camera.position.z + range);
+        self.oct_tree.get_all_items(& mut cur_instances);
         let now = Instant::now();
 
         for model_instance in cur_instances.iter_mut() {

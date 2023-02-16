@@ -37,8 +37,8 @@ pub struct FloorData {
 impl MapData {
     
     pub fn new() -> Self {
-        let height_pixel = 25.0;
-        let floor_size = 180.0;
+        let height_pixel = 150.0;
+        let floor_size = 540.0;
         return MapData {
             floors: vec![],
             floor_height: height_pixel,
