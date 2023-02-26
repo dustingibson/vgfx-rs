@@ -12,7 +12,7 @@ enum MovementState {
 }
 
 pub struct Player {
-    position: glm::Vec3,
+    pub position: glm::Vec3,
     speed: f32,
     acceleration: f32,
     deaccerlation: f32,

@@ -1,7 +1,7 @@
 use std::io::prelude::*;
 use std::fs::{File};
 use std::convert::TryInto;
-use std::io;
+use std::{io, string};
 use super::world::World;
 use crate::model::floor::Floor;
 use crate::model::model::ModelInstance;
@@ -9,9 +9,9 @@ use crate::model::wall::Wall;
 use crate::model::ceiling::Ceiling;
 use crate::gfx::camera::Camera;
 use crate::utils::octo::OctTree;
+use uuid::Uuid;
 
 extern crate nalgebra_glm as glm;
-
 
 
 pub struct MapData {
@@ -43,6 +43,16 @@ impl MapData {
             floors: vec![],
             floor_height: height_pixel,
             sizes: vec![floor_size, floor_size*2.0, floor_size*3.0]
+        }
+    }
+
+    fn new_model_instance(&self, model_name: String) -> ModelInstance {
+        return ModelInstance {
+            model_name: model_name.to_string(), 
+            position: glm::vec3(0.0, -50.0, 0.0),
+            scale: glm::Vec3::new(1.0, 1.0, 1.0),
+            rotate: glm::Vec3::new(0.0, 0.0, 0.0),
+            name: Uuid::new_v4().to_string()
         }
     }
 
@@ -82,13 +92,16 @@ impl MapData {
                     wall_model.insert_textures(position_wall, "wall_medium".to_string(), self.sizes[1], camera, oct_tree);
                     ceiling_model.insert_texture(position_ceiling, "ceiling_medium".to_string(), self.sizes[1], self.floor_height, camera, oct_tree);
                 } else if (room.size == 2) {
-                    floor_model.insert_texture(position_floor, "floor_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
+                    //floor_model.insert_texture(position_floor, "floor_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
                     wall_model.insert_textures(position_wall, "wall_large".to_string(), self.sizes[2], camera, oct_tree);
-                    ceiling_model.insert_texture(position_ceiling, "ceiling_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
+                    //ceiling_model.insert_texture(position_ceiling, "ceiling_large".to_string(), self.sizes[2], self.floor_height, camera, oct_tree);
                 }
             }
             break;
         }
+        let mut cube = self.new_model_instance("cube".to_string());
+        cube.position = glm::vec3(9775.0, 30.0, 8460.0);
+        oct_tree.insert_item_vec3((Box::new(cube.clone())), cube.position);
     }
 
     fn load(&mut self, base_folder: String) -> io::Result<MapData> {

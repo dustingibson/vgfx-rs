@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::Shader;
 use crate::geo::line::Line;
 use crate::gfx::face::FacePartitionRender;
+use crate::gfx::shader::AdditionalUniforms;
 use crate::gfx::texture::Texture;
 
 #[derive(Clone)]
@@ -77,14 +78,14 @@ impl Model {
         self.boundary_lines.push(Line::new(right_up_back, left_up_back, color, width));
     }
 
-    pub fn draw_stencil(&self, shader: &mut Shader, position: &mut glm::Vec3, scale: &mut glm::Vec3, rotate: &mut glm::Vec3) {
+    pub fn draw_stencil(&self, shader: &mut Shader, additional_uniforms: Option<&AdditionalUniforms>, additional_textures: Option<&Vec<Texture>>, position: &mut glm::Vec3, scale: &mut glm::Vec3, rotate: &mut glm::Vec3) {
         unsafe {
             gl::StencilFunc(gl::NOTEQUAL, 1, 0xFF);
             gl::StencilMask(0x00);
             gl::Disable(gl::DEPTH_TEST);
         }
         let mut new_position = position.clone() + glm::vec3(10.0, 10.0, 10.0);
-        self.draw(shader, &mut new_position, scale, rotate, false);
+        self.draw(shader, additional_uniforms, additional_textures, &mut new_position, scale, rotate, false);
         unsafe {
             gl::StencilMask(0xFF);
             gl::StencilFunc(gl::ALWAYS, 0, 0xFF);
@@ -92,7 +93,7 @@ impl Model {
         }
     }
 
-    pub fn draw(& self, shader: &mut Shader, position: &mut glm::Vec3, scale: &mut glm::Vec3, rotate: &mut glm::Vec3, stencil: bool) {
+    pub fn draw(& self, shader: &mut Shader, additional_uniforms: Option<&AdditionalUniforms>, additional_textures: Option<&Vec<Texture>>, position: &mut glm::Vec3, scale: &mut glm::Vec3, rotate: &mut glm::Vec3, stencil: bool) {
         if stencil {
             unsafe {
                 gl::StencilFunc(gl::ALWAYS, 1, 0xFF);
@@ -100,7 +101,7 @@ impl Model {
             }
         }
         for face_partition in self.face_partitions.iter() {
-            face_partition.draw(shader, position, &self.textures[face_partition.texture_index], scale, rotate);
+            face_partition.draw(shader, additional_uniforms, position, &self.textures[face_partition.texture_index], additional_textures, scale, rotate);
         }
         // for line in self.boundary_lines.iter() {
         //     line.draw(shader, position);
@@ -130,8 +131,8 @@ impl ModelInstance {
         };
     }
 
-    pub fn draw(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>, stencil: bool) {
-        model_map.get(&self.model_name).unwrap().draw(shader, &mut self.position, &mut self.scale, &mut self.rotate, stencil);
+    pub fn draw(&mut self, shader: &mut Shader, additional_uniforms: Option<&AdditionalUniforms>, additional_textures: Option<&Vec<Texture>>, model_map: &HashMap<String, Model>, stencil: bool) {
+        model_map.get(&self.model_name).unwrap().draw(shader, additional_uniforms, additional_textures, &mut self.position, &mut self.scale, &mut self.rotate, stencil);
     }
 
     pub fn draw_stencil(&mut self, shader: &mut Shader, model_map: &HashMap<String, Model>) {

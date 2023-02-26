@@ -2,6 +2,8 @@ use gl;
 use gl::types::*;
 use crate::Shader;
 use crate::Texture;
+
+use super::shader::AdditionalUniforms;
 extern crate nalgebra_glm as glm;
 extern crate libc;
 
@@ -96,7 +98,7 @@ impl FacePartitionRender {
         }
     }
 
-    pub fn draw(&self, shader: &mut Shader, position: &mut glm::Vec3, texture: &Texture, scale: &mut glm::Vec3, rotate: &mut glm::Vec3) {
+    pub fn draw(&self, shader: &mut Shader, additional_uniforms: Option<&AdditionalUniforms>, position: &mut glm::Vec3, texture: &Texture, additional_textures: Option<&Vec<Texture>>, scale: &mut glm::Vec3, rotate: &mut glm::Vec3) {
         unsafe {            
             gl::BindVertexArray(self.vao);
 
@@ -104,9 +106,23 @@ impl FacePartitionRender {
             gl::Uniform1i(shader.get_uniform_location("textured".to_string()), if texture.has_img {1} else {0} );
             gl::Uniform4f(shader.get_uniform_location("ambientColor".to_string()),  texture.texture_properties.ambient_color[0], texture.texture_properties.ambient_color[1], texture.texture_properties.ambient_color[2], 1.0);
             gl::Uniform1i(shader.get_uniform_location("textureSample".to_string()), 0);
+            //gl::Uniform3f(shader.get_uniform_location("lightPos".to_string()), 10075.0, 70.0, 8429.0 );
+            if (additional_uniforms.is_some()) {
+                additional_uniforms.unwrap().BindUniforms(shader);
+            }
+
 
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, texture.texture_id);
+
+            if additional_textures.is_some() {
+                //println!("Had additional textures {}", additional_textures.unwrap().len());
+                for additional_texture in additional_textures.unwrap() {
+                    gl::ActiveTexture(additional_texture.sampler_id);
+                    gl::BindTexture(gl::TEXTURE_2D, additional_texture.texture_id);
+                }
+            }
+
 
             gl::BindBuffer(gl::ARRAY_BUFFER, self.vertex_buffer_id);
             gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 0, std::ptr::null_mut());

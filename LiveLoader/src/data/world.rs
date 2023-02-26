@@ -14,6 +14,7 @@ use super::model::FacePartition;
 pub struct World {
     base_folder: String,
     model_map: HashMap<String, Model>,
+    image_map: HashMap<String, Vec<u8>>,
     areas: Vec<AreaInstance>
 }
 
@@ -23,11 +24,12 @@ impl World {
         return World {
             base_folder: base_folder,
             model_map: HashMap::new(),
+            image_map: HashMap::new(),
             areas: Vec::new()
         }
     }
 
-    pub fn get_paths(&mut self, sub_dir: String) -> io::Result<Vec<String>> {
+    pub fn get_paths(&mut self, sub_dir: String, accept_paths: &Vec<String>) -> io::Result<Vec<String>> {
         let mut paths: Vec<String> = vec![];
         for entry in fs::read_dir(self.base_folder.to_string() + "/" + &sub_dir.to_string())? {
             let entry = entry?;
@@ -36,7 +38,13 @@ impl World {
                 Some(fname) => {
                     match fname.to_str() {
                         Some(cont_fname) => {
-                            if cont_fname.contains(".json") || cont_fname.contains(".obj") || cont_fname.contains(".mtl") {
+                            let mut ignore = true;
+                            for cur_ignore_path in accept_paths {
+                                if cont_fname.contains(cur_ignore_path) {
+                                    ignore = false;
+                                }
+                            }
+                            if !ignore {
                                 paths.push(self.base_folder.to_string() + "/" + &sub_dir + "/" + &cont_fname.to_string());
                             }
                         },
@@ -346,7 +354,7 @@ impl World {
 
     pub fn to_fname(&mut self, path_str: String) -> String {
         let path = std::path::Path::new(&path_str);
-        return path.file_name().unwrap().to_str().unwrap().to_string().replace(".obj", "").replace(".mtl", "")
+        return path.file_name().unwrap().to_str().unwrap().to_string().replace(".obj", "").replace(".mtl", "").replace(".png", "")
     }
 
     pub fn to_dir(&mut self, path_str: String) -> String {
@@ -368,6 +376,14 @@ impl World {
                 },
                 Err(err) => { println!("{}", err.to_string()) }
             }
+        }
+    }
+
+    pub fn set_image(&mut self, paths: Vec<String>) {
+        for path in paths.iter() {
+            let name = self.to_fname(path.to_string());
+            let img = self.get_byte_from_file(path.to_string()).unwrap();
+            self.image_map.insert(name, img);
         }
     }
 
@@ -520,6 +536,16 @@ impl World {
             pos += write_vec3(&mut buffer, &value.boundary_points[6])?;
             // 53. Boundary 8
             pos += write_vec3(&mut buffer, &value.boundary_points[7])?;
+        }
+        // 54. Count of Images
+        pos += write_add(&mut buffer, &self.image_map.len().to_be_bytes())?;
+        for (img_key, img_value) in self.image_map.iter_mut() {
+            // 55. Name
+            pos += write_str(&mut buffer, &img_key.to_string())?;
+            // 56. Length of Image
+            pos += write_add(&mut buffer, &img_value.len().to_be_bytes())?;
+            // 57. Image
+            pos += write_add(&mut buffer, &img_value)?;
         }
         Ok(())
     }

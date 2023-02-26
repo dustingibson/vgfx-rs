@@ -60,7 +60,9 @@ pub struct Texture {
     pub texture_id: GLuint,
     pub has_img: bool,
     pub texture_images: HashMap<String, TextureImage>,
-    pub texture_properties: TextureProperties
+    pub texture_properties: TextureProperties,
+    //Optional
+    pub sampler_id: u32
 }
 
 impl Texture {
@@ -71,7 +73,8 @@ impl Texture {
             texture_id: 0,
             has_img: false,
             texture_images: HashMap::new(),
-            texture_properties: TextureProperties::new()
+            texture_properties: TextureProperties::new(),
+            sampler_id: gl::TEXTURE0
         }
     }
 
@@ -142,7 +145,8 @@ impl Texture {
             texture_id: texture_buffer,
             texture_images: texture_images,
             has_img: true,
-            texture_properties: TextureProperties::new()
+            texture_properties: TextureProperties::new(),
+            sampler_id: gl::TEXTURE0
         }
     }
 
@@ -235,7 +239,8 @@ impl Texture {
             texture_id: texture_buffer,
             has_img: true,
             texture_images: HashMap::new(),
-            texture_properties: TextureProperties::new()
+            texture_properties: TextureProperties::new(),
+            sampler_id: gl::TEXTURE0
         }
     }
 

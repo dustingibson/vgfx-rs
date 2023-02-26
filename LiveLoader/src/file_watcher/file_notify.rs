@@ -22,11 +22,13 @@ impl FileNotify {
         let (tx, rx) = channel();
         let mut watcher: RecommendedWatcher = Watcher::new(tx, Duration::from_secs(2))?;
         watcher.watch(self.base_folder.to_string(), RecursiveMode::Recursive);
+        let accept_areas_paths = vec![".obj".to_string(), ".json".to_string(), ".mtl".to_string()];
+        let accept_png_paths = vec![".png".to_string()];
         loop {
             match rx.recv() {
                 Ok(event) => {
                     let mut world = World::new(base_folder.to_string());
-                    match world.get_paths("areas".to_string()) {
+                    match world.get_paths("areas".to_string(), &accept_areas_paths) {
                         Ok(paths) => { 
                             println!("Areas: {}", paths.join(",").to_string());
                             world.set_areas(paths);
@@ -36,7 +38,7 @@ impl FileNotify {
                     match world.get_dir("models".to_string()) {
                         Ok(dirs) => {
                             for dir in dirs {
-                                match world.get_paths(dir.to_string()) {
+                                match world.get_paths(dir.to_string(), &accept_areas_paths) {
                                     Ok(paths) => { 
                                         println!("Models: {}", paths.join(",").to_string());
                                         world.set_models(paths);
@@ -49,6 +51,15 @@ impl FileNotify {
                         },
                         Err(_e) => {
                             panic!("{}", _e);
+                        }
+                    }
+                    match world.get_paths("images".to_string(), &accept_png_paths) {
+                        Ok(paths) => {
+                            println!("Images {}", paths.join(",").to_string());
+                            world.set_image(paths);
+                        },
+                        Err(_e) => {
+                            panic!("{}", _e)
                         }
                     }
                     world.save(self.out_folder.to_string());

@@ -141,7 +141,7 @@ impl Mesh {
             }
         }
         for face_partition in self.face_partitions.as_slice() {
-            face_partition.draw(shader, position, &self.mesh_texture, &mut glm::Vec3::new(1.0, 1.0, 1.0), &mut glm::Vec3::new(0.0, 0.0, 0.0));
+            face_partition.draw(shader, None, position, &self.mesh_texture, None,  &mut glm::Vec3::new(1.0, 1.0, 1.0), &mut glm::Vec3::new(0.0, 0.0, 0.0));
         }
         if stencil {
             unsafe {

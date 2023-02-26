@@ -15,9 +15,8 @@ uniform vec3 scale;
 uniform vec3 rotate;
 
 void main() {
-	vec3 new_pos = model_pos;
-	gl_Position = projection * view * model * vec4(new_pos, 1.0f);
-	fragPos = vec3(model * vec4(new_pos,1.0f));
-	normal = normals;
+	gl_Position = projection * view * model * vec4(model_pos, 1.0f);
+	fragPos = vec3(model * vec4(model_pos, 1.0f));
+	normal = vec3(model *  vec4(normals, 0.0f));
 	TexCoord = aTexCoord;
 }

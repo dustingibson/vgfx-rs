@@ -21,7 +21,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/vgfx/target/debug/vgfx-rs.exe",
-            "args": ["demo"],
+            "args": ["demo", "demo"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}/vgfx",
             "environment": [],

@@ -94,7 +94,7 @@ impl TextureCrud {
         self.texture_cursor.as_mut().unwrap().position = camera.abs_camera_position(50.0);
 
         shader_container.use_shader(&"fragment".to_string());
-        self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()), model_map, true);
+        self.texture_cursor.as_mut().unwrap().draw(&mut shader_container.get_shader(&"fragment".to_string()), None, None, model_map, true);
         shader_container.unuse_shader();
 
         shader_container.use_shader(&"color".to_string());

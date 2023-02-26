@@ -5,9 +5,11 @@ use crate::Texture;
 use crate::geo::label_2d::Label2D;
 use crate::gfx::face::FacePartitionRender;
 use crate::gfx::shader;
+use crate::gfx::shader::AdditionalUniforms;
 use crate::gfx::shader::Shader;
 use crate::gfx::shader::ShaderContainer;
 use crate::gfx::skybox::Skybox;
+use crate::gfx::texture::TextureImage;
 use crate::gfx::texture_group::TextureGroupRenderer;
 use crate::model::model::AreaInstance;
 use crate::utils::octo::OctTree;
@@ -35,6 +37,8 @@ pub struct World {
     texture_group: HashMap<String, TextureGroupRenderer>,
     skyboxes: Vec<Skybox>,
     map_data: MapData,
+    pub image_map: HashMap<String, Texture>,
+    additional_textures: Vec<Texture>,
     player: Player,
     camera_label: Label2D,
     fps_label: Label2D
@@ -52,7 +56,9 @@ impl World {
             texture_group: HashMap::new(),
             skyboxes: vec![],
             map_data: MapData::new_load(),
+            image_map: HashMap::new(),
             player: Player::new(),
+            additional_textures: vec![],
             camera_label: Label2D::new(sdl_context, camera, "camera".to_string(), glm::Vec4::new(1.0, 0.0, 0.0, 0.0), glm::Vec3::new(0.0, 0.0, 0.0), 16 ),
             fps_label: Label2D::new(sdl_context, camera, "fps".to_string(), glm::Vec4::new(1.0, 0.0, 0.0, 0.0), glm::Vec3::new(0.0, 0.025, 0.0), 16 )
         };
@@ -69,15 +75,16 @@ impl World {
     }
 
     pub fn draw_debug(&mut self, sdl_context: &mut SDLContext, camera: &mut Camera, shader_container: &mut ShaderContainer) {
+        //self.camera_label.change_text(sdl_context, camera.coord_str());
         self.camera_label.change_text(sdl_context, camera.coord_str());
         self.fps_label.change_text(sdl_context, sdl_context.get_fps().to_string());
 
 
-        shader_container.use_shader(&"fragment".to_string());
-        camera.set_projection_ortho(shader_container, &"fragment".to_string());
-        self.camera_label.draw(&mut shader_container.get_shader(&"fragment".to_string()));
-        self.fps_label.draw(&mut shader_container.get_shader(&"fragment".to_string()));
-        camera.set_projection(shader_container, &"fragment".to_string());
+        shader_container.use_shader(&"texture".to_string());
+        camera.set_projection_ortho(shader_container, &"texture".to_string());
+        self.camera_label.draw(&mut shader_container.get_shader(&"texture".to_string()));
+        self.fps_label.draw(&mut shader_container.get_shader(&"texture".to_string()));
+        camera.set_projection(shader_container, &"texture".to_string());
         shader_container.unuse_shader();
     }
 
@@ -94,7 +101,11 @@ impl World {
         self.player.reposition(position);
     }
 
-    pub fn draw(&mut self, shader: &mut Shader, camera: &mut Camera) {
+    pub fn player_position(&mut self)  -> glm::Vec3 {
+        return self.player.position;
+    }
+
+    pub fn draw(&mut self, shader: &mut Shader, additional_uniforms: &AdditionalUniforms, camera: &mut Camera) {
         let range: f32 = 5000.0;
         let mut cur_instances: Vec<Box<ModelInstance>> = vec![];
         //TODO: Make values relative to camera
@@ -106,7 +117,7 @@ impl World {
             
             //UNCOMMENT TO DRAW
             let model = self.model_map.get_mut(& mut model_instance.model_name.to_string()).unwrap();
-            model.draw(shader, &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), &mut model_instance.scale, &mut model_instance.rotate, false);
+            model.draw(shader, Some(additional_uniforms), Some(&self.additional_textures), &mut glm::Vec3::new(model_instance.position[0], model_instance.position[1], model_instance.position[2]), &mut model_instance.scale, &mut model_instance.rotate, false);
             
             // TODO: Refactor! Moving instance references in and out therefore needs to be reinserted.
 
@@ -336,6 +347,17 @@ impl World {
             world.model_map.insert(cur_model.name.to_string(), cur_model);
             //self.add_partition( &mut world.oct_tree, cur_model.name.to_string(), tmp_face_partitions);
         }
+        // 54. Count of Images
+        let num_images = read_usize(&buffer, &mut pos);
+        for i in 0..num_images {
+            // 55. Name of Image
+            let img_name = read_str(&buffer, &mut pos);
+            println!("Loading Image {}", img_name);
+            // 56-57. Iamge
+            let texture = load_texture(&buffer, &mut pos, img_name.to_string(), gl::TEXTURE1 + i as u32);
+            world.image_map.insert(img_name, texture.unwrap());
+        }
+        world.additional_textures.push(world.image_map.get("light").unwrap().clone());
         println!("Completed Loading!");
         Ok(world)
     }
@@ -415,6 +437,23 @@ fn load_image(data: &Vec<u8>, pos: &mut usize, texture_name: String) -> Option<V
             let img_bytes = read_to_array(data, pos.clone(), img_size);
             *pos = *pos + img_size;
             return Some(img_bytes.to_vec());
+        },
+        false => {
+            None
+        }
+    }
+}
+
+fn load_texture(data: &Vec<u8>, pos: &mut usize, texture_name: String, sampler_id: u32) -> Option<Texture> {
+    let img_size = read_usize(data, pos);
+    return match img_size > 0 {
+        true => {
+            let mut new_texture = Texture::new(texture_name);
+            let img_bytes = read_to_array(data, pos.clone(), img_size);
+            *pos = *pos + img_size;
+            new_texture.create_texture_buffer_from_byte_data(img_bytes);
+            new_texture.sampler_id = sampler_id;
+            return Some(new_texture);
         },
         false => {
             None

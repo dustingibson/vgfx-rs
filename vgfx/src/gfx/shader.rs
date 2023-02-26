@@ -11,9 +11,68 @@ extern crate nalgebra_glm as glm;
 
 #[derive(Clone)]
 
+pub struct AdditionalUniforms {
+    pub vec3_uniforms: HashMap<String, glm::Vec3>,
+    pub vec4_uniforms: HashMap<String, glm::Vec4>,
+    pub int_uniforms: HashMap<String, i32>
+}
+
 pub struct ShaderContainer {
     pub shaders: HashMap<String, Shader>,
     pub default_shader: Shader
+}
+
+impl AdditionalUniforms {
+
+    pub fn new() -> Self {
+        return AdditionalUniforms { 
+            vec3_uniforms: HashMap::new(), 
+            vec4_uniforms: HashMap::new(),
+            int_uniforms: HashMap::new()
+        }
+    }
+
+    pub fn AddVec3Uniform(&mut self, name: String, var: glm::Vec3) {
+        self.vec3_uniforms.insert(name.to_string(), var);
+    }
+
+    pub fn AddVec4Uniform(&mut self, name: String, var: glm::Vec4) {
+        self.vec4_uniforms.insert(name.to_string(), var);
+    }
+
+    pub fn AddIntUniform(&mut self, name: String, var: i32) {
+        self.int_uniforms.insert(name.to_string(), var);
+    }
+
+    pub fn ModifyVec3Uniform(&mut self, name: &String, var: glm::Vec3) {
+        *self.vec3_uniforms.get_mut(name).unwrap() = var;
+    }
+
+    pub fn ModifyVec4Uniform(&mut self, name: &String, var: glm::Vec4) {
+        *self.vec4_uniforms.get_mut(name).unwrap() = var;
+    }
+
+    pub fn ModifyIntUniform(&mut self, name: &String, var: i32) {
+        *self.int_uniforms.get_mut(name).unwrap() = var;
+    }
+
+    pub fn BindUniforms(&self, shader: &mut Shader) {
+        for (key, value) in self.vec3_uniforms.iter() {
+            unsafe {
+                gl::Uniform3f(shader.get_uniform_location(key.to_string()), value.x, value. y, value.z);
+            }
+        }
+        for (key, value) in self.vec4_uniforms.iter() {
+            unsafe {
+                gl::Uniform4f(shader.get_uniform_location(key.to_string()), value.x, value. y, value.z, value.w);
+            }
+        }
+        for (key, value) in self.int_uniforms.iter() {
+            unsafe {
+                gl::Uniform1i(shader.get_uniform_location(key.to_string()), *value);
+            }
+        }
+    }
 }
 
 impl ShaderContainer {
@@ -24,13 +83,17 @@ impl ShaderContainer {
         let mut fragment_shader = Shader::new("fragment".to_string());
         let mut skybox_shader = Shader::new("skybox".to_string());
         let mut color_shader = Shader::new("color".to_string());
+        let mut texture_shader = Shader::new("texture".to_string());
+
 
         fragment_shader.add_uniform("lightPos".to_string());
         fragment_shader.add_uniform("textureSample".to_string());
+        fragment_shader.add_uniform("lightSample".to_string());
         fragment_shader.add_uniform("textured".to_string());
         skybox_shader.add_uniform("textureSample".to_string());
 
         all_shaders.insert("fragment".to_string(), fragment_shader.clone());
+        all_shaders.insert("texture".to_string(), texture_shader.clone());
         all_shaders.insert("skybox".to_string(), skybox_shader.clone());
         all_shaders.insert("color".to_string(), color_shader.clone());
 
